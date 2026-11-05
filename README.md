@@ -18,6 +18,12 @@ AI conversations do not automatically establish truth. A model's claim of comple
 
 模型输出不等于事实，网关日志不等于完整执行过程。平台必须允许 Agent Hook 或 SDK 提供实际执行与验收证据，且不能让学习结果自动改写安全边界。
 
+## Documentation website / 在线文档站
+
+**Site URL (once Pages is enabled):** https://lzyred.github.io/TraceMason-docs/
+
+The Markdown in `docs/` is the single source of truth. GitHub Actions builds the site with MkDocs Material and publishes it when GitHub Pages is configured to use **GitHub Actions**. See [deployment instructions](docs/deployment.md).
+
 ## Documentation map / 文档导航
 
 | Area | Document | Purpose |
@@ -37,6 +43,7 @@ AI conversations do not automatically establish truth. A model's claim of comple
 | Decisions | [ADR-0001](docs/05-decisions/adr-0001-product-boundaries.md) | Fundamental boundaries (accepted principles, proposed stack) |
 | Decisions | [Open questions](docs/05-decisions/open-questions.md) | Unresolved decisions and validation experiments |
 | Reference | [Glossary](docs/glossary.md) | Terms and evidence semantics |
+| Reference | [GitHub Pages deployment](docs/deployment.md) | Publishing source, local preview, workflow and troubleshooting |
 
 ## Initial scope / 首期边界
 
