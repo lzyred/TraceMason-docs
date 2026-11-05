@@ -29,7 +29,7 @@ const document = {
 const context={
   document,
   navigator:{},
-  window:{scrollTo(){}},
+  window:{scrollTo(){},clearTimeout(){},setTimeout(){return 1;}},
   setTimeout(){return 1;},
   clearTimeout(){}
 };
