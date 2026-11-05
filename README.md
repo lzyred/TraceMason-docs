@@ -10,6 +10,10 @@ TraceMason is a proposed open-source, gateway-adjacent AI governance and evidenc
 >
 > **状态：v0.1 产品与架构提案，尚非已实现的软件。** 当前仓库为文档仓库。除明确标记为“已接受”的原则外，技术选型与接口均是待验证设计。
 
+## Interactive Demo / 交互原型
+
+**[Open the interactive TraceMason Demo](https://lzyred.github.io/TraceMason-docs/demo/)** (subject to GitHub Pages domain settings). A standalone, client-side simulation of Audit → Quality → Experience → Skill Registry, plus Policies and Integrations. It uses **only synthetic fixture data**, performs no real inference, and sends no data to an AI gateway. Source: [docs/demo/](docs/demo/).
+
 ## Product thesis / 产品命题
 
 **Observe → Audit → Evaluate → Learn → Validate → Publish → Re-evaluate**
