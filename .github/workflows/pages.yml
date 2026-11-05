@@ -25,13 +25,14 @@ permissions:
   contents: read
 
 jobs:
+  # Pin Ubuntu 24.04 until the Ubuntu 26.04 rollout is validated against this workflow.
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -42,7 +43,7 @@ jobs:
         run: mkdocs build --strict
       - name: Upload build output
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tracemason-site
           path: site/
@@ -51,7 +52,7 @@ jobs:
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
@@ -61,16 +62,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Download verified build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: tracemason-site
           path: site/
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site/
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
