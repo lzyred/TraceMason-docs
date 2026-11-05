@@ -1,0 +1,92 @@
+site_name: TraceMason
+site_description: "AI Governance & Evidence-Driven Skill Evolution | AI 治理与证据驱动的技能演化"
+site_url: https://lzyred.github.io/TraceMason-docs/
+repo_url: https://github.com/lzyred/TraceMason-docs
+repo_name: lzyred/TraceMason-docs
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+copyright: "TraceMason · From AI Traces to Trusted Skills · Design Proposal v0.1"
+
+theme:
+  name: material
+  language: zh
+  logo: assets/tracemason-mark.svg
+  favicon: assets/tracemason-mark.svg
+  font: false
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: 深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: 浅色模式
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+
+plugins:
+  - search:
+      lang:
+        - en
+        - zh
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - 首页 / Home: index.md
+  - 产品 / Product:
+      - 愿景与定位: 00-product/vision.md
+      - 功能与范围: 00-product/requirements.md
+      - 管理控制台: 00-product/console.md
+  - 架构 / Architecture:
+      - 系统总体架构: 01-architecture/system.md
+      - 事件与证据模型: 01-architecture/events-and-data.md
+      - 安全与治理: 01-architecture/security-governance.md
+      - 经验到 Skill 演化: 01-architecture/experience-skill.md
+  - 接口 / Interfaces:
+      - API 契约: 02-interfaces/api-contracts.md
+      - Agent 接入规范: 02-interfaces/agent-integration.md
+  - 交付 / Delivery:
+      - MVP 路线图: 03-delivery/mvp-plan.md
+      - 验收与评估: 03-delivery/acceptance.md
+  - 研究 / Research:
+      - 开源竞品与选型: 04-research/landscape.md
+  - 决策 / Decisions:
+      - ADR-0001 产品边界: 05-decisions/adr-0001-product-boundaries.md
+      - 开放问题: 05-decisions/open-questions.md
+  - 参考 / Reference:
+      - 术语: glossary.md
+      - 文档站部署: deployment.md

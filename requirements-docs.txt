@@ -1,0 +1,2 @@
+# Reproducible major-version boundary; pin exact version in release CI after initial Pages build.
+mkdocs-material>=9.6,<10
