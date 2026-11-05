@@ -46,7 +46,7 @@ function goto(page) {click("data-page",page);}
 function action(id) {click("data-action",id);}
 function contains(fragment) {assert.ok(main.innerHTML.includes(fragment),"Page missing expected content: "+fragment);}
 
-contains("Evidence");
+contains("EVIDENCE-DRIVEN");
 goto("audit");
 contains("evt-101");
 contains("evt-103");
@@ -87,5 +87,5 @@ contains("Gateway adapter");
 contains("Fixture only");
 
 action("reset");action("confirmReset");
-contains("Evidence");
+contains("EVIDENCE-DRIVEN");
 console.log("TraceMason demo smoke tests passed: pages, inspection, Skill lifecycle, policy redaction, reset.");
