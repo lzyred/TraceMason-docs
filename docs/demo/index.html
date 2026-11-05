@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1f2e">
+  <meta name="description" content="TraceMason interactive product demo: audit AI traces, verify task outcomes, evolve and ship governed Skills. All data is synthetic.">
+  <title>TraceMason · Interactive Product Demo</title>
+  <link rel="icon" href="../assets/tracemason-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="demo.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar" aria-label="产品主导航">
+      <a class="brand" href="../" aria-label="TraceMason Docs">
+        <span class="brand-mark"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M5 25 13 10l8 9 9-14" fill="none" stroke="#73e9d3" stroke-linecap="round" stroke-width="2.7"/><circle cx="5" cy="25" r="2.4"/><circle cx="13" cy="10" r="2.4"/><circle cx="21" cy="19" r="2.4"/><circle cx="30" cy="5" r="2.4"/></svg></span>
+        <span><strong>TraceMason</strong><small>AI GOVERNANCE PLATFORM</small></span>
+      </a>
+      <div class="workspace-picker"><span class="workspace-avatar">T</span><span><strong>TraceMason Lab</strong><small>Demo workspace</small></span><span class="workspace-caret">⌄</span></div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav id="main-nav" class="nav" aria-label="主菜单">
+        <button class="nav-item is-active" data-page="overview" aria-current="page"><span data-icon="grid"></span><span>Overview</span></button>
+        <button class="nav-item" data-page="audit"><span data-icon="scan"></span><span>Audit</span><span id="audit-count" class="nav-count">2</span></button>
+        <button class="nav-item" data-page="quality"><span data-icon="chart"></span><span>Quality</span></button>
+        <button class="nav-item" data-page="experience"><span data-icon="brain"></span><span>Experience</span><span class="nav-dot" aria-label="有候选经验"></span></button>
+        <button class="nav-item" data-page="skills"><span data-icon="layers"></span><span>Skill Registry</span></button>
+      </nav>
+      <div class="nav-label second-label">CONFIGURATION</div>
+      <nav class="nav" aria-label="配置菜单">
+        <button class="nav-item" data-page="policies"><span data-icon="shield"></span><span>Policies</span></button>
+        <button class="nav-item" data-page="integrations"><span data-icon="plug"></span><span>Integrations</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-flow">
+          <div class="sidebar-flow-head"><span class="small-dot"></span> GUIDED FLOW <span id="sidebar-progress">0 / 4</span></div>
+          <div class="progress-track"><div id="sidebar-progress-bar" class="progress-bar"></div></div>
+          <p>从一条失败的 AI 任务出发，完成经验验证与 Skill 发布。</p>
+          <button class="text-link" data-action="guide">继续演示 <span aria-hidden="true">→</span></button>
+        </div>
+        <a class="sidebar-docs" href="../"><span data-icon="book"></span> Documentation <span aria-hidden="true">↗</span></a>
+        <p class="sidebar-copy">© TraceMason · Concept v0.1</p>
+      </div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button menu-toggle" id="menu-toggle" aria-label="打开或关闭导航" aria-expanded="false"><span data-icon="menu"></span></button>
+          <span class="crumb-parent">TraceMason</span><span class="crumb-separator">/</span><strong id="page-breadcrumb">Overview</strong>
+        </div>
+        <div class="topbar-right">
+          <span class="demo-indicator"><span></span> SYNTHETIC DEMO</span>
+          <button id="reset-demo" class="header-action" data-action="reset"><span data-icon="rotate"></span><span>重置演示</span></button>
+          <span class="top-avatar" title="Demo user">D</span>
+        </div>
+      </header>
+      <div class="global-notice">
+        <span data-icon="info"></span>
+        <strong>演示环境</strong>
+        <span>所有审计、模型、成本和测试结果均为虚构数据；本页面不会调用模型或连接真实网关。</span>
+        <a href="../00-product/vision/" aria-label="查看产品定位文档">阅读设计文档 →</a>
+      </div>
+      <main id="view" class="content" tabindex="-1" aria-live="polite"></main>
+      <footer class="bottom-bar"><span>TraceMason Interactive Prototype · No backend connection</span><span>Evidence before confidence. <a href="../01-architecture/experience-skill/">Architecture →</a></span></footer>
+    </div>
+  </div>
+  <div id="toast" role="status" class="toast" aria-live="polite"></div>
+  <div id="modal-root"></div>
+</body>
+</html>
