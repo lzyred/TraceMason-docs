@@ -39,6 +39,8 @@ jobs:
           cache-dependency-path: requirements-docs.txt
       - name: Install docs dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-docs.txt
+      - name: Smoke-test interactive demo
+        run: node tests/demo-smoke.cjs
       - name: Check links and build site
         run: mkdocs build --strict
       - name: Upload build output
