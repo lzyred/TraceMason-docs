@@ -19,8 +19,8 @@ TraceMason · 迹匠
 </div>
 
 <div class="tm-actions" markdown>
-[开始阅读产品设计 :material-arrow-right:](00-product/vision.md){ .md-button .md-button--primary }
-[查看系统架构 :material-arrow-up-right:](01-architecture/system.md){ .md-button }
+[开始阅读产品设计 →](00-product/vision.md){ .md-button .md-button--primary }
+[查看系统架构 ↗](01-architecture/system.md){ .md-button }
 </div>
 
 <div class="tm-progress" markdown>
