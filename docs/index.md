@@ -4,100 +4,152 @@ hide:
   - toc
 ---
 
-<div class="tm-hero" markdown>
+<div class="tm-landing" id="tm-landing">
 
-<span class="tm-eyebrow">OPEN SOURCE CONCEPT · PRODUCT DESIGN v0.1</span>
+  <section class="tm-universe" aria-labelledby="tm-hero-heading">
+    <canvas id="tm-scene" class="tm-scene" aria-hidden="true"></canvas>
+    <div class="tm-scene-fallback" aria-hidden="true"></div>
+    <div class="tm-universe-mask" aria-hidden="true"></div>
 
-# From AI Traces to <span class="tm-accent">Trusted Skills.</span>
+    <div class="tm-hero-inner">
+      <div class="tm-overline">
+        <div class="tm-overline-left"><span class="tm-status-pulse" aria-hidden="true"></span> TraceMason <span class="tm-overline-sep">/</span> OPEN SOURCE RESEARCH PROJECT</div>
+        <div class="tm-overline-links">
+          <a href="00-product/vision/">Vision <span aria-hidden="true">↗</span></a>
+          <a href="01-architecture/system/">Architecture <span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/lzyred/TraceMason-docs" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
 
-<div class="tm-lead" markdown>
-TraceMason · 迹匠
+      <div class="tm-hero-copy">
+        <div class="tm-eyebrow-line"><span class="tm-eyebrow-mark" aria-hidden="true"></span> FROM AI TRACES TO TRUSTED SKILLS <span class="tm-version">V0.1 / EXPERIMENTAL</span></div>
+        <h1 id="tm-hero-heading">AI should learn<br>from <span class="tm-hero-shine">evidence.</span><br>Not assumptions.</h1>
+        <p class="tm-hero-cn">让 AI 从真实交付证据中学习，而不是从一句“任务完成”中自我肯定。</p>
+        <p class="tm-hero-support">Capture interactions. Verify outcomes. Turn proven experience into reusable, governed Agent Skills.</p>
 
-让模型交互、安全审计、真实任务验收与经验演化形成一条可信的工程闭环。
+        <div class="tm-hero-buttons">
+          <a href="runnable-demo/" class="tm-btn tm-btn-primary">Explore the working demo <span aria-hidden="true">↗</span></a>
+          <a href="00-product/vision/" class="tm-btn tm-btn-secondary">Read the product vision <span aria-hidden="true">→</span></a>
+        </div>
 
-**Audit what happened. Verify what worked. Reuse what is proven.**
-</div>
+        <div class="tm-hero-metadata" aria-label="Project characteristics">
+          <span><i class="tm-meta-dot" aria-hidden="true"></i> Open-source concept</span>
+          <span><i class="tm-meta-diamond" aria-hidden="true"></i> Evidence-first</span>
+          <span><i class="tm-meta-check" aria-hidden="true"></i> Runnable local prototype</span>
+        </div>
+      </div>
 
-<div class="tm-actions" markdown>
-[运行可执行 Demo →](runnable-demo.md){ .md-button .md-button--primary }
-[查看 UI 原型](demo/){ .md-button }
-[阅读产品设计](00-product/vision.md){ .md-button }
-[查看系统架构 ↗](01-architecture/system.md){ .md-button }
-</div>
+      <div class="tm-orbit-hud" aria-hidden="true">
+        <div class="tm-hud-rule"></div>
+        <span>ORBIT / 03</span>
+        <strong>TRUSTED KNOWLEDGE</strong>
+        <small>PROVENANCE → VALIDATION → SKILL</small>
+      </div>
 
-<div class="tm-progress" markdown>
-<span class="tm-stage">Observe</span>
-<span class="tm-stage">Audit</span>
-<span class="tm-stage">Evaluate</span>
-<span class="tm-stage">Learn</span>
-<span class="tm-stage">Validate</span>
-<span class="tm-stage">Publish</span>
-<span class="tm-stage">Re-evaluate</span>
-</div>
-</div>
+      <div class="tm-universe-foot">
+        <div class="tm-universe-indicator"><span class="tm-indicator-line" aria-hidden="true"></span> OBSERVE <span class="tm-mid-dot">·</span> VERIFY <span class="tm-mid-dot">·</span> EVOLVE</div>
+        <div class="tm-universe-controls">
+          <button id="tm-motion-toggle" type="button" class="tm-motion-toggle" aria-label="Pause background animation" aria-pressed="false"><span class="tm-motion-icon" aria-hidden="true">Ⅱ</span><span class="tm-motion-label">PAUSE MOTION</span></button>
+          <a href="#tm-how-it-works" class="tm-scroll-link">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+    </div>
+    <div class="tm-universe-edge" aria-hidden="true"></div>
+  </section>
 
-<div class="tm-kicker">DESIGNED FOR TRUSTWORTHY AI OPERATIONS</div>
+  <section class="tm-rail" aria-label="TraceMason product process">
+    <div class="tm-rail-content">
+      <span class="tm-rail-index">THE CONTINUOUS LOOP <span class="tm-rail-number">/ 01</span></span>
+      <div class="tm-rail-flow">
+        <span><i>01</i> Observe</span><b aria-hidden="true">→</b>
+        <span><i>02</i> Verify</span><b aria-hidden="true">→</b>
+        <span><i>03</i> Learn</span><b aria-hidden="true">→</b>
+        <span><i>04</i> Release</span><b aria-hidden="true">→</b>
+        <span><i>05</i> Re-evaluate</span>
+      </div>
+    </div>
+  </section>
 
-## 三个核心能力 · Three pillars
+  <section class="tm-section tm-introduction" id="tm-how-it-works">
+    <div class="tm-section-kicker"><span class="tm-kicker-line" aria-hidden="true"></span> NOT ANOTHER AI DASHBOARD</div>
+    <div class="tm-intro-layout">
+      <h2>Stop collecting answers.<br><span>Start improving outcomes.</span></h2>
+      <div class="tm-intro-description">
+        <p>Most AI tools record what models <em>said</em>. TraceMason explores how to connect those records to what actually <em>worked</em> — tests, tool results, human acceptance, and reproducible evidence.</p>
+        <p class="tm-zh">记录不等于理解，模型自评不等于验证。只有经过独立验收的经验，才值得成为下一个 Agent 可以复用的 Skill。</p>
+      </div>
+    </div>
+  </section>
 
-<div class="tm-feature-grid">
-  <a class="tm-feature" href="01-architecture/security-governance/">
-    <span class="tm-num">01 / GOVERNANCE</span>
-    <h3>AI Governance</h3>
-    <p>针对网关输入、模型输出与 Agent 执行边界建立差异化审计、脱敏与授权机制。</p>
-    <span class="tm-more">安全与治理 →</span>
-  </a>
-  <a class="tm-feature" href="01-architecture/events-and-data/">
-    <span class="tm-num">02 / EVIDENCE</span>
-    <h3>Evidence-Backed Quality</h3>
-    <p>以真实测试、工具证据及人工验收评价结果，而不是相信模型一句“任务完成”。</p>
-    <span class="tm-more">证据数据模型 →</span>
-  </a>
-  <a class="tm-feature" href="01-architecture/experience-skill/">
-    <span class="tm-num">03 / EVOLUTION</span>
-    <h3>Skill Evolution</h3>
-    <p>从纠错和经过验证的成功中提炼规则，并通过测试、审批、版本发布和回滚持续优化。</p>
-    <span class="tm-more">Skill 演化机制 →</span>
-  </a>
-</div>
+  <section class="tm-section tm-capabilities" aria-label="Core platform capabilities">
+    <div class="tm-capability-card" style="--tm-card-n:0">
+      <div class="tm-card-top"><span class="tm-card-num">01 / OBSERVE</span><span class="tm-card-icon" aria-hidden="true">◎</span></div>
+      <h3>Capture the signals.</h3>
+      <p>Bring gateway events, agent execution signals, and task evidence into one traceable view. Missing signals remain explicitly unknown.</p>
+      <a href="01-architecture/events-and-data/">Explore the evidence model <span aria-hidden="true">↗</span></a>
+      <div class="tm-card-graphic tm-graphic-trace" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="tm-capability-card" style="--tm-card-n:1">
+      <div class="tm-card-top"><span class="tm-card-num">02 / VERIFY</span><span class="tm-card-icon" aria-hidden="true">⌁</span></div>
+      <h3>Prove the outcome.</h3>
+      <p>Replace self-reported success with independent checks. Distinguish model claims, executed tests, incomplete evidence, and verified results.</p>
+      <a href="03-delivery/acceptance/">See the verification gates <span aria-hidden="true">↗</span></a>
+      <div class="tm-card-graphic tm-graphic-verify" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <div class="tm-capability-card" style="--tm-card-n:2">
+      <div class="tm-card-top"><span class="tm-card-num">03 / EVOLVE</span><span class="tm-card-icon" aria-hidden="true">⬡</span></div>
+      <h3>Ship trusted Skills.</h3>
+      <p>Extract candidates from failures and corrections, evaluate them, require approval, publish scoped versions, and preserve rollback.</p>
+      <a href="01-architecture/experience-skill/">Discover Skill evolution <span aria-hidden="true">↗</span></a>
+      <div class="tm-card-graphic tm-graphic-skill" aria-hidden="true"><span>TRACE</span><b>→</b><span>SKILL.md</span></div>
+    </div>
+  </section>
 
-## 产品闭环 · The system loop
+  <section class="tm-section tm-workbench" aria-labelledby="tm-workbench-title">
+    <div class="tm-workbench-copy">
+      <div class="tm-section-kicker"><span class="tm-kicker-line" aria-hidden="true"></span> BUILT TO BE TESTED</div>
+      <h2 id="tm-workbench-title">A prototype you can<br><span>actually run.</span></h2>
+      <p>The initial implementation is a local Python service with SQLite, actual unit-test execution, a deterministic completion gate, generated SKILL.md, and rollback. It is a technical proof of the evidence pipeline — not yet autonomous Agent improvement.</p>
+      <div class="tm-workbench-actions">
+        <a class="tm-btn tm-btn-dark" href="runnable-demo/">Run the local prototype <span aria-hidden="true">→</span></a>
+        <a class="tm-workbench-textlink" href="demo/">See UI concept <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+    <div class="tm-terminal">
+      <div class="tm-terminal-top">
+        <div class="tm-terminal-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span>QUICK START / TERMINAL</span>
+        <button type="button" id="tm-copy-command" aria-label="Copy quick start commands">COPY <span aria-hidden="true">⧉</span></button>
+      </div>
+      <pre class="tm-terminal-code"><code><span class="tm-command-comment"># Clone & launch the runnable prototype</span>
+<span class="tm-command-symbol">$</span> git clone https://github.com/lzyred/TraceMason-docs.git
+<span class="tm-command-symbol">$</span> cd TraceMason-docs
+<span class="tm-command-symbol">$</span> python3 prototype/tracemason.py
 
-<div class="tm-loop">
-  <div class="tm-loop-item">
-    <span class="tm-loop-tag">INGEST</span>
-    <strong>Inference + Agent Evidence</strong>
-    <small>模型请求与响应 / Hook / CI / 用户反馈</small>
-  </div>
-  <div class="tm-loop-arrow">→</div>
-  <div class="tm-loop-item">
-    <span class="tm-loop-tag">QUALIFY</span>
-    <strong>Audit + Outcome Verification</strong>
-    <small>策略检查 / 关联证据 / 独立验收</small>
-  </div>
-  <div class="tm-loop-arrow">→</div>
-  <div class="tm-loop-item">
-    <span class="tm-loop-tag">EVOLVE</span>
-    <strong>Instinct → Skill → Release</strong>
-    <small>经验候选 / 回归评估 / 审批及回滚</small>
-  </div>
-</div>
+<span class="tm-command-comment"># Open the local interactive workbench</span>
+<span class="tm-command-symbol">$</span> <span class="tm-command-accent">http://127.0.0.1:8765/</span></code></pre>
+      <div class="tm-terminal-bottom"><span><i class="tm-terminal-led"></i> LOCAL ONLY</span><span>Python standard library · No API key required</span></div>
+    </div>
+  </section>
 
-!!! warning "重要边界 / Important boundary"
-    **网关日志不等于完整的 Agent 执行记录。模型声明的成功不等于外部验证。** 这两条是 TraceMason 的核心设计原则。当前仓库是产品与架构设计文档，尚未发布可运行的 TraceMason 服务。
+  <section class="tm-section tm-integrity" aria-label="Scope and honesty">
+    <div><span class="tm-integrity-symbol" aria-hidden="true">✳</span><strong>Designed around evidence, not promises.</strong></div>
+    <p>This repository contains a documented architecture and runnable local prototype. Real Codex / Claude / OpenCode integration and measured cross-Agent improvement are future validation milestones — not shipped claims.</p>
+    <a href="05-decisions/open-questions/">Review open questions <span aria-hidden="true">↗</span></a>
+  </section>
 
-## 从哪里开始 · Explore the documentation
+  <section class="tm-last-cta">
+    <span>TRACE · VERIFY · EVOLVE</span>
+    <h2>Make every verified outcome<br>count toward the next one.</h2>
+    <div>
+      <a href="00-product/vision/" class="tm-btn tm-btn-primary">Read the vision <span aria-hidden="true">↗</span></a>
+      <a href="https://github.com/lzyred/TraceMason-docs" class="tm-btn tm-btn-outline" target="_blank" rel="noopener noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
 
-<div class="tm-shortcuts">
-  <a href="00-product/requirements/"><span>01</span><div><strong>产品功能与边界</strong><small>需求、P0 范围、成功标准</small></div></a>
-  <a href="00-product/console/"><span>02</span><div><strong>管理控制台</strong><small>七个页面的真实业务交互</small></div></a>
-  <a href="01-architecture/system/"><span>03</span><div><strong>技术总体架构</strong><small>推理、证据与演化三条链路</small></div></a>
-  <a href="02-interfaces/api-contracts/"><span>04</span><div><strong>API 与事件契约</strong><small>接口、身份、溯源、幂等</small></div></a>
-  <a href="03-delivery/mvp-plan/"><span>05</span><div><strong>MVP 实施路线图</strong><small>M0–M3 纵向交付阶段</small></div></a>
-  <a href="03-delivery/acceptance/"><span>06</span><div><strong>验收与评估</strong><small>12 个可以验证的验收项</small></div></a>
-</div>
+  <footer class="tm-landing-footer">
+    <strong>TraceMason <span>/</span> From AI Traces to Trusted Skills.</strong>
+    <span>Open-source research preview · v0.1 · Design and implementation evolve independently</span>
+  </footer>
 
-<div class="tm-footer-note">
-  <strong>Build on verified evidence, not AI assertions.</strong>
-  <span>TraceMason Docs v0.1 · 公开设计提案 / Open design proposal</span>
 </div>
