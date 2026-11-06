@@ -67,7 +67,8 @@ extra_css:
 
 nav:
   - 首页 / Home: index.md
-  - 交互 Demo / Interactive: demo/index.html
+  - 可执行 Demo / Runnable: runnable-demo.md
+  - 交互原型 / UI Mock: demo/index.html
   - 产品 / Product:
       - 愿景与定位: 00-product/vision.md
       - 功能与范围: 00-product/requirements.md

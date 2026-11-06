@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b2130">
+<title>TraceMason · Live Evidence Demo</title>
+<meta name="description" content="Runnable TraceMason evidence-driven Skill prototype. Real SQLite, unittest verification, rule evaluation, publication and rollback.">
+<link rel="stylesheet" href="/app.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand"><div class="logo">T<span>.</span></div><div><strong>TraceMason</strong><small>EVIDENCE ENGINE</small></div></div>
+    <div class="workspace"><span class="avatar">L</span><span><strong>Local Workspace</strong><small>127.0.0.1 only</small></span><span class="dim" style="margin-left:auto">⌄</span></div>
+    <div class="side-group">EXPLORE</div>
+    <nav>
+      <a class="nav-link active" href="#workflow"><span>◫</span> Proof of Value</a>
+      <a class="nav-link" href="#evidence"><span>◎</span> Evidence Trail</a>
+      <a class="nav-link" href="#skill"><span>⬡</span> Skill Lifecycle</a>
+      <a class="nav-link" href="#gateway"><span>⇄</span> Gateway API</a>
+    </nav>
+    <div class="side-spacer"></div>
+    <div class="side-card"><div class="side-card-top"><span class="live-dot"></span> BACKEND CONNECTED</div><div id="side-mode">SQLite + Python unittest</div><p>这不是预先写死结果的网页。按钮将调用本地 Python API，并更改持久化状态。</p></div>
+    <div class="side-foot">LOCAL RESEARCH BUILD · v0.1</div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><div><span class="dim">TraceMason</span><span class="sep">/</span><strong>Runnable Demo</strong></div><div class="top-actions"><span id="health-indicator" class="connection"><i></i> Checking API</span><button id="reload" class="button small">↻ Refresh</button></div></header>
+    <div class="content">
+      <div class="notice"><strong>REAL EXECUTION · LIMITED CLAIM</strong> Python tests, persisted records, rule evaluation and Skill publication run on the local server. The failing Agent completion claim is a labeled test fixture, not a live model result.</div>
+      <section class="intro" id="workflow">
+        <div class="intro-copy"><div class="eyebrow">A WORKING VERTICAL SLICE · NOT A STATIC MOCKUP</div><h1>From evidence to a <span>working Skill.</span></h1><p>把「任务完成」这个不可信声明，连接到真正执行的测试证据。系统自动识别冲突，形成 Skill，评估后发布，并在之后的请求中实际改变判定结果。</p>
+        <div class="intro-actions"><button id="quick-start" class="button primary">▶ Run failing fixture</button><button id="run-passing-top" class="button ghost">✓ Run passing control</button></div></div>
+        <div class="intro-diagram"><div><span>01</span><strong>Observe</strong><small>Runtime fixture + SQLite</small></div><b>↓</b><div><span>02</span><strong>Verify</strong><small>Actual Python unittest</small></div><b>↓</b><div><span>03</span><strong>Evolve</strong><small>Rule evaluation + SKILL.md</small></div></div>
+      </section>
+
+      <div class="summary" id="summary">
+        <div class="stat"><span>EXECUTED RUNS</span><strong id="metric-runs">—</strong><small>Recorded in SQLite</small></div>
+        <div class="stat"><span>FAILED EVIDENCE</span><strong id="metric-fail">—</strong><small>Real unittest exit code</small></div>
+        <div class="stat"><span>GATE EVAL</span><strong id="metric-eval">—</strong><small>Deterministic conformance</small></div>
+        <div class="stat"><span>SKILL STATUS</span><strong id="metric-stage" class="stat-status">—</strong><small>Published artifact on disk</small></div>
+      </div>
+
+      <div class="section-head"><div><div class="eyebrow">01 · OBSERVE</div><h2>Generate independent evidence</h2><p>同一测试集，错误实现与修复后的实现。进程退出码和实际输出写入本地数据库。</p></div><span class="tag blue">Real subprocess</span></div>
+      <div class="two">
+        <article class="panel step-card"><div class="step-header"><span class="step-icon fail">!</span><span class="tag red">Negative control</span></div><h3>Run intentionally failing code</h3><p>测试一个有缺陷的折扣函数。示例 Agent 声明“完成”，但 Python 测试实际失败；形成可引用的冲突证据。</p><button id="run-fail" class="button secondary">Run failing tests <span>→</span></button></article>
+        <article class="panel step-card"><div class="step-header"><span class="step-icon good">✓</span><span class="tag green">Positive control</span></div><h3>Run verified passing code</h3><p>使用同一组 unittest 执行正确实现，记录通过结果。验证规则不能把所有完成声明一律阻断。</p><button id="run-pass" class="button secondary">Run passing tests <span>→</span></button></article>
+      </div>
+
+      <div class="section-head" id="evidence"><div><div class="eyebrow">02 · INSPECT</div><h2>Evidence Trail</h2><p>从数据库读取每次测试的真实状态。选择任意事件查看 stdout、stderr 与 SHA-256 摘要。</p></div><button id="refresh-evidence" class="button small">↻ Sync events</button></div>
+      <section class="panel evidence-layout">
+        <div class="event-pane"><div class="panel-title"><strong>Execution history</strong><span id="evidence-total">0 runs</span></div><div class="table-wrap"><table><thead><tr><th>Run</th><th>Scenario</th><th>Tests</th><th>Verification</th></tr></thead><tbody id="run-table"><tr><td colspan="4" class="empty">No recorded runs yet.</td></tr></tbody></table></div></div>
+        <div class="detail-pane"><div class="panel-title"><strong>Independent test output</strong><span class="tag">Unittest</span></div><div id="run-details" class="run-details"><p class="muted">Run a fixture and select an event to inspect the actual executed tests.</p></div></div>
+      </section>
+
+      <div class="section-head" id="skill"><div><div class="eyebrow">03 · EVOLVE & RELEASE</div><h2>Skill Evolution</h2><p>只有存在真实失败证据，才允许生成候选。测试、审批、发布不是同一个动作。</p></div><span class="tag green" id="skill-badge">No candidate</span></div>
+      <div class="stage-track"><div data-stage="candidate"><i>1</i><strong>Derive</strong><small>Evidence</small></div><div data-stage="tested"><i>2</i><strong>Evaluate</strong><small>Rule conformance</small></div><div data-stage="approved"><i>3</i><strong>Approve</strong><small>Local review</small></div><div data-stage="active"><i>4</i><strong>Publish</strong><small>Disk artifact</small></div></div>
+      <div class="two wide-left">
+        <section class="panel pad"><div class="panel-title"><strong>Generated SKILL.md</strong><span class="tag blue">Portable Markdown</span></div><div id="skill-empty" class="empty-state">尚无候选 Skill。首先运行失败测试，点击 Derive candidate。</div><pre id="skill-source" class="code" hidden></pre><div class="actions"><button id="derive" class="button primary">1. Derive candidate</button><button id="evaluate" class="button secondary">2. Evaluate detector</button><button id="approve" class="button secondary">3. Approve</button><button id="publish" class="button secondary">4. Publish</button><button id="rollback" class="button danger">↶ Rollback</button></div></section>
+        <div class="stack">
+          <section class="panel pad"><div class="panel-title"><strong>Evidence-based evaluation</strong><span class="tag">Not model performance</span></div><div id="eval-panel" class="empty-state compact">先运行失败与通过测试，并执行 Eval。这里不会伪造“模型成功率提升”。</div></section>
+          <section class="panel pad"><div class="panel-title"><strong>Live completion gate</strong><span class="tag blue">Actual API decision</span></div><p class="hint">选取数据库中执行过测试的任务，调用 <code>/api/claims/check</code> 比较发布前后的真实判定。</p><select id="claim-run" class="select"><option value="">先运行一个测试</option></select><div class="actions"><button id="check-claim" class="button primary">Check completion claim →</button></div><div id="claim-result" class="decision">尚未检测。</div></section>
+        </div>
+      </div>
+
+      <div class="section-head" id="gateway"><div><div class="eyebrow">04 · CONNECT</div><h2>OpenAI-compatible gateway ingress</h2><p>可发送真实 HTTP 请求并查看 SQLite 审计记录。未配置上游时将明确返回 deterministic mock。</p></div><span id="upstream-state" class="tag blue">Checking</span></div>
+      <div class="two wide-left">
+        <section class="panel pad"><div class="panel-title"><strong>Live gateway request</strong><span class="tag">Non-streaming only</span></div><label class="field-label" for="gateway-prompt">User message (synthetic content only)</label><textarea id="gateway-prompt" rows="4" placeholder="Ask a harmless test question…">Hello TraceMason. Explain what evidence-backed delivery means in one sentence.</textarea><div class="actions"><button id="send-gateway" class="button primary">POST /v1/chat/completions →</button><button id="sample-secret" class="button secondary">Insert fake key</button></div><div id="gateway-response" class="gateway-response">No request sent.</div></section>
+        <section class="panel pad"><div class="panel-title"><strong>Audited gateway requests</strong><span id="gateway-count" class="tag">0 calls</span></div><div id="gateway-events" class="gateway-events"><p class="muted">No HTTP calls yet.</p></div><p class="fine">Only redacted previews and SHA-256 fingerprints are stored. Real upstream API key comes from a server environment variable; never enter a real secret here.</p></section>
+      </div>
+      <div class="closing"><div><strong>What is proven?</strong><p>Real HTTP ingress, SQLite persistence, subprocess tests, evidence-led candidate, executable rule evaluation, local release artifact, active gate and rollback.</p><small>Not yet proven: autonomous Agent correction, model-quality improvement, multi-tenant security or full Codex/Claude integration.</small></div><button id="reset" class="button subtle-danger">Reset local records</button></div>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+</body></html>

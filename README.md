@@ -14,6 +14,18 @@ TraceMason is a proposed open-source, gateway-adjacent AI governance and evidenc
 
 **[Open the interactive TraceMason Demo](https://lzyred.github.io/TraceMason-docs/demo/)** (subject to GitHub Pages domain settings). A standalone, client-side simulation of Audit → Quality → Experience → Skill Registry, plus Policies and Integrations. It uses **only synthetic fixture data**, performs no real inference, and sends no data to an AI gateway. Source: [docs/demo/](docs/demo/).
 
+## Runnable evidence-to-Skill prototype / 可执行核心 Demo
+
+The functional local prototype is in [prototype/](prototype/). It includes a real Python HTTP service, SQLite persistence, actual `unittest` execution, evidence-derived Skill generation, gate evaluation, publication and rollback. Run:
+
+```bash
+python3 prototype/tracemason.py
+```
+
+Then visit **http://127.0.0.1:8765/**. [Read the runnable demo guide](docs/runnable-demo.md).
+
+**Important:** This is not a deployed online backend. The GitHub Pages [UI prototype](https://lzyred.github.io/TraceMason-docs/demo/) remains a static synthetic illustration; the runnable local demo is the actual backend proof.
+
 ## Product thesis / 产品命题
 
 **Observe → Audit → Evaluate → Learn → Validate → Publish → Re-evaluate**
