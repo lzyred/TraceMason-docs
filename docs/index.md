@@ -19,7 +19,8 @@ TraceMason · 迹匠
 </div>
 
 <div class="tm-actions" markdown>
-[体验交互 Demo →](demo/){ .md-button .md-button--primary }
+[运行可执行 Demo →](runnable-demo.md){ .md-button .md-button--primary }
+[查看 UI 原型](demo/){ .md-button }
 [阅读产品设计](00-product/vision.md){ .md-button }
 [查看系统架构 ↗](01-architecture/system.md){ .md-button }
 </div>
