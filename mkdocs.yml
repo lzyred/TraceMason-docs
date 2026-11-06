@@ -64,6 +64,10 @@ markdown_extensions:
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/landing.css
+
+extra_javascript:
+  - javascripts/landing.js
 
 nav:
   - 首页 / Home: index.md
