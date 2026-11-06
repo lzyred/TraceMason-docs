@@ -21,6 +21,7 @@ import tempfile
 import threading
 import time
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -94,11 +95,19 @@ class Engine:
         self.lock = threading.RLock()
         self._init_db()
 
+    @contextmanager
     def _db(self):
         db = sqlite3.connect(self.dbpath, timeout=10)
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA foreign_keys = ON")
-        return db
+        try:
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA foreign_keys = ON")
+            yield db
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+        finally:
+            db.close()
 
     def _init_db(self):
         with self._db() as db:
