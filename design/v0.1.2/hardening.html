@@ -1,0 +1,87 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 内容与隐私安全加固</title><style>*{box-sizing:border-box}body{margin:0;background:#f6f8fa;color:#233e3a;font:14px/1.6 system-ui}header{padding:20px 28px;display:flex;gap:20px;flex-wrap:wrap;background:white;border-bottom:1px solid #e0e7e5}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}main{max-width:1450px;margin:auto;padding:28px}h1{font-size:27px}h2{font-size:18px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}img{max-width:100%;border:1px solid #ddd;border-radius:10px}@media(max-width:760px){main{padding:16px}section{padding:14px}.mermaid{min-width:600px}}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="http://127.0.0.1:8766/privacy.html">真实产品</a><a href="navigation.html">菜单与板块</a><a href="index.html">架构</a><a href="coverage.html">验收</a><a href="openapi.json">接口</a><a href="screens.html">实拍</a><a href="hardening.html">安全加固闭环</a><a href="reliability.html">可靠性与定版门槛</a><a href="release.html">v0.1.2定版</a><a href="../v0.1.3/index.html">C/S交互规划</a></header><main><h1>v0.1.2 · 内容与隐私安全加固</h1><section><h2>01 · 谁触发、谁执行、谁确认</h2><pre class="mermaid">flowchart LR
+ C[客户端提交模型请求] --&gt; G[网关与Ops统一Transport]
+ G --&gt; B[有界解析与本机规则识别]
+ B --&gt; P[读取该账号策略版本]
+ P --&gt;|未命中或可自动脱敏| S[提交枚举风险记录]
+ S --&gt; V[核对账号与策略版本]
+ V --&gt; E[只外发检查后的正文]
+ P --&gt;|策略要求拦截| R[409与请求编号 / 上游零请求]
+ R --&gt; U[用户从记录进入脱敏候选]
+ U --&gt; W[工作台核对与裁剪]
+ W --&gt; B
+ B --&gt;|无法完整检查| X[拒绝并给出原因 / 不保留原文候选]
+ M[模型回复要求身份或密码] -.只是内容而非授权.-&gt; C
+</pre></section><section><h2>02 · 执行标准与风险分级</h2><pre class="mermaid">flowchart TD
+ A[local-context-3 / 本机有限规则] --&gt; S[认证秘密 / 高风险]
+ S --&gt; S1[密码与私钥 / API Key / Cookie / JWT / 登录凭据]
+ S1 --&gt; S2[默认移除 / 可收紧为拦截]
+ A --&gt; I[已识别身份与环境 / 中风险]
+ I --&gt; I1[姓名 / 邮箱 / 手机 / 用户路径 / 主机线索]
+ I1 --&gt; I2[默认别名替换 / 可收紧为拦截]
+ A --&gt; U[格式或覆盖不足 / 风险未知]
+ U --&gt; U1[已知敏感编码 / 远程引用或工具 / 敏感复合字段]
+ U1 --&gt; U2[拒绝 / 整理或排除后重新提交]
+ A --&gt; N[未命中 / 无已知发现]
+ N --&gt; N1[不等于不存在隐私 / 无通用NER保证]
+ S2 --&gt; P[账号策略只允许脱敏或拦截]
+ I2 --&gt; P
+ P --&gt; CAS[版本更新与历史 / 禁止原始秘密放行]
+</pre></section><section><h2>03 · 拦截后的处理闭环</h2><pre class="mermaid">sequenceDiagram
+ participant C as 原客户端
+ participant G as 网关
+ participant D as 最小风险库
+ participant U as 管理工作台
+ participant P as 上游模型
+ C-&gt;&gt;G: 模型JSON含认证秘密
+ G-&gt;&gt;G: 完成检查与脱敏 / 账号策略要求拦截
+ G-&gt;&gt;D: 原请求记录A与规则依据
+ G--&gt;&gt;C: 409 + request_id + review_available
+ Note over G,U: 仅脱敏候选保留10分钟 / 最多16份
+ U-&gt;&gt;G: 从记录A单次领取候选
+ G--&gt;&gt;U: 锁定账号模型协议 / 候选待确认
+ U-&gt;&gt;G: 裁剪确认并重建清单
+ G-&gt;&gt;D: 清单检查记录B / 前序A
+ U-&gt;&gt;G: 清单授权发送
+ G-&gt;&gt;G: 再核对策略版本与单次授权
+ G-&gt;&gt;D: 外发记录C / 前序B
+ G-&gt;&gt;P: 原协议参数与脱敏正文
+ P--&gt;&gt;U: 真实响应经网关返回
+ Note over C,U: 原客户端连接不会被恢复 / 用户决定后续流程
+</pre></section><section><h2>04 · 结果展示与证据</h2><pre class="mermaid">flowchart TD
+ Q[请求编号 / 响应头与错误体] --&gt; R[外发记录详情]
+ R --&gt; WHY[枚举原因 / 命中规则 / 信息类型 / 处理动作]
+ R --&gt; VER[账号策略版本 / 规则集版本 / 前序记录]
+ R --&gt; STATE[实际发送状态]
+ STATE --&gt; NOT[未发送 / 清单检查或拦截]
+ STATE --&gt; READY[已授权 / 尚未证明已交付]
+ STATE --&gt; GO[发送中]
+ GO --&gt; OK[2xx且流完成 / 已完成]
+ GO --&gt; BAD[非2xx或传输错误 / 失败]
+ BAD --&gt; REDIRECT[移除上游跳转头 / 阻止客户端原文重发]
+ GO --&gt; STOP[用户断开 / 取消]
+ GO --&gt; UNKNOWN[进程中断或状态写失败 / 不确定]
+ OK --&gt; LIMIT[不代表语义成功或厂商未留存]
+ UNKNOWN --&gt; NORETRY[不自动重试 / 避免重复外发]
+</pre></section><section><h2>05 · 最小存储与生命周期</h2><pre class="mermaid">flowchart LR
+ INPUT[原文与模型响应] --&gt; MEM[有界内存处理]
+ MEM --&gt; NO[不写风险库 / 不写浏览器持久存储]
+ POLICY[账号策略枚举与版本] --&gt; DB[SQLite]
+ CHANGE[策略版本历史 / 30天] --&gt; DB
+ EVENT[请求编号 / 规则原因 / 风险分类 / 状态 / 前序编号] --&gt; DB
+ EVENT --&gt; TTL[风险记录30天 / 限定预览后删除]
+ CLEAN[已完成检查的脱敏候选] --&gt; CASE[内存10分钟 / 单次领取 / 最多16份]
+ CASE --&gt; TASK[任务空闲30分钟 / 最长2小时]
+ TASK --&gt; END[结束或重启清除]
+ ALIAS[同任务身份别名] --&gt; TASK
+ SECRET[秘密原值] --&gt; DROP[仅本轮识别 / 不作跨轮映射或原值哈希]
+</pre></section><section><h2>06 · 验证与未覆盖范围</h2><pre class="mermaid">flowchart TD
+ T[43项服务测试 / 真实本机上游] --&gt; A[拦截零外发 / 三协议 / 原参数保留]
+ T --&gt; B[策略失效 / 幂等发送 / 中断与迁移]
+ T --&gt; C[跨材料秘密重复 / 编码 / 伪造占位符]
+ BROWSER[Chrome真实点击] --&gt; UI[策略试检 / 记录详情 / 候选确认 / 实际响应]
+ CORPUS[20个回归样例] --&gt; COUNTS[10个脱敏正例 / 6个拒绝例 / 4个负例]
+ COUNTS --&gt; BOUND[开发回归集 / 不能推导真实误报或召回率]
+ GAP[未完成] --&gt; NER[代表性隐私语料评估 / 通用NER]
+ GAP --&gt; MULTI[OCR与附件 / 任意混淆 / IDE直连]
+ GAP --&gt; INTENT[模型回复意图检测 / 厂商数据留存治理]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#eef8f3",primaryBorderColor:"#78ad96",lineColor:"#709681",fontFamily:"system-ui"},flowchart:{htmlLabels:false}})</script></body></html>

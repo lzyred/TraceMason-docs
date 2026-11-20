@@ -1,0 +1,52 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 菜单与板块对照</title><style>body{font:14px/1.7 system-ui;background:#f6f8fa;color:#233e3a;margin:0}header{padding:22px 30px;background:white;display:flex;gap:22px;flex-wrap:wrap}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}main{max-width:1400px;margin:auto;padding:28px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}h1{font-size:27px}h2{font-size:18px}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}@media(max-width:700px){main{padding:16px}.mermaid{min-width:650px}}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="prototype/index.html">原始评审原型</a><a href="http://127.0.0.1:8766/privacy.html">真实工作台</a><a href="index.html">架构</a><a href="screens.html">页面实拍</a><a href="hardening.html">安全加固闭环</a><a href="release.html">v0.1.2定版</a><a href="../v0.1.3/index.html">C/S交互规划</a></header><main><h1>菜单与子功能板块 · 原型到真实页面</h1><section><h2>01 · 系统菜单与原型模块的归属</h2><pre class="mermaid">flowchart LR
+ APP[TraceMason] --&gt; API[一级：API 接入]
+ APP --&gt; PRIV[一级：隐私外发防护]
+ API --&gt; ACC[账号列表 / 添加配置 / 基础运维检查]
+ PRIV --&gt; W[二级：防护工作台]
+ PRIV --&gt; R[二级：外发记录]
+ PRIV --&gt; P[二级：防护边界]
+ W --&gt; WR[privacy.html#workspace]
+ R --&gt; RR[privacy.html#records]
+ P --&gt; PR[privacy.html#policy]
+ PROTO[原型内的三个导航 / 属于隐私防护模块] -.整合到系统侧栏.-&gt; PRIV
+</pre></section><section><h2>02 · 工作台按原型恢复的板块</h2><pre class="mermaid">flowchart TD
+ H[工作台 / 四步任务流程 / 当前轮次] --&gt; LEFT[左侧：任务输入与材料]
+ H --&gt; RIGHT[右侧：交付决定与证据]
+ LEFT --&gt; TASK[这次要让 AI 做什么 / 任务描述 / 交付对象]
+ TASK --&gt; MODEL[真实调用补充：模型 / 折叠的连接协议]
+ TASK --&gt; MAT[本轮材料 / 添加文本与工具返回 / 选择文件]
+ MAT --&gt; ACTION[查看修改 / 排除 / 重新纳入 / 生成清单]
+ MAT --&gt; REPLY[发送后：模型回复与下一轮补充]
+ RIGHT --&gt; MAN[模型将拿到什么 / 本轮外发清单]
+ MAN --&gt; COUNTS[保留材料 / 已处理片段 / 不交付材料]
+ COUNTS --&gt; REVIEW[逐项决定 / 只确认脱敏候选]
+ REVIEW --&gt; SEND[交付内容预览 / 实际发送]
+ SEND --&gt; FINDINGS[本轮处理明细 / 材料·信息类型·处理结果]
+ FINDINGS --&gt; LIMIT[覆盖边界 / 进入防护边界]
+ DEMO[原型中的样例装载与预演] -.不进入正式页面.-&gt; REAL[真实账号 / 真实材料 / 真实响应]
+</pre></section><section><h2>03 · 子页面内容与责任</h2><pre class="mermaid">flowchart LR
+ R[外发记录] --&gt; RF[时间 / 交付账号 / 轮次 / 保留与排除]
+ R --&gt; RR[检查决定 / 风险 / 发现分类 / 发送结果 / 来源]
+ R --&gt; RD[请求编号 / 判定依据 / 策略版本 / 前序记录]
+ RD --&gt; REC[脱敏候选 / 进入工作台确认]
+ R --&gt; RA[筛选 / 导出元数据 / 限定预览后删除]
+ P[防护边界] --&gt; PS[网关可执行 / 客户端需配合 / 无法追溯]
+ P --&gt; PA[按数据用途分别处理]
+ P --&gt; PT[任务内隐私关联]
+ P --&gt; PL[当前能力与限制 / 数据保留]
+ RF --&gt; DATA[现有隐私API / 不展示原文或可逆映射]
+ RR --&gt; DATA
+</pre></section><section><h2>04 · 对照验收与允许的实施差异</h2><pre class="mermaid">flowchart TD
+ A[原始评审原型保持为参考] --&gt; B[菜单属于模块 / 三个子页面]
+ A --&gt; C[任务材料左 / 清单证据右]
+ A --&gt; D[处理明细 / 轮次 / 材料保留排除]
+ B --&gt; E[浏览器检查结构与选中态]
+ C --&gt; F[桌面几何位置 / 手机单列与侧栏]
+ D --&gt; G[真实材料到上游 / 记录数量]
+ X[实施必要差异] --&gt; Y[填写任意模型 / 选择实际协议]
+ X --&gt; Z[真实发送和回复替代预演]
+ X --&gt; L[固定本地规则能力 / 真实覆盖边界]
+ E --&gt; PASS[截图与自动化回归]
+ F --&gt; PASS
+ G --&gt; PASS
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",flowchart:{htmlLabels:false}})</script></body></html>

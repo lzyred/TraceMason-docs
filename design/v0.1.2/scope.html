@@ -1,0 +1,37 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 当前可用范围</title><style>*{box-sizing:border-box}body{margin:0;background:#f6f8fa;color:#233e3a;font:14px/1.6 system-ui}header{padding:20px 28px;display:flex;gap:20px;flex-wrap:wrap;background:white;border-bottom:1px solid #e0e7e5}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}main{max-width:1450px;margin:auto;padding:28px}h1{font-size:27px}h2{font-size:18px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}img{max-width:100%;border:1px solid #ddd;border-radius:10px}@media(max-width:760px){main{padding:16px}section{padding:14px}.mermaid{min-width:600px}}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="http://127.0.0.1:8766/privacy.html">真实产品</a><a href="index.html">架构</a><a href="coverage.html">验收</a><a href="openapi.json">接口</a><a href="screens.html">实拍</a><a href="hardening.html">安全加固闭环</a><a href="reliability.html">可靠性与定版门槛</a></header><main><h1>v0.1.2 · 当前可用范围</h1><section><h2>02 · 每个出站请求都经过同一闸门</h2><pre class="mermaid">flowchart LR
+ A[代理入口] --&gt; T[Transport.request]
+ B[连接检查] --&gt; T
+ T --&gt; R[有界读取 / 路径与头检查]
+ R --&gt; D[本机识别与替换]
+ D --&gt; E[提交最小风险记录]
+ E --&gt; S[内部Approved对象 / 进程seal]
+ W[工作台清单确认] --&gt; E
+ S --&gt; V[验证账号配置与策略版本]
+ V --&gt; N[创建上游请求]
+ D --&gt;|无法检查| X[拒绝 / 不外发原文]
+ E --&gt;|记录写入失败| X
+</pre></section><section><h2>03 · 三类材料的不同处理</h2><pre class="mermaid">flowchart TD
+ A[任务 / 文本 / 配置 / 日志 / 工具返回] --&gt; R[local-context-3]
+ R --&gt; S[已识别认证秘密]
+ S --&gt; Z[按账号策略移除或拦截 / 私钥材料整份排除]
+ R --&gt; I[已识别身份与环境]
+ I --&gt; M[按账号策略别名或拦截 / 保留可用结构]
+ R --&gt; Q[代码 / 身份材料 / 用途不明]
+ Q --&gt; C[仅展示候选 / 用户裁剪与确认]
+ C --&gt; R2[重新扫描 / 旧清单失效]
+ R --&gt; U[二进制 / 外部附件 / 不可检查]
+ U --&gt; B[阻止 / 排除后重建]
+ Z --&gt; F[外发清单]
+ M --&gt; F
+ R2 --&gt; F
+</pre></section><section><h2>09 · 客户端与识别能力边界</h2><pre class="mermaid">flowchart TD
+ A[已实现] --&gt; B[本机同源工作台]
+ A --&gt; C[经过代理的文本模型JSON]
+ A --&gt; D[有限字段与格式识别 / Unicode归一化]
+ N[未覆盖] --&gt; E[直接访问厂商网站 / 直连工具]
+ N --&gt; F[IDE与Agent自动拦截集成]
+ N --&gt; G[通用中文NER / 未知密钥 / 主动混淆保证]
+ N --&gt; H[OCR / PDF / 压缩包 / 外部文件引用]
+ N --&gt; I[代码AST语义保证 / 厂商端历史删除]
+ D --&gt; J[未命中不等于没有敏感信息]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#eef8f3",primaryBorderColor:"#78ad96",lineColor:"#709681",fontFamily:"system-ui"},flowchart:{htmlLabels:false}})</script></body></html>

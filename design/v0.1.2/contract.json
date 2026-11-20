@@ -1,0 +1,281 @@
+{
+  "version": "0.1.2",
+  "revision": 9,
+  "stage": "released",
+  "focus": "AI使用过程中的最小必要外发：整包提交、多轮补充、工具返回、身份关联",
+  "navigation": [
+    "防护工作台",
+    "外发记录",
+    "防护边界"
+  ],
+  "trust": {
+    "user": "may over-share for convenience; do not require manual cleaning of every source",
+    "model": "untrusted recipient and source of requests, no assumption of vendor intent; asking for identity/credentials never grants permission",
+    "materials": "documents/code/tool outputs may contain instructions; treat as data, never as policy or authorization",
+    "detectors": "produce evidence and uncertainty, never universal proof of absence",
+    "local_core": "trusted enforcement point, raw inputs never sent to external detector by default"
+  },
+  "decision_matrix": {
+    "authentication_secrets": "remove spans/values or entire credential material; cannot be overridden by a generic user confirmation; includes passwords, private keys, API/access tokens and verification codes",
+    "personal_identity": "prefer task-scoped aliases; user confirms exact sanitized minimal fragments only where purpose unclear; no raw identity exceptions in v0.1.2",
+    "environment": "host/user/path/organization clues linked only within trusted scope; preserve error codes, ports, topology and stack file positions where safe",
+    "business_structure": "JSON解析与类型保持；模型/角色/工具标识含敏感内容则拒绝，不擅改结构。代码材料人工核对脱敏候选；未实现语言AST校验，不保证代码语义。",
+    "unknown": "incomplete extraction or unsupported format cannot produce ready; exclude source or resubmit inspectable content"
+  },
+  "scope": {
+    "baseline": "v0.1.1 Provider/API KEY/Ops + v0.1.2 privacy service; Python aiohttp",
+    "gateway_only": "controls proxied outbound requests; without client task integration protects single request only; no inferred session stitching",
+    "client_required": [
+      "local file discovery/read/extraction before upload",
+      "manifest and confirmation UX",
+      "stable explicit task IDs",
+      "intercept tool-return submission",
+      "retry requests through same managed route"
+    ],
+    "not_covered": [
+      "direct vendor website traffic",
+      "prior external uploads or external file_id contents unavailable locally",
+      "tools that directly contact external endpoints bypassing gateway",
+      "provider-side historical data deletion",
+      "arbitrary encrypted/obfuscated content guaranteed detection"
+    ],
+    "formats_v012": "UTF8 text/log/config and supported model JSON; private key files excluded; JSON parsed with duplicate-key rejection in production; archive/PDF/OCR/binary extraction not implemented until bounded parser coverage validated",
+    "source_hints": "客户端用途提示不会豁免秘密扫描。私钥内容嗅探整份排除；身份/代码/unknown必须确认；unsupported必须排除。不能推断所有未标注身份。",
+    "vendor_neutral": true
+  },
+  "workflow": {
+    "ordinary": "auto remove definite credentials + alias definite identities + preserve supported business content; no confirmation for every normal request",
+    "review": "only uncertain necessary material, unsupported/ambiguous sources or semantic damage; exact safe fragment review required; unknown uninspectable cannot be manually released",
+    "model_followup": "receive model response through original path; policy does not have to infer intent of every reply. Next user/tool outbound always inspected. Prompted scenario in prototype is demonstrative, no claim of deployed response-intent classifier",
+    "materials": "up to16 sources per task,64KiB each, total1MiB before parse; empty purpose requires user entry for workbench; source origin user/tool/upload persisted as enum only",
+    "upload": "client reads before external upload; file body and filename both sensitive; use generated external filenames or exclude secret-bearing filenames; cannot send opaque external references as though checked",
+    "recovery": "仅账号策略拦截且完成检查、含有效model的请求，保留脱敏候选10分钟，最多16份。记录入口单次取回工作台，锁定原账号/模型/协议；确认后重新检查与发送，保留原请求结构。不恢复原客户端连接或自动重试。",
+    "drivers": {
+      "gateway": "每次模型代理或Ops出站自动触发共享检查",
+      "workbench": "用户生成清单和限定确认；服务端决定能否外发",
+      "policy": "本机管理员保存按账号版本化标准；修改使旧清单失效",
+      "trial": "仅本机检查，不外发、不存正文或外发记录",
+      "result": "请求编号关联拦截记录、清单检查和实际发送"
+    }
+  },
+  "recognition": {
+    "candidate": "Presidio-style registry with pattern/NER/context separation is reference, not selected production dependency; language, licenses, package versions and model artifacts must be reviewed at implementation",
+    "no_external_guard": true,
+    "no_blanket_replacement": "no arbitrary substring replacement across code or unrelated identifiers; same entity aliases require scoped evidence and token/span boundaries; unknown semantic impact routes to review",
+    "prompt_injection": "task statement, files and model instructions cannot change immutable secret prohibition, activate release tokens, select another destination or invoke local tools",
+    "accuracy_gate": "当前只有有限独立示例、负样本和真实上游canary验证；没有代表性中文语料统计，S03尚未通过，不能宣称泛化检出率。",
+    "prototype": "finite rule demonstrator, not production detector or benchmark; known scenarios only",
+    "implemented": "local-context-3：本地字段与上下文规则、Unicode归一化、嵌套字段、Cookie/JWT/登录凭据、同批材料已知秘密复用；有限编码证据与跨内容块秘密触发拒绝。未部署NER或外部检测模型。嵌入JSON解析并恢复字符串封装；工具Schema与实际参数分开检查，默认值仍检查；Claude工具名作为结构字段保留；字段名去零宽字符；标签和值跨块均拒绝。",
+    "proposed_pipeline": [
+      "content-type/encoding and bounded extraction",
+      "structured secret recognizers + format validation",
+      "local NER/context model for identities",
+      "organization-specific classifications",
+      "overlap resolution with source spans and immutable offsets",
+      "necessity/coverage/semantic uncertainty decision",
+      "span- and syntax-aware transform + independent residual test"
+    ]
+  },
+  "session": {
+    "scope": "可信本机管理身份 + task_id + destination；无远程多租户支持",
+    "aliases": "identity/environment entities only; request-local credential values discarded after removal; never restore credentials in output; alias maps local volatile memory only；已知身份值后续识别为秘密时从别名映射移除。",
+    "ttl": "30min idle,2h absolute in production; close/delete/restart removes sources and mappings; no claim of physical secure zeroization in Python/JS",
+    "anonymous": "missing trusted task context means request-local aliases only; never infer association by timing or content similarity",
+    "memory_caps": "任务原文总量32MiB；每任务1MiB，16份材料；本机管理身份16任务、实例32任务；扫描8任务/4线程，入口缓冲16请求；外发单请求64KiB",
+    "prototype": "静态历史原型仍仅用于交互比较；真实页面不使用浏览器持久存储",
+    "browser_materials": "当前页内存中支持材料查看与修改；不会写localStorage/sessionStorage。结束/到期清空；刷新不恢复。服务端不提供原文查询接口。"
+  },
+  "manifest": {
+    "binding": [
+      "principal",
+      "task_id",
+      "task_revision",
+      "round",
+      "destination_id and config version",
+      "policy and ruleset version",
+      "source IDs/revisions",
+      "per-source actions",
+      "coverage",
+      "expires_at",
+      "server-held immutable envelope and unforgeable process seal"
+    ],
+    "lifetime": "120秒；服务端内存保存不可由客户端重提交替换的正文；随机release_token绑定清单；内部对象seal验证。未使用MAC，原文哈希不入库。",
+    "changes": "any included source/purpose/destination/policy/confirmation change invalidates manifest; new revision needed; excluded changes also invalidate simplification",
+    "ready": "no pending or blocked sources, at least checked task content; user can exclude unsupported sources explicitly and view loss of coverage",
+    "consent": "authenticated local admin confirms exact sanitized manifest/material revision; cannot blanket approve future requests or original credentials; task ID alone is not auth",
+    "send": "server sends its own approved envelope, never arbitrary client-resubmitted body after approval; no time-of-check to time-of-use original-body swap",
+    "idempotency": "内存中先预占清单再await，单次发送；已创建release的相同key返回同结果，首次尚在授权时409；不确定网络结果仅重试相同key，不自动重发；重启后原清单不可恢复。",
+    "failure": "timeout/cancel/storage/worker failure no original fallback. Risk record must commit before upstream creation; store failure503. Upstream failure records separately; no automatic replay"
+  },
+  "gateway": {
+    "entry": "existing /proxy/{account}/{path}, before upstream open fully buffer bounded JSON and inspect every round including embedded history/tool content",
+    "automatic": "ready/no human-needed decision forwarded with current policy; secret removal always applied",
+    "needs_review": "422 privacy_review_required/其他明确错误码，原文不外发；用户在工作台创建任务整理。未实现SDK自动跳转任务引用。",
+    "unsupported": "422 content_uninspectable or unsupported_protocol,413 limits,503 subsystem failure",
+    "transport": "任意模型名称；仅POST responses/chat/completions/messages文本JSON和GET models。查询参数和不支持路径拒绝；仅允许检查后的协议头；供应方认证单独注入。流式响应保持原字节，错误/重定向不自动重试。",
+    "bypass_paths": "all request/upload routes either enforced before vendor transfer or rejected; URL/query/header scanning/allowlist, tools structured args checked; no sensitive debug logging",
+    "redirects": "保留上游HTTP状态与正文，移除Location和Refresh；阻止客户端自动向上游指定地址重发原始请求。3xx计失败，不自动跟随。"
+  },
+  "storage": {
+    "persistent": "SQLite privacy.sqlite3：records仅存枚举风险、处置原因、规则ID、策略版本、前序记录ID、事件类型与发送状态；policies保存账号策略；policy_changes保留30天版本变更。",
+    "records": [
+      "opaque request/record IDs",
+      "account snapshot enum/ID",
+      "source role counts not raw filename",
+      "decision and forward state",
+      "category/action/ruleset",
+      "policy revision",
+      "included/excluded counts",
+      "TTL",
+      "reason_code",
+      "rule_id",
+      "parent_record_id",
+      "event_kind",
+      "policy_revision=0 means policy not read before refusal"
+    ],
+    "forbidden": [
+      "raw input/output",
+      "original value hashes",
+      "source filenames or absolute paths",
+      "task/purpose text",
+      "raw free-form model name",
+      "free-text feedback",
+      "reversible alias maps",
+      "raw scanner exception messages"
+    ],
+    "retention": "固定30天，查询时过滤到期记录，15秒周期清理；删除预览绑定最多10000个已结束记录ID，60秒一次性确认；没有可调保留周期。",
+    "encryption": "raw materials volatile local only; deployment disallows content debug dumps, uses restrictive process/filesystem permissions. If disk spill needed it is outside this revision and requires explicit design review",
+    "source_confirmation": "no persistent free-text consent explanation; store action enums and versions only"
+  },
+  "auth": {
+    "management": "existing loopback Host/Origin boundary + X-TraceMason-Token all privacy APIs including GET; authenticated role is trusted-local admin; remote/multiuser deployment not covered",
+    "task_access": "所有任务接口检查可信本机管理身份；隐私GET同样需要会话令牌。owner不使用可伪造client_id。",
+    "client": "已实现同源浏览器工作台；网关可信本机进程可调用。没有IDE插件或外部Agent授权协议。"
+  },
+  "prototype": {
+    "entry": "prototype/index.html",
+    "storage_key": "tm-outbound-design-r8",
+    "state": "only safe records persisted; files read local TextDecoder fatal UTF8;16 files and64KiB each; originals stay in page memory",
+    "release": "local simulation only; no fetch to provider; confirmation is UX simulation not server authorization",
+    "implemented": [
+      "bundle flow",
+      "actual limited-rule sanitization",
+      "identity-purpose confirmation",
+      "unknown-material exclusion",
+      "multi-round scenario",
+      "destination-change invalidation",
+      "single-use preview",
+      "metadata export",
+      "session clear"
+    ],
+    "not_implemented": [
+      "通用生产NER和解析器",
+      "IDE/Agent客户端整合",
+      "OCR/归档提取",
+      "模型回复意图检测"
+    ]
+  },
+  "implementation_gate": [
+    "真实本机抓包/数据库canary/并发授权已验证",
+    "有限JSON及文本范围内交付",
+    "统计语料S03与IDE/Agent覆盖仍未通过，不扩大安全承诺"
+  ],
+  "ui_revision": 4,
+  "navigation_tree": [
+    {
+      "label": "API 接入",
+      "route": "/"
+    },
+    {
+      "label": "隐私外发防护",
+      "children": [
+        {
+          "label": "防护工作台",
+          "route": "/privacy.html#workspace"
+        },
+        {
+          "label": "外发记录",
+          "route": "/privacy.html#records"
+        },
+        {
+          "label": "防护边界",
+          "route": "/privacy.html#policy"
+        }
+      ]
+    }
+  ],
+  "layout_reference": "navigation.html",
+  "workbench_panels": {
+    "left": [
+      "任务描述与交付对象",
+      "本轮材料",
+      "发送后的模型回复与下一轮"
+    ],
+    "right": [
+      "本轮外发清单",
+      "本轮处理明细",
+      "覆盖边界"
+    ],
+    "record_columns": [
+      "时间",
+      "账号",
+      "轮次",
+      "保留/排除",
+      "决定",
+      "发送状态",
+      "风险",
+      "发现",
+      "来源",
+      "依据 / 详情"
+    ]
+  },
+  "hardening_revision": 1,
+  "security_design": "hardening.html",
+  "account_policy": {
+    "defaults": {
+      "secrets_action": "redact",
+      "identity_action": "alias"
+    },
+    "allowed": {
+      "secrets_action": [
+        "redact",
+        "block"
+      ],
+      "identity_action": [
+        "alias",
+        "block"
+      ]
+    },
+    "revision": "CAS更新；外发前再次核对",
+    "no_raw_override": true,
+    "history": "保留30天，页面最近20项"
+  },
+  "result_semantics": {
+    "completed": "2xx且响应流完成；不证明内容语义成功或厂商未留存",
+    "failed": "非2xx或传输失败，不自动重试",
+    "not_sent": "清单检查或被拦截",
+    "interrupted": "重启时未完成记录，不能认定未到达上游",
+    "metadata_write_failure": "发送前写入失败则阻止；发送后状态写失败可能留下不确定状态，不能撤回既有外发",
+    "policy_revision_zero": "请求在读取策略前已被拒绝；界面显示未读取策略，不推断使用默认v1。"
+  },
+  "reliability_revision": 1,
+  "reliability": "reliability.html",
+  "release_decision": {
+    "status": "released",
+    "decided_at": "2026-11-17T22:27:31.190121+08:00",
+    "authority": "user",
+    "instruction": "先定版吧，后续规划cs交互吧",
+    "scope": "v0.1.2 本机Provider接入与有限规则隐私外发防护",
+    "known_limitations": [
+      "未完成真实模型厂商与实际客户端验收",
+      "未完成代表性隐私语料统计；不承诺通用检出率",
+      "通用NER、OCR及绕过网关的流量不在本版覆盖范围"
+    ],
+    "runtime_image": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
+    "ruleset": "local-context-3",
+    "follow_up": "../v0.1.3/index.html",
+    "baseline_manifest": "../../releases/v0.1.2/manifest.json",
+    "baseline_bundle": "../../releases/v0.1.2/source-and-design.tar.gz",
+    "git_tag_created": false
+  }
+}

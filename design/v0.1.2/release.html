@@ -1,0 +1,22 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 定版记录</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f8f7;color:#203d36;font:14px/1.6 system-ui}header{padding:20px 28px;background:white;display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid #dce8e2}header b{margin-right:auto}a{color:#137a66;text-decoration:none}main{max-width:1450px;margin:auto;padding:28px}h1{font-size:27px}h2{font-size:18px}section{background:white;padding:24px;margin:22px 0;border:1px solid #dce8e2;border-radius:12px;overflow:auto}.mermaid svg{display:block;margin:auto;max-width:100%;height:auto}.badge{background:#e6f4ed;color:#186a54;padding:5px 10px;border-radius:6px}@media(max-width:700px){main{padding:16px}section{padding:16px}.mermaid{min-width:650px}header{padding:16px}}</style></head><body><header><b>TraceMason</b><a href="http://127.0.0.1:8766/privacy.html">真实页面</a><a href="index.html">架构</a><a href="reliability.html">验证</a><a href="../../releases/v0.1.2/manifest.json">基线清单</a><a href="../../releases/v0.1.2/source-and-design.tar.gz">源码与设计快照</a><a href="../v0.1.3/index.html">C/S规划</a></header><main><h1>v0.1.2 · 定版记录</h1><h2><span class="badge">已定版 · 2026-11-17 · 已知边界保留</span></h2><section><h2>01 · 定版范围</h2><pre class="mermaid">flowchart BT
+ P[Provider接入 / Codex·OpenAI / DeepSeek / Claude] --&gt; G[统一模型转发网关]
+ K[API KEY账号管理] --&gt; G
+ O[Ops基础运维] --&gt; G
+ G --&gt; S[本机隐私检查 / local-context-3]
+ S --&gt; A[自动脱敏或策略拦截]
+ A --&gt; R[风险记录 / 有限候选确认 / 真实发送状态]
+ R --&gt; V[v0.1.2 / 用户确认定版]
+</pre></section><section><h2>02 · 固定基线与验证</h2><pre class="mermaid">flowchart LR
+ V[v0.1.2] --&gt; SRC[源码与设计快照 / 逐文件SHA256]
+ V --&gt; IMAGE[已验证容器镜像 / 完整摘要见release.json]
+ V --&gt; T[macOS与Linux各43项测试通过]
+ V --&gt; C[75组交叉场景通过 / 开发回归集]
+ V --&gt; UI[真实浏览器 / 三协议流 / 失败状态]
+ SRC --&gt; FOLLOW[后续改动进入新版本或补丁修订]
+</pre></section><section><h2>03 · 保留边界与下一阶段</h2><pre class="mermaid">flowchart TD
+ V[已定版] --&gt; LIMIT[真实厂商未验收 / 代表性隐私效果未评估]
+ LIMIT --&gt; HONEST[原验证状态保留 / 不等于通用内容安全认证]
+ V --&gt; NEXT[v0.1.3暂定 / C/S交互规划]
+ NEXT --&gt; P[客户端接入 / 任务关联 / 拦截处理 / 结果回传]
+ P --&gt; REVIEW[先交互原型与接口契约评审 / 再实施]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",flowchart:{htmlLabels:false}})</script></body></html>

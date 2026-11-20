@@ -1,0 +1,643 @@
+{
+  "version": "0.1.2",
+  "status": "released",
+  "created_at": "2026-11-17T22:28:49.295571+08:00",
+  "authority": "user",
+  "ruleset": "local-context-3",
+  "runtime_image": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
+  "scope": "Service source/tests/scripts/docs, v0.1.2 design and local Mermaid assets; no credentials, runtime databases, Git internals, dependencies or v0.1.3 plan",
+  "git_tag_created": false,
+  "file_count": 125,
+  "files": [
+    {
+      "path": "TraceMason-Service/.dockerignore",
+      "bytes": 174,
+      "sha256": "f7f803a65ba9a28d5183d119b360bf408f59b9711ec2dbcce7ff1b6c2044cf67"
+    },
+    {
+      "path": "TraceMason-Service/.gitignore",
+      "bytes": 43,
+      "sha256": "fa53b8ab5cb64c4b661745bac3dd14b94b4037b5523e00351a2ac8cdc6d19a9e"
+    },
+    {
+      "path": "TraceMason-Service/Dockerfile",
+      "bytes": 888,
+      "sha256": "0efa9513aa3bbbe4897819ec6cfd8ef747de67958bb79e22b78995fa0ef698af"
+    },
+    {
+      "path": "TraceMason-Service/Dockerfile.local",
+      "bytes": 321,
+      "sha256": "d9b9fe0e3f3a8eaf7e0b5441a53c12dec96bf36bbee1e2d5dcb94a7374821bc1"
+    },
+    {
+      "path": "TraceMason-Service/README.md",
+      "bytes": 1994,
+      "sha256": "d29994c7d013fbaaaef664140c2c89553c2760df9edf2f99ea5c8c882c6aeacf"
+    },
+    {
+      "path": "TraceMason-Service/accounts/credential_store.py",
+      "bytes": 1522,
+      "sha256": "c234740f21de4f10cc4d72d79e4432571ad4c268a2c0815c2ed47f1c1a7754d8"
+    },
+    {
+      "path": "TraceMason-Service/accounts/repository.py",
+      "bytes": 4565,
+      "sha256": "ef0044a5db3579a36eb4bd2226a36f9f46fbf6c344fab0665354c9d35113fac4"
+    },
+    {
+      "path": "TraceMason-Service/accounts/service.py",
+      "bytes": 7682,
+      "sha256": "ab129b3d4024f4bd03f752d79f4290f537f1a09a76c1f26d0098da2258d67e5e"
+    },
+    {
+      "path": "TraceMason-Service/compose.yaml",
+      "bytes": 459,
+      "sha256": "982b68ffeee8114f07783b4f28403af3a717fa93c3cbdbd03f132e7470531e4f"
+    },
+    {
+      "path": "TraceMason-Service/docs/container.html",
+      "bytes": 2688,
+      "sha256": "a42aac0fd32358e0ef0426d089d14a1df23b66513e6f7b5ab6f0af02947c79bc"
+    },
+    {
+      "path": "TraceMason-Service/docs/design-entry.html",
+      "bytes": 497,
+      "sha256": "3313c5b74ffe16a0ca3c61554e7b51dee1b0172325a87d5c2c256ecadbbc3317"
+    },
+    {
+      "path": "TraceMason-Service/docs/implementation.html",
+      "bytes": 4903,
+      "sha256": "0991c6852394fb9b222af164d039e4f23bb02bf0c5fc092c6c07fd772bbf7bc5"
+    },
+    {
+      "path": "TraceMason-Service/docs/privacy.html",
+      "bytes": 4908,
+      "sha256": "17c797bcbd629d317fb29b25d25cd2078743880e56eb11db0ed037eee225f265"
+    },
+    {
+      "path": "TraceMason-Service/docs/review-fixes.html",
+      "bytes": 3085,
+      "sha256": "fce9e77e236d4286fcf0cf03c9e1fee951e0a8e9f4cfa620051da54596d13057"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/api-access-1440.png",
+      "bytes": 111009,
+      "sha256": "b782cf80d5f10c5d0812d1051b7644685007489d918baf21d7a6d05b94f248c4"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/api-access-390.png",
+      "bytes": 69775,
+      "sha256": "fd167ec4450ceab33c9b3a7b4a6de136eb45414e45b993e0895b1693c81fd1ea"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/container-live.png",
+      "bytes": 59503,
+      "sha256": "cf6cb890b55ee1fed7d7c48b30876af0bfe21a21be7a1bccd459e5a889e38377"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-architecture.png",
+      "bytes": 123851,
+      "sha256": "9ac3e617e620a1e3dce790fa462f752b7546674f428d43cda25b4b1d6badc7e3"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-container-live.png",
+      "bytes": 149275,
+      "sha256": "a12695fd07155f5eb8c20d2aca364e9453a6d67f1feba19fc74663e580e3ce37"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-failed-response.png",
+      "bytes": 172446,
+      "sha256": "31730758e3a08ee8acf119244c144c844f2e927c9e710e5cc0ad1d7d724c1b67"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-layout-empty-desktop.png",
+      "bytes": 149678,
+      "sha256": "931d28f5e1ae49da88a3156da0f1da018aca3d53cdda00f49064ef7d566f2080"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-navigation-mapping.png",
+      "bytes": 152041,
+      "sha256": "503c6e6ae6bae62ffc3d589ea6ddcd2c25d50236f80dc306a63a6ee89015b7a4"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-navigation-mobile.png",
+      "bytes": 33570,
+      "sha256": "409c26105c4d7922de375494ed6827d11423c084cb6151d246cdc717df7b5117"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-policy-hardening.png",
+      "bytes": 107410,
+      "sha256": "22d807623e139fa5e56bd892ca377aa1aa823e425cb34cf2dcb5f0c96119f3e8"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-policy-mobile.png",
+      "bytes": 67599,
+      "sha256": "5b6d85cd3fb16bc2ff778bc35c781ec9615585e6edb39ba63b6f94149213544e"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-ready-desktop.png",
+      "bytes": 172912,
+      "sha256": "faa9e93501e2a5dee80bae1832cd692466ff0113d73996ca01a6143d6a349f15"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-record-reason.png",
+      "bytes": 148921,
+      "sha256": "540f6571a36ab9f3b69deed44f3bdcbbcff10135b62d9ebf850f760b843905dd"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-records-desktop.png",
+      "bytes": 138748,
+      "sha256": "86036d7854f0e4e43db2e757a2c7dd3c8c387238f4879a927788e0993b22b3ec"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-recovered-request.png",
+      "bytes": 199314,
+      "sha256": "4d8952d9e3fe5e8f58dc77d7032264915a2ff242a03eb68005408b8e019d1120"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-reliability.png",
+      "bytes": 158516,
+      "sha256": "816c34d525cb7548ae46495317bb34d617a789c43f606dbc05de91de1b223211"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-review-desktop.png",
+      "bytes": 174638,
+      "sha256": "7fd30b4f620daa92605506a4accd76c4daa94399ba04dd02193e2e8b8176cd2c"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-security-architecture.png",
+      "bytes": 145667,
+      "sha256": "10d417314d36773ac07bb81a7a66bc0c48f9f1b35935a3c2e82b3b0024cac3ce"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-sent-desktop.png",
+      "bytes": 179675,
+      "sha256": "a245b86fa76d4c9242854dc205379b033287e814a80b9ac60930f6c8bef1289e"
+    },
+    {
+      "path": "TraceMason-Service/docs/screenshots/privacy-workspace-mobile.png",
+      "bytes": 63945,
+      "sha256": "6fe8d9a8c2faded9e370b1f5c7f2f5c9fd9351d968e463322e6a2906c539c659"
+    },
+    {
+      "path": "TraceMason-Service/docs/sources.html",
+      "bytes": 807,
+      "sha256": "469c2e8f6fa5f1b5e9ed8ec1cd302963ee90d8d4ee4792d571f7caaccabf7c18"
+    },
+    {
+      "path": "TraceMason-Service/docs/verification.json",
+      "bytes": 411,
+      "sha256": "8dbacc101f5a0943d81bb8685138ef37a5b4a7f8732a1d2579d2ad07c0d2c6ef"
+    },
+    {
+      "path": "TraceMason-Service/errors.py",
+      "bytes": 581,
+      "sha256": "c55a91bfb754f32d949ffc335b8c0b499b586386da21e743a08bb815a523ff8a"
+    },
+    {
+      "path": "TraceMason-Service/ops/service.py",
+      "bytes": 3222,
+      "sha256": "2cdc1df40a5be0c83cd61a0b61456f918325f3de0c2ae6822514f73b8116bfb7"
+    },
+    {
+      "path": "TraceMason-Service/privacy/__init__.py",
+      "bytes": 86,
+      "sha256": "aae9205c366462a75e2bfd15628593b652f510df6f9f27d04e3fd9dc1c1afe13"
+    },
+    {
+      "path": "TraceMason-Service/privacy/detector.py",
+      "bytes": 19773,
+      "sha256": "18310ad752f3cc793cf575a830311dedc1ca0854e6dfd0ec9333aff4598ab3ec"
+    },
+    {
+      "path": "TraceMason-Service/privacy/repository.py",
+      "bytes": 9347,
+      "sha256": "b297cf3598d619bab3939807803f65326fc890a74958cdc5e4398b38652269b2"
+    },
+    {
+      "path": "TraceMason-Service/privacy/routes.py",
+      "bytes": 8316,
+      "sha256": "5a84d2d74f7cb355d7244157b49ebe2267bb55551ae87ddf16c6c3fbfb3d8cd2"
+    },
+    {
+      "path": "TraceMason-Service/privacy/service.py",
+      "bytes": 30009,
+      "sha256": "a267a2a970f46a2b8437e8fdcc8be8442a12ff37be52dab765f1487cf101b3f0"
+    },
+    {
+      "path": "TraceMason-Service/privacy/standards.py",
+      "bytes": 3448,
+      "sha256": "3b7c538de0e255f7aaed029dc5595ce1d9bd65f5ca3aa7c3d8d3bcfa68288130"
+    },
+    {
+      "path": "TraceMason-Service/provider/auth.py",
+      "bytes": 900,
+      "sha256": "b99db43a826a032c018d35440130de8ab2c29bbc71d3861da7b7346a73b54529"
+    },
+    {
+      "path": "TraceMason-Service/provider/events.py",
+      "bytes": 851,
+      "sha256": "13de0eb9b0e378851a7e23e4a35d5a31fbd0c16fe79925a04d79abb4b018ad14"
+    },
+    {
+      "path": "TraceMason-Service/provider/profiles.py",
+      "bytes": 1076,
+      "sha256": "4d7ca7b62d8fd420d6e985f8579ea4218467477399b5774304f3622896cca910"
+    },
+    {
+      "path": "TraceMason-Service/provider/transport.py",
+      "bytes": 5923,
+      "sha256": "ecbd174647c2e59996259b07bb3b91546715b674b5e49a63d37c25381ddd8912"
+    },
+    {
+      "path": "TraceMason-Service/provider/tunnel.py",
+      "bytes": 5581,
+      "sha256": "97796df6564d9552904092546f5398ec73699afb599140f9a3ab81c636c7ca72"
+    },
+    {
+      "path": "TraceMason-Service/requirements.txt",
+      "bytes": 243,
+      "sha256": "5b3ad84516416593d0bb7c980cb81693c0208c8ea050197836978b0550a51b33"
+    },
+    {
+      "path": "TraceMason-Service/scripts/browser-check.mjs",
+      "bytes": 13413,
+      "sha256": "ef106128f68c299655428a3f57256edeeb375abd710ace6ce78fd6b62fa87ea9"
+    },
+    {
+      "path": "TraceMason-Service/scripts/browser-privacy-check.mjs",
+      "bytes": 19636,
+      "sha256": "a38428811ea4a3c61087da76641b6d8c13c7343a376905e3eaf75e3a84fe05f8"
+    },
+    {
+      "path": "TraceMason-Service/scripts/sync-prototype.py",
+      "bytes": 1813,
+      "sha256": "b6ce717d59d752c1724f3249c35fe3863f4e3721b876a3aa1a10204777ee2a0d"
+    },
+    {
+      "path": "TraceMason-Service/scripts/verify-reliability.py",
+      "bytes": 1824,
+      "sha256": "b326179ab0ab2f301596755f6bb0c9226a9381a5c5e707ed4ac1c3ce362d0a48"
+    },
+    {
+      "path": "TraceMason-Service/server.py",
+      "bytes": 10411,
+      "sha256": "249814a4f5503467465f4de83bfd30ed95ac1e6f5431079de606e8bd432761f8"
+    },
+    {
+      "path": "TraceMason-Service/tests/browser_fixture.py",
+      "bytes": 1606,
+      "sha256": "370643913cf3c9190ab2f428399cf20f683104ead2bf6c0c4c122c982b664bfa"
+    },
+    {
+      "path": "TraceMason-Service/tests/browser_privacy_fixture.py",
+      "bytes": 2731,
+      "sha256": "06f5f632da8d4419958c2cd9864d41e0dca8f283cc07be1e4d7dd74bb65f9506"
+    },
+    {
+      "path": "TraceMason-Service/tests/privacy_corpus.json",
+      "bytes": 2948,
+      "sha256": "09c83b9c32c25d4d520d4e17f297baaf88f44dbffb45ba59b14a3153b5bde536"
+    },
+    {
+      "path": "TraceMason-Service/tests/privacy_cross_cases.json",
+      "bytes": 3906,
+      "sha256": "c303e91725b07882f444bfa6723e6170812004f87a52c8d9c7249ae423aed281"
+    },
+    {
+      "path": "TraceMason-Service/tests/test_cross_validation.py",
+      "bytes": 12102,
+      "sha256": "725ee1398763ad5b5b1ebd65e43014390f4946f3f1792a92c22f2de57127c256"
+    },
+    {
+      "path": "TraceMason-Service/tests/test_hardening.py",
+      "bytes": 12960,
+      "sha256": "929a7610fafc5962a462714830283f6c7cdb3ee6c6a567769a680204921a0331"
+    },
+    {
+      "path": "TraceMason-Service/tests/test_privacy.py",
+      "bytes": 19473,
+      "sha256": "f0099cd2422dc2127c7629b298c8ffb8dd75abdbd69abdceff16edd6f35915d6"
+    },
+    {
+      "path": "TraceMason-Service/tests/test_service.py",
+      "bytes": 18387,
+      "sha256": "96a3c84f44d4de991a4d794004d559a1badf36ff3fac854799290e41f5158d27"
+    },
+    {
+      "path": "TraceMason-Service/web/api-client.js",
+      "bytes": 2096,
+      "sha256": "521c795c6593698b6184134446a387d040b742294e96f3d957cb47dc0ed47f23"
+    },
+    {
+      "path": "TraceMason-Service/web/app.css",
+      "bytes": 21841,
+      "sha256": "28606359e6d6e589d2244613cf78fb91a573ca0d97766a0ca038e91eb7ea982f"
+    },
+    {
+      "path": "TraceMason-Service/web/app.js",
+      "bytes": 24119,
+      "sha256": "f2632d40c4720a6447c5b597ce2dcb95e94339823c119875809c05b53cbf49e4"
+    },
+    {
+      "path": "TraceMason-Service/web/contract.js",
+      "bytes": 4431,
+      "sha256": "687d7fbc8a2f5aa1e348e53d8a88a008331f59ac55ad1ec6776d6b8240378281"
+    },
+    {
+      "path": "TraceMason-Service/web/index.html",
+      "bytes": 11432,
+      "sha256": "1f2709304ebdea17d68c16d704105d6edc2ca22a4f9e484538020c13c1517a15"
+    },
+    {
+      "path": "TraceMason-Service/web/privacy.css",
+      "bytes": 22861,
+      "sha256": "8ac688db7f66903a208c67c6abb8843c609c282ebeb7a32bf2d33e50bb1115f1"
+    },
+    {
+      "path": "TraceMason-Service/web/privacy.html",
+      "bytes": 1868,
+      "sha256": "51987412b3e3f1e7ee0e0be383d841166264280db0449f85426650f84fb78335"
+    },
+    {
+      "path": "TraceMason-Service/web/privacy.js",
+      "bytes": 40305,
+      "sha256": "46884e8093c51a375864904a2f55f02c7b91c51b1b69438ca3e1242d268b7b11"
+    },
+    {
+      "path": "TraceMason-docs/design/provider-gateway-v1/assets/MERMAID-LICENSE.txt",
+      "bytes": 1089,
+      "sha256": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80"
+    },
+    {
+      "path": "TraceMason-docs/design/provider-gateway-v1/assets/mermaid.min.js",
+      "bytes": 3336760,
+      "sha256": "5a8ec91820bd55afef049068489369910e5d6ce70c8103952f27e29d3e76e8bc"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/acceptance.json",
+      "bytes": 4501,
+      "sha256": "5a1c05e4683f564bf5befb37039ffe0473b0d6541e5d9dbd7755cd35770d0f26"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/checks/browser-review.mjs",
+      "bytes": 12267,
+      "sha256": "8374823b6a80bee91761a06740689ed12ba7a47f0b8908d85b85ad512ffa5f8b"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/checks/static-review.py",
+      "bytes": 2726,
+      "sha256": "955fc57ecca7d4fdbf5b4db7a710186158a84e01c52c0f2ebe8af7b4054e0a74"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/contract.json",
+      "bytes": 16744,
+      "sha256": "04de475f2b723faa86a3523b2d42ed7002c0c619e923368d57316766b69a9b81"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/coverage.html",
+      "bytes": 2831,
+      "sha256": "fdac18e7c00420bfb9e1f8f94442f552d5d736feaaa36374a4b66bc3cfe54a88"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/coverage.json",
+      "bytes": 4479,
+      "sha256": "6fe1b761570d10c9d6b3432bfdf9127d6939f273f2026aba24f9476aba2faa1b"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/hardening.html",
+      "bytes": 6792,
+      "sha256": "0d5cf05ff775a70f5d13c9dfca982e8e9e46a3e8ca8b398dab62ba01a875c5f0"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/index.html",
+      "bytes": 8918,
+      "sha256": "416fe87ca27a578387f41e50ca8e1ac652bc6879f3d07b8428f50c8812cf5bf8"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/navigation.html",
+      "bytes": 4531,
+      "sha256": "270d419e3b4a9dcfbc2deddd29dab9c0d0e53aa8b3a0b0d0ed414e76ef9994e9"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/openapi.json",
+      "bytes": 91303,
+      "sha256": "f4ec818d5eb456bb5a565bb66a031684b0ab33de4494cdc0642b21b17acd72e5"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/prototype/index.html",
+      "bytes": 1398,
+      "sha256": "2e8c5ef7ad590fc0cfbcba51478c70c6ce35f57212ce60a739f9cb5b2c780fa7"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/prototype/recognizer-demo.js",
+      "bytes": 10818,
+      "sha256": "df5fe47e24d741d83cea0843039acffa5005ad98092f91d491cb76220bf220da"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/prototype/workspace.css",
+      "bytes": 16078,
+      "sha256": "3f68c164f074d75a7e6dd67a3cceea66ba98c738a992b444f26c8c98a50d7953"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/prototype/workspace.js",
+      "bytes": 25637,
+      "sha256": "8528415aaf7521c3cd59ae25aca3c291b72fdd470b7342dd2823fb25af63dfbc"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/release.html",
+      "bytes": 2930,
+      "sha256": "641b321dbc80336ca4e2f5de50b13da3a431b1023c4211cc32d1e8e1306a649a"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/release.json",
+      "bytes": 2622,
+      "sha256": "e4d716b5d46643a1e95e5730f474f9eafa02ccf446c87891d7f46a17195a12e8"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/reliability.html",
+      "bytes": 5178,
+      "sha256": "740739364e21946d41ee7863d6bc5b14e626e298cf2d1e27ab5064351133fb49"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/reliability.json",
+      "bytes": 12301,
+      "sha256": "9e7b87a69266501e5bd2b6dc23357012073d0e9139630a2c993a160a1e40b4e7"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/scope.html",
+      "bytes": 3419,
+      "sha256": "fe1b1addb4076f384b280c68a980378622dc000a9266b62c735c3903d1b706a7"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screens.html",
+      "bytes": 3081,
+      "sha256": "5b7b9ccd1847e1d6907adac80e7968b56d8f6a412a868efef1c28392dc8c6438"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-architecture.png",
+      "bytes": 140612,
+      "sha256": "e67d0d86820bed64a176ec59456b6759fe8ed68ad3d598d65abce63240a4c5bb"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-bundle-1440.png",
+      "bytes": 331216,
+      "sha256": "da24a6e93918ead216d38f65ef452954b1fe07d0f234629e6f6a60028e893e1f"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-coverage.png",
+      "bytes": 71779,
+      "sha256": "50193d6d7aa36ccb677df9603204aee371a560cb32b6f1645562235e165c9d43"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-followup-1440.png",
+      "bytes": 361399,
+      "sha256": "c341fa9f34e1e5feaa1ce7003d367442997094adf8d278bbeaecebf9f5e45963"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-policy-1440.png",
+      "bytes": 213637,
+      "sha256": "65cbd9516a1440b90e7ab4d68894a522f88e4192fda7799dd49b6f9793a257b8"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-policy-390.png",
+      "bytes": 181090,
+      "sha256": "9cba521a5293de8d1ed5669d551da8c834c18cef0691035ed824c4463aef59c0"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-ready-1440.png",
+      "bytes": 340068,
+      "sha256": "b51e42eb1eef0d9a13ed3d0c7d4170087de85c8f046ace41f17b08b711c328cc"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-records-1440.png",
+      "bytes": 91359,
+      "sha256": "1ec5ce843a42632f589a8f1c832f7f8e64182029700a402a5eb0bab0f517d04a"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-records-390.png",
+      "bytes": 62002,
+      "sha256": "81f3563bfb9cfda87a1265abd598126010326e68d8653a500b61590dd2260c4a"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-sources.png",
+      "bytes": 78928,
+      "sha256": "283220f10c052e28ed4424e94be9a2cbf0ca06582b138d33a9690907c534da7d"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-unknown-1440.png",
+      "bytes": 384286,
+      "sha256": "9177ea20d93ae380dfa558c29af19ce4167a18f577a03b91c6f9a0749ec4603d"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-workspace-1440.png",
+      "bytes": 315303,
+      "sha256": "7763d5aab9e9d18c738b9775b3689ac6967d82c511ba48830d51c77d4c18d18f"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/outbound-workspace-390.png",
+      "bytes": 268128,
+      "sha256": "b3e947a169b11245dfdafd70588d1efb069b78c1f6907b9b0106bdfce904d782"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-architecture.png",
+      "bytes": 123851,
+      "sha256": "9ac3e617e620a1e3dce790fa462f752b7546674f428d43cda25b4b1d6badc7e3"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-container-live.png",
+      "bytes": 149275,
+      "sha256": "a12695fd07155f5eb8c20d2aca364e9453a6d67f1feba19fc74663e580e3ce37"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-failed-response.png",
+      "bytes": 172446,
+      "sha256": "31730758e3a08ee8acf119244c144c844f2e927c9e710e5cc0ad1d7d724c1b67"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-layout-empty-desktop.png",
+      "bytes": 149678,
+      "sha256": "931d28f5e1ae49da88a3156da0f1da018aca3d53cdda00f49064ef7d566f2080"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-navigation-mapping.png",
+      "bytes": 152041,
+      "sha256": "503c6e6ae6bae62ffc3d589ea6ddcd2c25d50236f80dc306a63a6ee89015b7a4"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-navigation-mobile.png",
+      "bytes": 33570,
+      "sha256": "409c26105c4d7922de375494ed6827d11423c084cb6151d246cdc717df7b5117"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-policy-hardening.png",
+      "bytes": 107410,
+      "sha256": "22d807623e139fa5e56bd892ca377aa1aa823e425cb34cf2dcb5f0c96119f3e8"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-policy-mobile.png",
+      "bytes": 67599,
+      "sha256": "5b6d85cd3fb16bc2ff778bc35c781ec9615585e6edb39ba63b6f94149213544e"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-ready-desktop.png",
+      "bytes": 172912,
+      "sha256": "faa9e93501e2a5dee80bae1832cd692466ff0113d73996ca01a6143d6a349f15"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-record-reason.png",
+      "bytes": 148921,
+      "sha256": "540f6571a36ab9f3b69deed44f3bdcbbcff10135b62d9ebf850f760b843905dd"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-records-desktop.png",
+      "bytes": 138748,
+      "sha256": "86036d7854f0e4e43db2e757a2c7dd3c8c387238f4879a927788e0993b22b3ec"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-recovered-request.png",
+      "bytes": 199314,
+      "sha256": "4d8952d9e3fe5e8f58dc77d7032264915a2ff242a03eb68005408b8e019d1120"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-reliability.png",
+      "bytes": 158516,
+      "sha256": "816c34d525cb7548ae46495317bb34d617a789c43f606dbc05de91de1b223211"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-review-desktop.png",
+      "bytes": 174638,
+      "sha256": "7fd30b4f620daa92605506a4accd76c4daa94399ba04dd02193e2e8b8176cd2c"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-security-architecture.png",
+      "bytes": 145667,
+      "sha256": "10d417314d36773ac07bb81a7a66bc0c48f9f1b35935a3c2e82b3b0024cac3ce"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-sent-desktop.png",
+      "bytes": 179675,
+      "sha256": "a245b86fa76d4c9242854dc205379b033287e814a80b9ac60930f6c8bef1289e"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/screenshots/privacy-workspace-mobile.png",
+      "bytes": 63945,
+      "sha256": "6fe8d9a8c2faded9e370b1f5c7f2f5c9fd9351d968e463322e6a2906c539c659"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/sources.html",
+      "bytes": 3104,
+      "sha256": "6103714bb12de3377ff07dc7ce72be98489393afd3a4533914f57fa4567eaca7"
+    },
+    {
+      "path": "TraceMason-docs/design/v0.1.2/verification.json",
+      "bytes": 6201,
+      "sha256": "4d371bf3affa0637841ae5e6c6c398be3a39c4e3214f77a6524006bf14c022c5"
+    }
+  ],
+  "archive": {
+    "name": "source-and-design.tar.gz",
+    "bytes": 8558095,
+    "sha256": "23b2281b345d0786b62d04e6bf18a991467791554d5e3a7160a3d5f88333d24d"
+  }
+}

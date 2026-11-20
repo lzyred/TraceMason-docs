@@ -1,0 +1,150 @@
+{
+  "version": "0.1.2",
+  "revision": 9,
+  "status": "bounded-runtime-verified",
+  "checked_at": "2026-11-17T21:51:35.373906+08:00",
+  "scope": "real local service, mock provider capture and Chrome; no real vendor credentials used",
+  "service_tests": 43,
+  "browser": [
+    "account CRUD, encrypted key retention, enabled/disabled, Ops, cancellation, desktop/mobile passed",
+    "privacy task/review/private exclusion/actual egress/SSE/next round/records/deletion/mobile passed",
+    "account policies and non-egress trial, correlated record reasons, blocked native request recovery, exact native model/temperature, completed-state display, six Mermaid diagrams passed",
+    "three native SSE shapes, fragmented UTF8 and CRLF, exact failure heading for HTTP401 passed"
+  ],
+  "console_errors": 0,
+  "production_verified": false,
+  "production_changed": true,
+  "checks": [
+    {
+      "id": "S01",
+      "result": "passed-bounded",
+      "evidence": "three model protocols, tool bodies, ops checks, header/query/opaque rejection; payload and DB canaries absent"
+    },
+    {
+      "id": "S02",
+      "result": "partial",
+      "evidence": "JSON types/tool names/model names preserved; code requires candidate review, no AST or general semantic guarantee"
+    },
+    {
+      "id": "S03",
+      "result": "not-passed",
+      "evidence": "finite independent examples and negatives only; no representative holdout corpus or recall benchmark"
+    },
+    {
+      "id": "S04",
+      "result": "passed-local",
+      "evidence": "all privacy GET auth, revision/account/expiry binding, concurrent single send, idempotency, cancellation, restart record state"
+    },
+    {
+      "id": "S05",
+      "result": "partial",
+      "evidence": "same-origin workbench implemented; IDE/Agent interceptors and external uploads not covered"
+    },
+    {
+      "id": "H01",
+      "name": "账号标准与试检",
+      "expected": "CAS保存且不能原文放行；修改使旧清单失效；试检零上游调用",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_hardening.py / browser-privacy-check.mjs"
+    },
+    {
+      "id": "H02",
+      "name": "拦截处理衔接",
+      "expected": "完整检查后脱敏候选单次领取、过期消失；确认后保留原协议参数；不会重放原请求",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_automatic_block_recovery_native_protocol_and_audit_chain / Chrome"
+    },
+    {
+      "id": "H03",
+      "name": "识别绕过回归",
+      "expected": "开发集中的编码、复合字段、跨块、占位符绕过拒绝或移除；跨材料已知秘密不遗漏",
+      "phase": "runtime-local",
+      "result": "passed-bounded",
+      "evidence": "privacy_corpus.json 20 cases / test_hardening.py"
+    },
+    {
+      "id": "H04",
+      "name": "记录依据与真实结果",
+      "expected": "请求编号关联原因规则版本和前序；超限、取消留最小记录；3xx不误报成功；旧库升级保留记录",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_hardening.py / Chrome record modal"
+    },
+    {
+      "id": "redirect-client",
+      "result": "passed-local",
+      "evidence": "client allow_redirects=True must remain at307 with no Location/Refresh and one sanitized upstream request"
+    },
+    {
+      "id": "R01",
+      "result": "passed-local",
+      "evidence": "reliability.json: 75 scenario matrix, five reliability tests; both platforms 43 tests"
+    }
+  ],
+  "not_verified": [
+    "general Chinese NER and unseen secrets",
+    "language AST preservation",
+    "IDE/Agent outbound interception",
+    "vendor-side deletion or direct website traffic",
+    "Live vendor/client acceptance: local service has zero configured accounts"
+  ],
+  "container": {
+    "image": "tracemason:0.1.2",
+    "image_id": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
+    "healthy": true,
+    "build": "Dockerfile.local, unchanged dependencies from local v0.1.1",
+    "retained_volumes": [
+      "accounts",
+      "credentials"
+    ],
+    "hardening_deployed": true,
+    "migration": "integrity check passed; pre-upgrade live record IDs retained",
+    "reliability_deployed": true
+  },
+  "ui_revision": 4,
+  "ui_alignment": {
+    "reference": "prototype/index.html",
+    "mapping": "navigation.html",
+    "checks": [
+      "two service entries; privacy has three nested child routes",
+      "left task/materials; right manifest/findings/coverage",
+      "four workflow steps; modal text/tool input; local material edit and reinclude",
+      "records show round and material included/excluded counts",
+      "scope page restores gateway/client/outside control distinctions",
+      "real mouse clicks, desktop geometry, mobile menu and viewport",
+      "completed send retains readonly manifest; next round available",
+      "published container page checked",
+      "policy execution label reflects account-specific standard, no hardcoded automatic redaction claim",
+      "recovered native request locks destination/model/protocol and material additions"
+    ]
+  },
+  "hardening_revision": 1,
+  "regression_corpus": {
+    "total": 20,
+    "redaction": 10,
+    "blocked": 6,
+    "negative": 4,
+    "passed": 20,
+    "source": "../../../TraceMason-Service/tests/privacy_corpus.json",
+    "representative_holdout": false,
+    "metrics": "No general recall/precision claim; development regression fixtures only"
+  },
+  "local_container_verified": true,
+  "production_verification_limit": "本机容器、模拟上游与真实浏览器已验收；真实厂商调用与代表性隐私识别统计未验收。",
+  "reliability_revision": 1,
+  "reliability": "reliability.html",
+  "ruleset": "local-context-3",
+  "reliability_evidence": "reliability.json",
+  "release_decision": "released-by-user-with-documented-limitations",
+  "platforms": {
+    "macOS": 43,
+    "Linux-container": 43
+  },
+  "release_authorization": {
+    "date": "2026-11-17T22:27:31.190121+08:00",
+    "authority": "user",
+    "note": "用户确认定版；未通过或未执行的验证项保留原结果，不改写为已通过。"
+  }
+}

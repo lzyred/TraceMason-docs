@@ -1,0 +1,76 @@
+{
+  "version": "0.1.2",
+  "revision": 9,
+  "focus": "AI隐私外发防护：整包提交与多轮最小必要交付",
+  "stage": "released",
+  "product_entry": "http://127.0.0.1:8766/privacy.html",
+  "architecture_entry": "index.html",
+  "openapi": "openapi.json",
+  "contract": "contract.json",
+  "acceptance": "acceptance.json",
+  "coverage": "coverage.html",
+  "verification": "verification.json",
+  "sources": "sources.html",
+  "screenshots": "screens.html",
+  "navigation": [
+    "防护工作台",
+    "外发记录",
+    "防护边界"
+  ],
+  "production_changed": true,
+  "implementation_requires": "已获得用户实施授权；有限规则范围内交付，通用NER与IDE客户端覆盖未验收",
+  "archive": "../archive/v0.1.2-privacy-review7/",
+  "review_url": "http://127.0.0.1:8766/privacy.html",
+  "prototype_limit": "bounded local rule demonstration, no vendor traffic, not proof of security effectiveness",
+  "architecture_url": "http://127.0.0.1:8772/design/v0.1.2/index.html",
+  "ui_revision": 4,
+  "navigation_tree": [
+    {
+      "label": "API 接入",
+      "route": "/"
+    },
+    {
+      "label": "隐私外发防护",
+      "children": [
+        {
+          "label": "防护工作台",
+          "route": "/privacy.html#workspace"
+        },
+        {
+          "label": "外发记录",
+          "route": "/privacy.html#records"
+        },
+        {
+          "label": "防护边界",
+          "route": "/privacy.html#policy"
+        }
+      ]
+    }
+  ],
+  "layout_reference": "navigation.html",
+  "hardening_revision": 1,
+  "security_design": "hardening.html",
+  "reliability_revision": 1,
+  "reliability": "reliability.html",
+  "ruleset": "local-context-3",
+  "release_decision": {
+    "status": "released",
+    "decided_at": "2026-11-17T22:27:31.190121+08:00",
+    "authority": "user",
+    "instruction": "先定版吧，后续规划cs交互吧",
+    "scope": "v0.1.2 本机Provider接入与有限规则隐私外发防护",
+    "known_limitations": [
+      "未完成真实模型厂商与实际客户端验收",
+      "未完成代表性隐私语料统计；不承诺通用检出率",
+      "通用NER、OCR及绕过网关的流量不在本版覆盖范围"
+    ],
+    "runtime_image": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
+    "ruleset": "local-context-3",
+    "follow_up": "../v0.1.3/index.html",
+    "baseline_manifest": "../../releases/v0.1.2/manifest.json",
+    "baseline_bundle": "../../releases/v0.1.2/source-and-design.tar.gz",
+    "git_tag_created": false
+  },
+  "release_note": "release.html",
+  "next_version_plan": "../v0.1.3/index.html"
+}

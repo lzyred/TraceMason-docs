@@ -1,0 +1,179 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 已实现架构与能力边界</title><style>*{box-sizing:border-box}body{margin:0;background:#f6f8fa;color:#233e3a;font:14px/1.6 system-ui}header{padding:20px 28px;display:flex;gap:20px;flex-wrap:wrap;background:white;border-bottom:1px solid #e0e7e5}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}main{max-width:1450px;margin:auto;padding:28px}h1{font-size:27px}h2{font-size:18px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}img{max-width:100%;border:1px solid #ddd;border-radius:10px}@media(max-width:760px){main{padding:16px}section{padding:14px}.mermaid{min-width:600px}}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="http://127.0.0.1:8766/privacy.html">真实产品</a><a href="navigation.html">菜单与板块</a><a href="index.html">架构</a><a href="coverage.html">验收</a><a href="openapi.json">接口</a><a href="screens.html">实拍</a><a href="hardening.html">安全加固闭环</a><a href="reliability.html">可靠性与定版门槛</a><a href="release.html">v0.1.2定版</a><a href="../v0.1.3/index.html">C/S交互规划</a></header><main><h1>v0.1.2 · 已实现架构与能力边界</h1><section><h2>01 · 服务底座与已实现入口</h2><pre class="mermaid">flowchart BT
+ P[Provider接入 / OpenAI·Codex / DeepSeek / Claude] --&gt; G[统一出站Transport]
+ G --&gt; A[API KEY账号 / 凭据加密 / 配置版本]
+ G --&gt; O[Ops连接检查]
+ G --&gt; W[模型网关 / 三种文本JSON协议]
+ G --&gt; U[隐私防护工作台]
+ P -.认证单独注入.-&gt; K[供应方认证头不属于用户正文]
+</pre></section><section><h2>02 · 每个出站请求都经过同一闸门</h2><pre class="mermaid">flowchart LR
+ A[代理入口] --&gt; T[Transport.request]
+ B[连接检查] --&gt; T
+ T --&gt; R[有界读取 / 路径与头检查]
+ R --&gt; D[本机识别与替换]
+ D --&gt; E[提交最小风险记录]
+ E --&gt; S[内部Approved对象 / 进程seal]
+ W[工作台清单确认] --&gt; E
+ S --&gt; V[验证账号配置与策略版本]
+ V --&gt; N[创建上游请求]
+ D --&gt;|无法检查| X[拒绝 / 不外发原文]
+ E --&gt;|记录写入失败| X
+</pre></section><section><h2>03 · 三类材料的不同处理</h2><pre class="mermaid">flowchart TD
+ A[任务 / 文本 / 配置 / 日志 / 工具返回] --&gt; R[local-context-3]
+ R --&gt; S[已识别认证秘密]
+ S --&gt; Z[按账号策略移除或拦截 / 私钥材料整份排除]
+ R --&gt; I[已识别身份与环境]
+ I --&gt; M[按账号策略别名或拦截 / 保留可用结构]
+ R --&gt; Q[代码 / 身份材料 / 用途不明]
+ Q --&gt; C[仅展示候选 / 用户裁剪与确认]
+ C --&gt; R2[重新扫描 / 旧清单失效]
+ R --&gt; U[二进制 / 外部附件 / 不可检查]
+ U --&gt; B[阻止 / 排除后重建]
+ Z --&gt; F[外发清单]
+ M --&gt; F
+ R2 --&gt; F
+</pre></section><section><h2>04 · 完整交互与真实响应</h2><pre class="mermaid">sequenceDiagram
+ participant U as 用户
+ participant UI as 真实工作台
+ participant API as 隐私服务
+ participant DB as 风险库
+ participant P as 模型厂商
+ U-&gt;&gt;UI: 添加材料 / 选择账号与模型
+ UI-&gt;&gt;API: 创建任务与材料
+ UI-&gt;&gt;API: 生成外发清单
+ API--&gt;&gt;UI: 已检查 / 待确认 / 排除 / 阻止
+ U-&gt;&gt;UI: 确认经过脱敏的候选
+ UI-&gt;&gt;API: 限定材料修订确认 / 重建清单
+ U-&gt;&gt;UI: 发送已检查内容
+ UI-&gt;&gt;API: 清单ID + 一次性token + 幂等key
+ API-&gt;&gt;DB: 提交枚举风险记录
+ API-&gt;&gt;P: 只发送服务端清单中的正文
+ UI-&gt;&gt;API: 认证后的单次响应流
+ P--&gt;&gt;API: HTTP / SSE
+ API--&gt;&gt;UI: 流式回复
+ UI--&gt;&gt;U: 模型回复 / 外发记录
+</pre></section><section><h2>05 · 清单状态与竞态</h2><pre class="mermaid">stateDiagram-v2
+ [*] --&gt; 收集材料
+ 收集材料 --&gt; 检查
+ 检查 --&gt; 待处理: 用途或格式不确定
+ 待处理 --&gt; 收集材料: 候选确认 / 排除 / 替换
+ 检查 --&gt; 可发送: 全部有决定
+ 可发送 --&gt; 失效: 内容或目的地或策略变更 / 120秒到期
+ 失效 --&gt; 检查
+ 可发送 --&gt; 已预占: 同步消耗清单
+ 已预占 --&gt; 记录提交
+ 记录提交 --&gt; 发送中: 当前账号与策略版本一致
+ 记录提交 --&gt; 拒绝: 写入失败或任务变化
+ 发送中 --&gt; 完成
+ 发送中 --&gt; 失败或取消
+ 完成 --&gt; 已有结果: 同幂等key重试
+ 失败或取消 --&gt; 已有结果: 不自动重放
+</pre></section><section><h2>06 · 身份关联的范围</h2><pre class="mermaid">flowchart TD
+ A[可信本机管理身份] --&gt; T[显式task_id]
+ T --&gt; D[目的地账号]
+ D --&gt; M[仅内存身份与环境别名]
+ M --&gt; R[同任务下一轮重新扫描]
+ R --&gt; C[材料用途确认重新生效]
+ D --&gt;|换账号| E[清空映射 / 确认失效]
+ T --&gt;|结束 / 空闲30分钟 / 最长2小时 / 重启| X[清除任务材料与映射]
+ G[普通API请求无task_id] --&gt; Q[仅单请求内关联]
+ Q -.不按时间或内容猜测会话.-&gt; N[无跨请求自动拼接]
+</pre></section><section><h2>07 · 数据设计与保留边界</h2><pre class="mermaid">erDiagram
+ ACCOUNT_POLICY ||--o{ POLICY_CHANGE : revisions
+ ACCOUNT_POLICY ||--o{ RECORD : applied
+ RECORD ||--o| VOLATILE_CANDIDATE : sanitized_only
+ ACCOUNT_POLICY {
+ string account_id
+ int revision
+ string secrets_action
+ string identity_action
+ }
+ POLICY_CHANGE {
+ string account_id
+ int revision
+ string action_enums
+ float created
+ }
+ VOLATILE_CANDIDATE {
+ bytes sanitized_body_only
+ float ttl_600seconds
+ bool claimed
+ }
+ VOLATILE_TASK ||--o{ VOLATILE_MATERIAL : contains
+ VOLATILE_TASK ||--o| VOLATILE_MANIFEST : current
+ VOLATILE_TASK ||--o{ VOLATILE_ALIAS : scoped
+ VOLATILE_MANIFEST ||--o| VOLATILE_RELEASE : authorizes
+ VOLATILE_RELEASE ||--|| RECORD : records
+ VOLATILE_TASK {
+ string principal
+ string destination
+ string purpose_memory_only
+ int revision
+ float ttl
+ }
+ VOLATILE_MATERIAL {
+ string text_memory_only
+ string kind
+ bool excluded
+ bool confirmed
+ int revision
+ }
+ VOLATILE_MANIFEST {
+ bytes sanitized_body_memory_only
+ string one_time_token
+ int config_revision
+ int policy_revision
+ float expires
+ }
+ RECORD {
+ string id
+ string parent_record_id
+ string reason_code
+ string ruleset
+ int policy_revision
+ string event_kind
+ string account_id
+ string decision
+ string state
+ string source
+ int round
+ int included
+ int excluded
+ json enumerated_findings
+ float created
+ float expires_30days
+ }
+</pre></section><section><h2>08 · 失败、容量与流控制</h2><pre class="mermaid">flowchart LR
+ A[JSON请求 ≤64KiB] --&gt; B[入口缓冲最多16并发]
+ B --&gt; C[扫描最多8任务 / 4线程]
+ C --&gt; D[扫描等待1.5秒]
+ D --&gt; E[记录提交后外发]
+ E --&gt; F[响应队列8块 / 每块64KiB]
+ F --&gt; G[读取背压 / 断开即取消]
+ T[任务材料32MiB总量 / 16份每任务] --&gt; C
+ X[超限 / 超时 / 解析失败 / 写入失败] --&gt; STOP[明确错误 / 原文不外发]
+ D --&gt; X
+ F --&gt; H[15秒无人订阅或背压超时取消]
+</pre></section><section><h2>09 · 客户端与识别能力边界</h2><pre class="mermaid">flowchart TD
+ A[已实现] --&gt; B[本机同源工作台]
+ A --&gt; C[经过代理的文本模型JSON]
+ A --&gt; D[有限字段与格式识别 / Unicode归一化]
+ N[未覆盖] --&gt; E[直接访问厂商网站 / 直连工具]
+ N --&gt; F[IDE与Agent自动拦截集成]
+ N --&gt; G[通用中文NER / 未知密钥 / 主动混淆保证]
+ N --&gt; H[OCR / PDF / 压缩包 / 外部文件引用]
+ N --&gt; I[代码AST语义保证 / 厂商端历史删除]
+ D --&gt; J[未命中不等于没有敏感信息]
+</pre></section><section><h2>10 · 本次验证与未通过门槛</h2><pre class="mermaid">flowchart LR
+ T[服务测试43项] --&gt; A[真实本机上游捕获 / 凭据不在正文或风险库]
+ T --&gt; B[原账号加密 / CAS / Ops / 流响应回归]
+ T --&gt; C[过期 / 修改 / 并发 / 重放 / 中断]
+ U[Chrome真实界面验收] --&gt; D[整包处理 / 确认 / 实际发送 / SSE / 记录删除]
+ U --&gt; E[1440桌面 / 390手机 / 无页面脚本错误]
+ A --&gt; L[有限协议与规则范围内可使用]
+ B --&gt; L
+ C --&gt; L
+ D --&gt; L
+ E --&gt; L
+ N[未通过S03] --&gt; K[缺代表性独立语料 / 无通用召回率保证]
+ N --&gt; M[不宣称完整内容安全能力]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#eef8f3",primaryBorderColor:"#78ad96",lineColor:"#709681",fontFamily:"system-ui"},flowchart:{htmlLabels:false}})</script></body></html>

@@ -1,0 +1,3479 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TraceMason AI隐私外发防护设计契约",
+    "version": "0.1.2",
+    "description": "v0.1.2 implemented local privacy API. Finite recognizers; no general NER guarantee. All privacy operations require local session token."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8766"
+    }
+  ],
+  "security": [
+    {
+      "LocalAdminToken": []
+    }
+  ],
+  "paths": {
+    "/api/privacy/policy": {
+      "get": {
+        "operationId": "getOutboundPolicy",
+        "summary": "查看不可绕过的外发边界与覆盖能力",
+        "description": "查看不可绕过的外发边界与覆盖能力",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/tasks": {
+      "post": {
+        "operationId": "createOutboundTask",
+        "summary": "创建本机隔离任务，绑定接收方",
+        "description": "创建本机隔离任务，绑定接收方",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/tasks/{task_id}": {
+      "get": {
+        "operationId": "getOutboundTask",
+        "summary": "读取任务元数据，不回显原文",
+        "description": "读取任务元数据，不回显原文",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateOutboundTask",
+        "summary": "更新任务目的或接收方，使旧清单失效",
+        "description": "更新任务目的或接收方，使旧清单失效",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskPatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "closeOutboundTask",
+        "summary": "销毁原文、清单与别名映射",
+        "description": "销毁原文、清单与别名映射",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Closed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/tasks/{task_id}/materials": {
+      "post": {
+        "operationId": "addOutboundMaterial",
+        "summary": "添加本机可读文本或工具返回，来源提示不等于信任",
+        "description": "Client extracts before external upload. Server validates declared MIME and hint; unsupported references/files are not silently accepted. No raw body logs.",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/tasks/{task_id}/materials/{material_id}": {
+      "patch": {
+        "operationId": "changeOutboundMaterial",
+        "summary": "排除或替换材料并增加任务版本",
+        "description": "排除或替换材料并增加任务版本",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialAction"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "material_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/tasks/{task_id}/manifests": {
+      "post": {
+        "operationId": "buildOutboundManifest",
+        "summary": "冻结本轮材料，生成去敏清单",
+        "description": "冻结本轮材料，生成去敏清单",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manifest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/tasks/{task_id}/reviews": {
+      "post": {
+        "operationId": "reviewOutboundMaterial",
+        "summary": "确认精确去敏片段或排除材料；修改后重扫",
+        "description": "No approve-original action. Confirmation applies to exact material/manifest/destination/principal. Invalidates old manifest; rebuild required.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/tasks/{task_id}/releases": {
+      "post": {
+        "operationId": "releaseOutboundManifest",
+        "summary": "消费单次许可，交付服务端持有的清单内容",
+        "description": "Record commit precedes upstream creation; no client request-body substitution; idempotency key returns prior release and never repeats vendor request. Prototype only simulates this.",
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Release"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseWrite"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/releases/{release_id}": {
+      "get": {
+        "operationId": "getOutboundRelease",
+        "summary": "区分已授权、已发送与上游失败",
+        "description": "区分已授权、已发送与上游失败",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/records": {
+      "get": {
+        "operationId": "listOutboundRecords",
+        "summary": "分页风险元数据，不提供原文回放",
+        "description": "分页风险元数据，不提供原文回放",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "destination_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "decision",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "release",
+                "redacted",
+                "blocked"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/records/export": {
+      "post": {
+        "operationId": "exportOutboundRecords",
+        "summary": "导出范围内处理元数据",
+        "description": "10000 records/20MiB limit; no task text, filenames, source/output text or reversible aliases.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Export"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/records/deletion-preview": {
+      "post": {
+        "operationId": "previewOutboundDeletion",
+        "summary": "固定终态记录集合生成清理预览",
+        "description": "固定终态记录集合生成清理预览",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/records/deletion-confirm": {
+      "post": {
+        "operationId": "confirmOutboundDeletion",
+        "summary": "消费60秒单次确认并清理预览集合",
+        "description": "消费60秒单次确认并清理预览集合",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authentication or principal mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Reference not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Revision/destination/manifest conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired/ended/consumed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Capacity exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Uninspectable content or original-secret approval attempted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Processing/store unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletionConfirm"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/releases/{release_id}/response": {
+      "get": {
+        "operationId": "streamOutboundResponse",
+        "summary": "读取该主体的上游响应流",
+        "description": "Authenticated single-consumer stream. Same-origin headers exclude upstream cookies and redirects. Response already sent cannot be replayed; disconnect cancels upstream. Release starts upstream before subscriber; attach within15s.",
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Native upstream body or event stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Wrong principal"
+          },
+          "410": {
+            "description": "Stream unavailable; no upstream replay"
+          },
+          "502": {
+            "description": "Upstream failure before stream"
+          }
+        }
+      }
+    },
+    "/api/privacy/policy/accounts/{account_id}": {
+      "get": {
+        "operationId": "getAccountPolicy",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPolicy"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "saveAccountPolicy",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPolicy"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/policy/check": {
+      "post": {
+        "operationId": "tryPrivacyPolicy",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyTrial"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyTrialWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/privacy/records/{record_id}": {
+      "get": {
+        "operationId": "getPrivacyRecord",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordDetail"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/privacy/records/{record_id}/recovery": {
+      "post": {
+        "operationId": "recoverPrivacyRecord",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recovery"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "maxProperties": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "review_available": {
+                "type": "boolean"
+              },
+              "record_saved": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "TaskCreate": {
+        "type": "object",
+        "properties": {
+          "destination_id": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "purpose": {
+            "type": "string",
+            "description": "1..4000 UTF-8 bytes; write-only",
+            "writeOnly": true
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "responses",
+              "chat_completions",
+              "messages"
+            ]
+          }
+        },
+        "required": [
+          "destination_id",
+          "purpose",
+          "model"
+        ],
+        "additionalProperties": true
+      },
+      "TaskPatch": {
+        "type": "object",
+        "properties": {
+          "destination_id": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "purpose": {
+            "type": "string",
+            "description": "1..4000 UTF-8 bytes; write-only",
+            "writeOnly": true
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "responses",
+              "chat_completions",
+              "messages"
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_round": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "destination_id",
+          "purpose"
+        ],
+        "additionalProperties": true
+      },
+      "MaterialInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "user",
+              "tool",
+              "upload"
+            ]
+          },
+          "kind_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "config",
+              "log",
+              "code",
+              "identity",
+              "private",
+              "unknown",
+              "opaque"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "included",
+              "excluded",
+              "unclassified"
+            ]
+          },
+          "coverage": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "unsupported"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "index",
+          "origin",
+          "kind_hint",
+          "revision",
+          "state",
+          "coverage"
+        ],
+        "additionalProperties": false
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialInfo"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "collecting",
+              "needs_review",
+              "ready",
+              "forwarding",
+              "ended"
+            ]
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "responses",
+              "chat_completions",
+              "messages"
+            ]
+          },
+          "native_request": {
+            "type": "boolean"
+          },
+          "origin_record_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "round",
+          "destination_id",
+          "materials",
+          "state",
+          "expires_in",
+          "model",
+          "protocol"
+        ],
+        "additionalProperties": false
+      },
+      "MaterialWrite": {
+        "type": "object",
+        "properties": {
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "user",
+              "tool",
+              "upload"
+            ]
+          },
+          "kind_hint": {
+            "type": "string",
+            "enum": [
+              "text",
+              "config",
+              "log",
+              "code",
+              "identity",
+              "private",
+              "unknown",
+              "opaque"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 65536,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "expected_task_revision",
+          "origin",
+          "kind_hint",
+          "text"
+        ],
+        "additionalProperties": true
+      },
+      "MaterialAction": {
+        "type": "object",
+        "properties": {
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "rescan"
+            ]
+          },
+          "replacement_text": {
+            "type": "string",
+            "maxLength": 65536,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "expected_task_revision",
+          "action"
+        ],
+        "additionalProperties": true
+      },
+      "BuildWrite": {
+        "type": "object",
+        "properties": {
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_task_revision"
+        ],
+        "additionalProperties": true
+      },
+      "Finding": {
+        "type": "object",
+        "properties": {
+          "material_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "secret",
+              "identity",
+              "environment"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "remove",
+              "alias",
+              "exclude"
+            ]
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "rule_id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "action",
+          "rule_id"
+        ],
+        "additionalProperties": false
+      },
+      "ManifestItem": {
+        "type": "object",
+        "properties": {
+          "material_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "material_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "included",
+              "excluded",
+              "pending",
+              "blocked"
+            ]
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "safe_preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          }
+        },
+        "required": [
+          "material_id",
+          "material_revision",
+          "status",
+          "reason_code",
+          "safe_preview",
+          "findings"
+        ],
+        "additionalProperties": false
+      },
+      "Manifest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "ruleset_version": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "needs_review",
+              "blocked",
+              "ready"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManifestItem"
+            }
+          },
+          "sanitized_preview": {
+            "type": "string"
+          },
+          "release_token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "type": "number",
+            "description": "Unix seconds"
+          },
+          "record_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "task_revision",
+          "round",
+          "destination_id",
+          "policy_revision",
+          "ruleset_version",
+          "state",
+          "items",
+          "sanitized_preview",
+          "release_token",
+          "expires_at"
+        ],
+        "additionalProperties": false,
+        "description": "Preview contains only proposed outbound content, never raw original echo; not persisted, Cache-Control:no-store. ready requires all confirmed/excluded; release token bound to server envelope and principal."
+      },
+      "ReviewWrite": {
+        "type": "object",
+        "properties": {
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "manifest_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "material_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "material_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "exclude",
+              "approve_sanitized"
+            ]
+          },
+          "sanitized_text": {
+            "type": "string",
+            "maxLength": 65536,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "expected_task_revision",
+          "manifest_id",
+          "material_id",
+          "material_revision",
+          "action"
+        ],
+        "additionalProperties": true
+      },
+      "ReviewResult": {
+        "type": "object",
+        "properties": {
+          "task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "manifest_invalidated": {
+            "type": "boolean",
+            "const": true
+          },
+          "needs_rebuild": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "task_revision",
+          "manifest_invalidated",
+          "needs_rebuild"
+        ],
+        "additionalProperties": false
+      },
+      "ReleaseWrite": {
+        "type": "object",
+        "properties": {
+          "manifest_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "release_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "expected_task_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "manifest_id",
+          "release_token",
+          "expected_task_revision",
+          "destination_id",
+          "idempotency_key"
+        ],
+        "additionalProperties": true
+      },
+      "Release": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "record_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "forward_state": {
+            "type": "string",
+            "enum": [
+              "authorized",
+              "forwarding",
+              "completed",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ]
+          },
+          "response_route": {
+            "type": "string",
+            "description": "Authenticated same-principal local stream route; never arbitrary user URL."
+          }
+        },
+        "required": [
+          "release_id",
+          "record_id",
+          "forward_state",
+          "response_route"
+        ],
+        "additionalProperties": false
+      },
+      "ReleaseStatus": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "record_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "forward_state": {
+            "type": "string",
+            "enum": [
+              "authorized",
+              "forwarding",
+              "completed",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ]
+          },
+          "response_route": {
+            "type": "string",
+            "description": "Authenticated same-principal local stream route; never arbitrary user URL."
+          }
+        },
+        "required": [
+          "release_id",
+          "record_id",
+          "forward_state",
+          "response_route"
+        ],
+        "additionalProperties": false
+      },
+      "Policy": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "credential_original_release_allowed": {
+            "type": "boolean",
+            "const": false
+          },
+          "identity_action": {
+            "type": "string",
+            "enum": [
+              "task_alias"
+            ]
+          },
+          "unknown_action": {
+            "type": "string",
+            "enum": [
+              "review_or_exclude"
+            ]
+          },
+          "ruleset_version": {
+            "type": "string"
+          },
+          "supported_extractors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "task_ttl_seconds": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "manifest_ttl_seconds": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_materials": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16
+          },
+          "max_material_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65536
+          },
+          "record_retention_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "recognizer_scope": {
+            "type": "string"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "reason_catalog": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "credential_original_release_allowed",
+          "identity_action",
+          "unknown_action",
+          "ruleset_version",
+          "supported_extractors",
+          "task_ttl_seconds",
+          "manifest_ttl_seconds",
+          "max_materials",
+          "max_material_bytes",
+          "record_retention_days",
+          "recognizer_scope"
+        ],
+        "additionalProperties": false
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "release",
+              "redacted",
+              "blocked"
+            ]
+          },
+          "forward_state": {
+            "type": "string",
+            "enum": [
+              "not_sent",
+              "authorized",
+              "forwarding",
+              "completed",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ]
+          },
+          "included_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excluded_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredFinding"
+            }
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0表示在读取策略前已拒绝请求，不能解释为采用默认策略；正整数为实际读取的账号策略版本。"
+          },
+          "created_at": {
+            "type": "number",
+            "description": "Unix seconds"
+          },
+          "expires_at": {
+            "type": "number",
+            "description": "Unix seconds"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "ops",
+              "workbench"
+            ]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "none",
+              "unknown"
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "ruleset_version": {
+            "type": "string"
+          },
+          "parent_record_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_kind": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "inspection"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "destination_id",
+          "round",
+          "decision",
+          "forward_state",
+          "included_count",
+          "excluded_count",
+          "findings",
+          "policy_revision",
+          "created_at",
+          "expires_at",
+          "source",
+          "risk_level"
+        ],
+        "additionalProperties": false
+      },
+      "RecordPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "additionalProperties": false
+      },
+      "RecordFilter": {
+        "type": "object",
+        "properties": {
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "release",
+              "redacted",
+              "blocked"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "ExportWrite": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/RecordFilter"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "Export": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        },
+        "required": [
+          "records"
+        ],
+        "additionalProperties": false
+      },
+      "DeletionPreview": {
+        "type": "object",
+        "properties": {
+          "preview_id": {
+            "type": "string"
+          },
+          "confirmation_token": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "preview_id",
+          "confirmation_token",
+          "count",
+          "expires_in"
+        ],
+        "additionalProperties": false
+      },
+      "DeletionConfirm": {
+        "type": "object",
+        "properties": {
+          "preview_id": {
+            "type": "string"
+          },
+          "confirmation_token": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "preview_id",
+          "confirmation_token"
+        ],
+        "additionalProperties": true
+      },
+      "Deleted": {
+        "type": "object",
+        "properties": {
+          "deleted_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "deleted_count"
+        ],
+        "additionalProperties": false
+      },
+      "Closed": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ended"
+            ]
+          }
+        },
+        "required": [
+          "task_id",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "StoredFinding": {
+        "type": "object",
+        "properties": {
+          "material_index": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "secret",
+              "identity",
+              "environment"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "remove",
+              "alias",
+              "exclude"
+            ]
+          },
+          "ruleset": {
+            "type": "string"
+          },
+          "rule_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "material_index",
+          "category",
+          "action",
+          "ruleset"
+        ],
+        "additionalProperties": false
+      },
+      "AccountPolicy": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "secrets_action": {
+            "type": "string",
+            "enum": [
+              "redact",
+              "block"
+            ]
+          },
+          "identity_action": {
+            "type": "string",
+            "enum": [
+              "alias",
+              "block"
+            ]
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "revision": {
+                  "type": "integer"
+                },
+                "secrets_action": {
+                  "type": "string"
+                },
+                "identity_action": {
+                  "type": "string"
+                },
+                "created": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "revision",
+                "secrets_action",
+                "identity_action",
+                "created"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "account_id",
+          "revision",
+          "secrets_action",
+          "identity_action",
+          "history"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyWrite": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer"
+          },
+          "secrets_action": {
+            "type": "string",
+            "enum": [
+              "redact",
+              "block"
+            ]
+          },
+          "identity_action": {
+            "type": "string",
+            "enum": [
+              "alias",
+              "block"
+            ]
+          }
+        },
+        "required": [
+          "expected_revision",
+          "secrets_action",
+          "identity_action"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyTrialWrite": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "request_json": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "path",
+          "request_json"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyTrial": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string"
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "sanitized_request": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "policy_revision": {
+            "type": "integer"
+          },
+          "ruleset_version": {
+            "type": "string"
+          },
+          "sent": {
+            "type": "boolean",
+            "const": false
+          }
+        },
+        "required": [
+          "decision",
+          "reason_code",
+          "findings",
+          "sanitized_request",
+          "policy_revision",
+          "ruleset_version",
+          "sent"
+        ],
+        "additionalProperties": false
+      },
+      "RecordDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "release",
+              "redacted",
+              "blocked"
+            ]
+          },
+          "forward_state": {
+            "type": "string",
+            "enum": [
+              "not_sent",
+              "authorized",
+              "forwarding",
+              "completed",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ]
+          },
+          "included_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excluded_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredFinding"
+            }
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "0表示在读取策略前已拒绝请求，不能解释为采用默认策略；正整数为实际读取的账号策略版本。"
+          },
+          "created_at": {
+            "type": "number",
+            "description": "Unix seconds"
+          },
+          "expires_at": {
+            "type": "number",
+            "description": "Unix seconds"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "ops",
+              "workbench"
+            ]
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "none",
+              "unknown"
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "ruleset_version": {
+            "type": "string"
+          },
+          "parent_record_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "event_kind": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "inspection"
+            ]
+          },
+          "review_available": {
+            "type": "boolean"
+          },
+          "review_expires_in": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "destination_id",
+          "round",
+          "decision",
+          "forward_state",
+          "included_count",
+          "excluded_count",
+          "findings",
+          "policy_revision",
+          "created_at",
+          "expires_at",
+          "source",
+          "risk_level",
+          "request_id",
+          "reason_code",
+          "reason",
+          "ruleset_version",
+          "parent_record_id",
+          "event_kind",
+          "review_available",
+          "review_expires_in"
+        ],
+        "additionalProperties": false
+      },
+      "Recovery": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destination_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaterialInfo"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "collecting",
+              "needs_review",
+              "ready",
+              "forwarding",
+              "ended"
+            ]
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "responses",
+              "chat_completions",
+              "messages"
+            ]
+          },
+          "native_request": {
+            "type": "boolean"
+          },
+          "origin_record_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "round",
+          "destination_id",
+          "materials",
+          "state",
+          "expires_in",
+          "model",
+          "protocol",
+          "native_request",
+          "origin_record_id",
+          "candidate",
+          "purpose"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "LocalAdminToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-TraceMason-Token",
+        "description": "Trusted-local Host/Origin boundary plus token on all APIs; principal-bound tasks and manifests; ID alone does not authorize. Managed remote client authentication not provided by loopback token."
+      }
+    }
+  },
+  "x-gateway-integration": {
+    "ordinary_api": "all proxy requests inspected before opening upstream; safe automatic outcomes forwarded without requiring UI",
+    "needs_review": "409 privacy_review_required + task reference; no upstream request. Client must use managed review protocol; no spoofed success.",
+    "file_upload": "not implemented vendor upload adapters reject uninspectable upload; external file IDs with no local source cannot be attested",
+    "stream": "response GET does not trigger or repeat outbound request"
+  }
+}

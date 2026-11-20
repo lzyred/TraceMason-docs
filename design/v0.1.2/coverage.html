@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v0.1.2 · 实际验证与待完成门槛</title><style>*{box-sizing:border-box}body{margin:0;background:#f6f8fa;color:#233e3a;font:14px/1.6 system-ui}header{padding:20px 28px;display:flex;gap:20px;flex-wrap:wrap;background:white;border-bottom:1px solid #e0e7e5}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}main{max-width:1450px;margin:auto;padding:28px}h1{font-size:27px}h2{font-size:18px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}img{max-width:100%;border:1px solid #ddd;border-radius:10px}@media(max-width:760px){main{padding:16px}section{padding:14px}.mermaid{min-width:600px}}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="http://127.0.0.1:8766/privacy.html">真实产品</a><a href="index.html">架构</a><a href="coverage.html">验收</a><a href="openapi.json">接口</a><a href="screens.html">实拍</a><a href="hardening.html">安全加固闭环</a><a href="reliability.html">可靠性与定版门槛</a><a href="release.html">v0.1.2定版</a><a href="../v0.1.3/index.html">C/S交互规划</a></header><main><h1>v0.1.2 · 实际验证与待完成门槛</h1><section><h2>10 · 本次验证与未通过门槛</h2><pre class="mermaid">flowchart LR
+ T[服务测试43项] --&gt; A[真实本机上游捕获 / 凭据不在正文或风险库]
+ T --&gt; B[原账号加密 / CAS / Ops / 流响应回归]
+ T --&gt; C[过期 / 修改 / 并发 / 重放 / 中断]
+ U[Chrome真实界面验收] --&gt; D[整包处理 / 确认 / 实际发送 / SSE / 记录删除]
+ U --&gt; E[1440桌面 / 390手机 / 无页面脚本错误]
+ A --&gt; L[有限协议与规则范围内可使用]
+ B --&gt; L
+ C --&gt; L
+ D --&gt; L
+ E --&gt; L
+ N[未通过S03] --&gt; K[缺代表性独立语料 / 无通用召回率保证]
+ N --&gt; M[不宣称完整内容安全能力]
+</pre></section><section><h2>失败时不得外发</h2><pre class="mermaid">flowchart TD
+ A[真实模拟上游] --&gt; B[记录请求数与实际字节]
+ C[未支持格式 / 过期 / 改账号 / 记录写失败] --&gt; D[上游请求数不增加]
+ E[秘密canary] --&gt; F[检查上游正文 / DB / 导出]
+ F --&gt; G[原值不得出现]
+ B --&gt; G
+ H[有限样例通过] -.不代表.-&gt; I[未知内容也可全部识别]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#eef8f3",primaryBorderColor:"#78ad96",lineColor:"#709681",fontFamily:"system-ui"},flowchart:{htmlLabels:false}})</script></body></html>

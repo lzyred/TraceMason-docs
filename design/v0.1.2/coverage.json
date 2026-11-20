@@ -1,0 +1,120 @@
+{
+  "revision": 9,
+  "items": [
+    {
+      "id": "U01",
+      "name": "整包提交",
+      "expected": "环境配置与错误日志保留关系，认证秘密被剔除；私钥排除；身份资料不能默认进入出站包",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U02",
+      "name": "最小确认",
+      "expected": "只确认已去敏的最小片段；修改后重扫；没有发送原始秘密按钮",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U03",
+      "name": "逐轮防护",
+      "expected": "模型追问或工具返回再次提交时重新检查；同任务身份别名一致；不提供回复意图分类器",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U04",
+      "name": "授权约束",
+      "expected": "接收方/材料变化使旧清单失效；过期拒绝；同清单不能重复交付",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U05",
+      "name": "未知内容",
+      "expected": "本机文件实际读取，非文本/超限未知材料不交付，可排除后重算",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U06",
+      "name": "最小记录",
+      "expected": "风险库与导出无原值、文件名、正文、映射；结束任务清空内存；页面刷新不恢复，服务残留由TTL清理",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "U07",
+      "name": "可用界面",
+      "expected": "桌面1440与手机390三页无溢出；全部Mermaid渲染",
+      "phase": "runtime-local"
+    },
+    {
+      "id": "S01",
+      "name": "真实外发",
+      "expected": "抓包零认证秘密；包括正文上下文、上传入口、工具结果、查询与透传头",
+      "phase": "production"
+    },
+    {
+      "id": "S02",
+      "name": "业务保真",
+      "expected": "端口错误码保留，身份关联正确，不破坏JSON/代码/工具协议；命中区间与偏移可验证",
+      "phase": "production"
+    },
+    {
+      "id": "S03",
+      "name": "效果验证",
+      "expected": "独立语料报告分类精确率/召回率、未知覆盖率、语义破坏率；中文、编码、跨块与负样本",
+      "phase": "production",
+      "result": "not-passed"
+    },
+    {
+      "id": "S04",
+      "name": "完整性",
+      "expected": "主体与任务隔离、目的地/版本/内容绑定、确认失效、重复请求、过期、取消与重启",
+      "phase": "production"
+    },
+    {
+      "id": "S05",
+      "name": "边界诚实",
+      "expected": "直连厂商与先行上传文件明确未受保护，不根据模型索取扩大权限",
+      "phase": "production"
+    },
+    {
+      "id": "H01",
+      "name": "账号标准与试检",
+      "expected": "CAS保存且不能原文放行；修改使旧清单失效；试检零上游调用",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_hardening.py / browser-privacy-check.mjs"
+    },
+    {
+      "id": "H02",
+      "name": "拦截处理衔接",
+      "expected": "完整检查后脱敏候选单次领取、过期消失；确认后保留原协议参数；不会重放原请求",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_automatic_block_recovery_native_protocol_and_audit_chain / Chrome"
+    },
+    {
+      "id": "H03",
+      "name": "识别绕过回归",
+      "expected": "开发集中的编码、复合字段、跨块、占位符绕过拒绝或移除；跨材料已知秘密不遗漏",
+      "phase": "runtime-local",
+      "result": "passed-bounded",
+      "evidence": "privacy_corpus.json 20 cases / test_hardening.py"
+    },
+    {
+      "id": "H04",
+      "name": "记录依据与真实结果",
+      "expected": "请求编号关联原因规则版本和前序；超限、取消留最小记录；3xx不误报成功；旧库升级保留记录",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "test_hardening.py / Chrome record modal"
+    },
+    {
+      "id": "R01",
+      "name": "跨通道与环境交叉验证",
+      "expected": "固定样例经三协议在检测器、试检、实际上游和记录中一致；负例不变；并发隔离；三协议候选单次领取；记录失败拒绝；不将合成样例结果视为总体准确率",
+      "phase": "runtime-local",
+      "result": "passed-local",
+      "evidence": "reliability.json / scripts/verify-reliability.py"
+    }
+  ],
+  "hardening_revision": 1,
+  "reliability_revision": 1
+}

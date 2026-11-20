@@ -1,0 +1,515 @@
+{
+  "checked_at": "2026-11-17T21:49:19.239613+08:00",
+  "ruleset": "local-context-3",
+  "tests_run": 5,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "matrix_expected": 75,
+  "matrix_passed": 75,
+  "counts": {
+    "blocked": 18,
+    "redacted": 39,
+    "unchanged": 18
+  },
+  "fixture_sha256": "c303e91725b07882f444bfa6723e6170812004f87a52c8d9c7249ae423aed281",
+  "detector_sha256": "18310ad752f3cc793cf575a830311dedc1ca0854e6dfd0ec9333aff4598ab3ec",
+  "fixture_count": 25,
+  "scope": "synthetic development fixtures; local HTTP upstream; no live vendor calls; not representative privacy recall or precision",
+  "oracles": [
+    "explicit secret absence and useful-content retention",
+    "unchanged negative JSON equality",
+    "detector vs trial vs actual upstream",
+    "record reason/decision/version/state consistency",
+    "on-disk canary absence"
+  ],
+  "matrix": [
+    {
+      "id": "config-zero-width-key",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-nested-phone",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-camel-client-secret",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "literal-chinese-credentials",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "quoted-password-spaces",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "identity-and-log",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "private-key",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "ssh-and-log",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "cookie-session",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "full-width-context",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "embedded-field-secret-placeholder",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-sensitive",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-clean",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "tool-schema-sensitive-property-names",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-secret-default",
+      "provider": "openai",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "benign-error-context",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-code-context",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-chinese-prose",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-city-field",
+      "provider": "openai",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "percent-encoded-secret",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "truncated-private-key",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "composite-password-field",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-label-boundary",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-value-boundary",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "bidi-control",
+      "provider": "openai",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "config-zero-width-key",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-nested-phone",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-camel-client-secret",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "literal-chinese-credentials",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "quoted-password-spaces",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "identity-and-log",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "private-key",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "ssh-and-log",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "cookie-session",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "full-width-context",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "embedded-field-secret-placeholder",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-sensitive",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-clean",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "tool-schema-sensitive-property-names",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-secret-default",
+      "provider": "deepseek",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "benign-error-context",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-code-context",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-chinese-prose",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-city-field",
+      "provider": "deepseek",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "percent-encoded-secret",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "truncated-private-key",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "composite-password-field",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-label-boundary",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-value-boundary",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "bidi-control",
+      "provider": "deepseek",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "config-zero-width-key",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-nested-phone",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "json-camel-client-secret",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "literal-chinese-credentials",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "quoted-password-spaces",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "identity-and-log",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "private-key",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "ssh-and-log",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "cookie-session",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "full-width-context",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "embedded-field-secret-placeholder",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-sensitive",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "tool-arguments-clean",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "tool-schema-sensitive-property-names",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-secret-default",
+      "provider": "claude",
+      "expected": "redacted",
+      "result": "passed"
+    },
+    {
+      "id": "benign-error-context",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-code-context",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "benign-chinese-prose",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "schema-city-field",
+      "provider": "claude",
+      "expected": "unchanged",
+      "result": "passed"
+    },
+    {
+      "id": "percent-encoded-secret",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "truncated-private-key",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "composite-password-field",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-label-boundary",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "split-value-boundary",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    },
+    {
+      "id": "bidi-control",
+      "provider": "claude",
+      "expected": "blocked",
+      "result": "passed"
+    }
+  ],
+  "live_vendor": {
+    "result": "not-run",
+    "reason": "local service has zero configured accounts, zero keys, zero models",
+    "checked_at": "2026-11-17T21:47:04.199903+08:00"
+  },
+  "platforms": {
+    "macOS": {
+      "tests": 43,
+      "passed": true
+    },
+    "Linux-container": {
+      "tests": 43,
+      "passed": true,
+      "isolation": "network none; read-only source; ephemeral tmpfs; no production data volumes; 512MiB/2CPU"
+    }
+  },
+  "release_decision": "released-by-user-with-documented-limitations",
+  "deployed_container": {
+    "image_id": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
+    "healthy": true,
+    "ruleset": "local-context-3",
+    "browser_verified": true,
+    "checked_at": "2026-11-17T21:51:35.373906+08:00"
+  },
+  "independence_limit": "The detector, trial and gateway share one engine. Cross-channel agreement validates integration consistency, not independent detection accuracy; explicit fixture assertions check known secret absence and negative-input preservation.",
+  "browser": {
+    "three_protocol_sse": true,
+    "fragmented_utf8_crlf": true,
+    "http401_failed_heading": true,
+    "reliability_diagrams": 5,
+    "console_errors": 0
+  },
+  "release_authorization": {
+    "date": "2026-11-17T22:27:31.190121+08:00",
+    "authority": "user",
+    "note": "用户确认定版；未通过或未执行的验证项保留原结果，不改写为已通过。"
+  }
+}
