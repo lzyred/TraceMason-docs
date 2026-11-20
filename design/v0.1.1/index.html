@@ -1,0 +1,1497 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TraceMason v0.1.1 · 架构与产品设计</title><link rel="stylesheet" href="../provider-gateway-v1/review.css"><header><b>TraceMason v0.1.1</b><span>已实现本地闭环 · 真实供应商待验收</span><a class="primary" href="prototype/index.html">打开产品原型 →</a></header><aside><a href="#scope">01 · v0.1.1 服务板块</a><a href="#architecture">02 · 前后端模块依赖</a><a href="#data">03 · Provider 与账号的数据关系</a><a href="#journey">04 · 原型与服务动作对应</a><a href="#api">05 · 接口归属与兼容路径</a><a href="#states">06 · Ops 状态不混用</a><a href="#forward">07 · Provider 通用实现边界</a><a href="#implementation">08 · 实施与验收边界</a><a href="#backup">09 · 备份提取与本版调整</a></aside><main><h2><a href="../v0.1.2/index.html">v0.1.2 产品交互与架构评审 →</a></h2><h2><a href="http://127.0.0.1:8766">真实控制台</a> · <a href="../../../TraceMason-Service/docs/implementation.html">实现与运行验证</a></h2><h2><a href="../../../TraceMason-Service/docs/review-fixes.html">架构与体验修复映射</a></h2><h2><a href="../../../TraceMason-Service/docs/container.html">容器部署与正式页面清理</a></h2><h1>API 接入 · 单入口 / 三项服务职责</h1><h2><a href="references.html">源码借鉴与具体落点</a> · <a href="openapi.json">接口契约</a> · <a href="development-map.json">模块映射</a> · <a href="acceptance.json">验收清单</a> · <a href="screens.html">页面预览</a></h2><section id="scope"><h2>01 · v0.1.1 服务板块</h2><div class="canvas"><pre class="mermaid">flowchart TB
+ ROOT[TraceMason v0.1.1 · API 接入服务]
+ MENU[前端唯一菜单 · API 接入] --&gt; ROOT --&gt; P[Provider 接入通用实现]
+ ROOT --&gt; A[API KEY 账号管理]
+ ROOT --&gt; O[Ops]
+ P --&gt; T[OpenAI API / DeepSeek API / Claude API]
+ ROOT -.不包含.-&gt; EX[订阅转换 / OAuth / Cookie / Session 凭据]
+ P --&gt; CODEX[Codex 客户端使用 API 凭据 · 不兑换 ChatGPT 订阅]
+ P --&gt; F[通用认证注入 / 路径与请求原样转发]
+ A --&gt; CRUD[添加 / 查询 / 编辑 / 删除]
+ A --&gt; KEY[Provider 关联 / 地址 / API KEY 凭据]
+ A --&gt; ENABLE[启用 / 停用]
+ O --&gt; STATUS[管理服务 / 凭据 / 配置状态]
+ O --&gt; CHECK[检查结果 / 时间 / 耗时 / 错误 / 重试]
+</pre></div></section><section id="architecture"><h2>02 · 前后端模块依赖</h2><div class="canvas"><pre class="mermaid">flowchart TB
+ subgraph UI[前端]
+ ENTRY[API 接入 · 唯一菜单入口] --&gt; FORM[居中配置弹窗 · 平台分段选择 / API KEY 录入 / 留空保留 / 替换]
+ LIST[账号表格 · 搜索 / 筛选 / 状态 / 延迟 / 错误] --&gt; FORM
+ OPSUI[表内运维状态 / 检查与错误详情弹窗] --&gt; CLIENT[统一 API Client]
+ ENTRY --&gt; LIST
+ LIST --&gt; OPSUI
+ FORM --&gt; CLIENT
+ LIST --&gt; CLIENT
+ end
+ subgraph SERVER[后端 · 单进程模块化服务]
+ API[管理端口 8766 · DTO / Host / Origin / token] --&gt; ACC[AccountService]
+ API --&gt; OPS[OpsService]
+ ACC --&gt; REPO[独立数据库线程 → AccountRepository · 事务 / CAS]
+ ACC --&gt; CREDS[CredentialResolver · 密钥库 / 环境变量]
+ OPS --&gt; ACC
+ OPS --&gt; PROVIDER[Provider 通用实现]
+ GATEWAY[转发端口 8768 · account_id] --&gt; ACC
+ GATEWAY --&gt; PROVIDER
+ PROVIDER --&gt; AUTH[认证注入]
+ PROVIDER --&gt; TRANS[HTTP/SSE 原字节流 / WebSocket 原始帧]
+ end
+ CLIENT --&gt; API
+ TRANS --&gt; UP[配置的上游]
+</pre></div></section><section id="data"><h2>03 · Provider 与账号的数据关系</h2><div class="canvas"><pre class="mermaid">erDiagram
+ PROVIDER_PROFILE ||--o{ API_KEY_ACCOUNT : supports
+ API_KEY_ACCOUNT ||--o{ CHECK_RESULT : has
+ API_KEY_ACCOUNT }o--|| CREDENTIAL_REF : resolves
+ PROVIDER_PROFILE {
+ string kind PK
+ string name
+ string default_base_url
+ string default_auth_type
+ string probe_template
+ }
+ API_KEY_ACCOUNT {
+ string id PK
+ string provider_kind FK
+ string name
+ string base_url
+ string credential_ref FK
+ string auth_type
+ boolean enabled
+ }
+ CREDENTIAL_REF {
+ string credential_ref PK
+ boolean configured_derived
+ }
+ CHECK_RESULT {
+ string account_id FK
+ boolean ok
+ string checked_at
+ int http_status_nullable
+ int duration_ms
+ string error_code_nullable
+ }
+</pre></div></section><section id="journey"><h2>04 · 原型与服务动作对应</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ P[添加账号弹窗 · Provider 选择] --&gt; CHOOSE[选择供应方]
+ CHOOSE --&gt; FORM[账号名称 / 标识 / 地址 / 认证 / API KEY 凭据]
+ FORM --&gt; SAVE[保存账号 · 不必指定模型]
+ SAVE --&gt; LIST[账号管理页]
+ LIST --&gt; EDIT[编辑配置]
+ LIST --&gt; TOGGLE[启用 / 停用]
+ LIST --&gt; DELETE[确认删除]
+ LIST --&gt; DETAIL[详情 / 凭据准备]
+ LIST --&gt; TEST[可选自定义检查]
+ O[Ops 页] --&gt; REFRESH[刷新状态]
+ O --&gt; TEST
+ TEST --&gt; RESULT[记录本次结果 · 不自动停用账号]
+</pre></div></section><section id="api"><h2>05 · 接口归属与兼容路径</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ CLIENT[API Client] --&gt; ACC[API KEY 账号管理]
+ CLIENT --&gt; OPS[Ops]
+ ACC --&gt; LIST[GET /api/providers · 账号快照]
+ ACC --&gt; SAVE[POST /api/providers · 创建或更新]
+ ACC --&gt; ENABLE[POST /api/providers/enabled]
+ ACC --&gt; DELETE[DELETE /api/providers/:id]
+ OPS --&gt; SNAP[GET /api/providers · 状态投影]
+ OPS --&gt; CHECK[POST /api/providers/test · 自定义检查]
+ LIST &amp; SAVE &amp; ENABLE &amp; DELETE &amp; CHECK --&gt; CAS[ETag / If-Match + 管理 Token]
+ NOTE[沿用备份 URL · providers 指账号实例]
+ NOTE -.-&gt; ACC
+ PROFILE[后端 Provider 目录 API · 前端与原型统一生成]
+ PROFILE -.-&gt; CLIENT
+</pre></div></section><section id="states"><h2>06 · Ops 状态不混用</h2><div class="canvas"><pre class="mermaid">flowchart TB
+ ACCOUNT[账号] --&gt; ENABLE[配置状态 · enabled / disabled]
+ ACCOUNT --&gt; CRED[凭据状态 · loaded / missing]
+ ACCOUNT --&gt; UP[上游状态 · unknown / 本次通过 / 本次失败]
+ UP --&gt; TIME[展示检查时间 · 不承诺持续健康]
+ MGMT[本机管理服务 · connected / unreachable] --&gt; OPS[账号表格与检查详情]
+ ENABLE &amp; CRED &amp; TIME --&gt; OPS
+ CHECK[自定义检查失败] --&gt; ERROR[原因 / 错误码 / 重试]
+ CHECK -. 不自动停用 .-&gt; ENABLE
+ NEVER[从未检查] --&gt; UNKNOWN[显示未知 · 不伪造健康]
+</pre></div></section><section id="forward"><h2>07 · Provider 通用实现边界</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ IN[显式账号入口 /proxy/account_id/path] --&gt; ACCOUNT[查询账号启用状态与凭据]
+ ACCOUNT --&gt; SNAP[在途请求使用不可变快照]
+ SNAP --&gt; PATH[配置根地址 + 原路径/查询]
+ PATH --&gt; HEADER[保留端到端头 · 注入认证 · 重建传输头]
+ HEADER --&gt; STREAM[正文流与响应流直接转发]
+ STREAM --&gt; OUT[保留上游状态码 / 错误 / 未知字段]
+ WS[WebSocket] --&gt; TUNNEL[原始握手与帧 · 流控 / 压缩透传]
+ MODEL[模型名称 / 版本 / 类型] --&gt; PASS[不设白名单 / 不补写或覆盖 model]
+ PASS --&gt; STREAM
+ OBS[有界元数据事件队列 · 满时丢弃] -. 失败不阻断转发 .-&gt; STREAM
+</pre></div></section><section id="implementation"><h2>08 · 实施与验收边界</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ REVIEW[v0.1.1 设计 review] --&gt; CONTRACT[OpenAPI / 数据 / 验收清单]
+ CONTRACT --&gt; P[Provider 通用实现]
+ CONTRACT --&gt; A[API KEY 账号服务与持久化]
+ CONTRACT --&gt; O[Ops 检查与状态投影]
+ P &amp; A &amp; O --&gt; UI[原型替换为同源真实接口]
+ UI --&gt; TEST[真实服务联调 / 密钥保密 / 并发 / 启停 / 流式]
+ TEST --&gt; UP[真实供应商 API 凭据验收 · 待执行]
+ CURRENT[当前已完成 · 真实前后端与本地上游联调]
+ CURRENT -. 不代表 .-&gt; UP
+</pre></div></section><section id="backup"><h2>09 · 备份提取与本版调整</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ B[backup/pre-restart-20261113 · c13b594] --&gt; S[storage.py · 配置/校验/凭据引用/原子写]
+ B --&gt; V[server.py · 认证守卫/探测/转发]
+ B --&gt; U[ui/app.js · 配置操作/错误反馈]
+ S --&gt; A[API KEY 账号模块]
+ V --&gt; P[Provider + Ops]
+ U --&gt; F[单一 API 接入控制台]
+ CHANGE[v0.1.1 调整] --&gt; KIND[显式 provider_kind · 不从 URL 猜供应方]
+ CHANGE --&gt; E[显式 enabled · 多账号独立管理]
+ CHANGE --&gt; REMOVE[取消全局 active / 测试强制门槛 / 模型白名单]
+</pre></div></section><h2>API KEY 保管 · 直接录入/替换 · 服务端加密存储（已实现本地验证）</h2><details><summary>开发必需：接口字段与状态码</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">{
+  &quot;openapi&quot;: &quot;3.1.0&quot;,
+  &quot;info&quot;: {
+    &quot;title&quot;: &quot;TraceMason v0.1.1 · Provider / API KEY / Ops&quot;,
+    &quot;version&quot;: &quot;0.1.1&quot;,
+    &quot;description&quot;: &quot;Local API access: management origin :8766 and relay origin :8768, separate route sets. AccountService with serial database worker, encrypted credentials, single-source Provider catalog, opaque HTTP/SSE/WebSocket frame transport. Checks are optional HTTP observations, not model capability gates.&quot;
+  },
+  &quot;servers&quot;: [
+    {
+      &quot;url&quot;: &quot;/&quot;
+    }
+  ],
+  &quot;paths&quot;: {
+    &quot;/api/session&quot;: {
+      &quot;get&quot;: {
+        &quot;operationId&quot;: &quot;getAdminSession&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Session&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Session&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [],
+        &quot;tags&quot;: [
+          &quot;API KEY&quot;
+        ]
+      }
+    },
+    &quot;/api/providers&quot;: {
+      &quot;get&quot;: {
+        &quot;operationId&quot;: &quot;listProviders&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Snapshot&quot;,
+            &quot;headers&quot;: {
+              &quot;ETag&quot;: {
+                &quot;description&quot;: &quot;Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.&quot;,
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;example&quot;: &quot;\&quot;cfg-opaque-token\&quot;&quot;
+                }
+              },
+              &quot;Cache-Control&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;no-store&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Snapshot&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [],
+        &quot;tags&quot;: [
+          &quot;API KEY&quot;,
+          &quot;Ops&quot;
+        ]
+      },
+      &quot;post&quot;: {
+        &quot;operationId&quot;: &quot;saveProvider&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Snapshot&quot;,
+            &quot;headers&quot;: {
+              &quot;ETag&quot;: {
+                &quot;description&quot;: &quot;Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.&quot;,
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;example&quot;: &quot;\&quot;cfg-opaque-token\&quot;&quot;
+                }
+              },
+              &quot;Cache-Control&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;no-store&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Snapshot&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [
+          {
+            &quot;AdminToken&quot;: []
+          }
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;If-Match&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;
+            },
+            &quot;description&quot;: &quot;Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry.&quot;
+          }
+        ],
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/SaveCommand&quot;
+              }
+            }
+          }
+        },
+        &quot;description&quot;: &quot;Credential replace and config update commit atomically after CAS validation. Omitted/blank API KEY preserves existing managed secret. Public DTO always redacts secret. Changing credential/config invalidates old check result; does not auto-disable account.&quot;,
+        &quot;tags&quot;: [
+          &quot;API KEY&quot;
+        ]
+      }
+    },
+    &quot;/api/providers/test&quot;: {
+      &quot;post&quot;: {
+        &quot;operationId&quot;: &quot;testProvider&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Probe&quot;,
+            &quot;headers&quot;: {
+              &quot;ETag&quot;: {
+                &quot;description&quot;: &quot;Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.&quot;,
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;example&quot;: &quot;\&quot;cfg-opaque-token\&quot;&quot;
+                }
+              },
+              &quot;Cache-Control&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;no-store&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Probe&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [
+          {
+            &quot;AdminToken&quot;: []
+          }
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;If-Match&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;
+            },
+            &quot;description&quot;: &quot;Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry.&quot;
+          }
+        ],
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/ProbeCommand&quot;
+              }
+            }
+          }
+        },
+        &quot;description&quot;: &quot;Optional custom request; result never gates proxy eligibility. HTTP status and stream result describe only this request. Probe preset is editable.&quot;,
+        &quot;tags&quot;: [
+          &quot;Ops&quot;
+        ]
+      }
+    },
+    &quot;/api/providers/{id}&quot;: {
+      &quot;delete&quot;: {
+        &quot;operationId&quot;: &quot;deleteProvider&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Snapshot&quot;,
+            &quot;headers&quot;: {
+              &quot;ETag&quot;: {
+                &quot;description&quot;: &quot;Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.&quot;,
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;example&quot;: &quot;\&quot;cfg-opaque-token\&quot;&quot;
+                }
+              },
+              &quot;Cache-Control&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;no-store&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Snapshot&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [
+          {
+            &quot;AdminToken&quot;: []
+          }
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;If-Match&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;
+            },
+            &quot;description&quot;: &quot;Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry.&quot;
+          },
+          {
+            &quot;name&quot;: &quot;id&quot;,
+            &quot;in&quot;: &quot;path&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;pattern&quot;: &quot;^[A-Za-z0-9_-]{1,64}$&quot;
+            }
+          }
+        ],
+        &quot;description&quot;: &quot;Delete account after confirmation; preserve history. No global active/default account.&quot;,
+        &quot;tags&quot;: [
+          &quot;API KEY&quot;
+        ]
+      }
+    },
+    &quot;/api/providers/enabled&quot;: {
+      &quot;post&quot;: {
+        &quot;operationId&quot;: &quot;setProviderEnabled&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Snapshot&quot;,
+            &quot;headers&quot;: {
+              &quot;ETag&quot;: {
+                &quot;description&quot;: &quot;Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.&quot;,
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;example&quot;: &quot;\&quot;cfg-opaque-token\&quot;&quot;
+                }
+              },
+              &quot;Cache-Control&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;no-store&quot;
+                }
+              }
+            },
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Snapshot&quot;
+                }
+              }
+            }
+          },
+          &quot;400&quot;: {
+            &quot;description&quot;: &quot;invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;403&quot;: {
+            &quot;description&quot;: &quot;admin_token_required / invalid_host / invalid_origin&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;404&quot;: {
+            &quot;description&quot;: &quot;provider_not_found&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;409&quot;: {
+            &quot;description&quot;: &quot;provider_exists / provider_not_configured&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;412&quot;: {
+            &quot;description&quot;: &quot;config_changed; refresh before retry; preserve draft&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;428&quot;: {
+            &quot;description&quot;: &quot;precondition_required&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;500&quot;: {
+            &quot;description&quot;: &quot;config_invalid / config_write_failed&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;413&quot;: {
+            &quot;description&quot;: &quot;invalid_size&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          },
+          &quot;415&quot;: {
+            &quot;description&quot;: &quot;invalid_content_type&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/Error&quot;
+                }
+              }
+            }
+          }
+        },
+        &quot;security&quot;: [
+          {
+            &quot;AdminToken&quot;: []
+          }
+        ],
+        &quot;parameters&quot;: [
+          {
+            &quot;name&quot;: &quot;If-Match&quot;,
+            &quot;in&quot;: &quot;header&quot;,
+            &quot;required&quot;: true,
+            &quot;schema&quot;: {
+              &quot;type&quot;: &quot;string&quot;
+            },
+            &quot;description&quot;: &quot;Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry.&quot;
+          }
+        ],
+        &quot;requestBody&quot;: {
+          &quot;required&quot;: true,
+          &quot;content&quot;: {
+            &quot;application/json&quot;: {
+              &quot;schema&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/EnabledCommand&quot;
+              }
+            }
+          }
+        },
+        &quot;description&quot;: &quot;Toggle account availability. Disable affects new requests; in-flight requests retain original snapshot.&quot;,
+        &quot;tags&quot;: [
+          &quot;API KEY&quot;
+        ]
+      }
+    },
+    &quot;/api/provider-profiles&quot;: {
+      &quot;get&quot;: {
+        &quot;operationId&quot;: &quot;getProviderProfiles&quot;,
+        &quot;responses&quot;: {
+          &quot;200&quot;: {
+            &quot;description&quot;: &quot;Single-source Provider presets and separate gateway_url&quot;,
+            &quot;content&quot;: {
+              &quot;application/json&quot;: {
+                &quot;schema&quot;: {
+                  &quot;type&quot;: &quot;object&quot;,
+                  &quot;required&quot;: [
+                    &quot;profiles&quot;,
+                    &quot;gateway_url&quot;
+                  ],
+                  &quot;properties&quot;: {
+                    &quot;profiles&quot;: {
+                      &quot;type&quot;: &quot;object&quot;,
+                      &quot;additionalProperties&quot;: {
+                        &quot;type&quot;: &quot;object&quot;
+                      }
+                    },
+                    &quot;gateway_url&quot;: {
+                      &quot;type&quot;: &quot;string&quot;,
+                      &quot;format&quot;: &quot;uri&quot;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  &quot;components&quot;: {
+    &quot;securitySchemes&quot;: {
+      &quot;AdminToken&quot;: {
+        &quot;type&quot;: &quot;apiKey&quot;,
+        &quot;in&quot;: &quot;header&quot;,
+        &quot;name&quot;: &quot;X-TraceMason-Token&quot;
+      }
+    },
+    &quot;schemas&quot;: {
+      &quot;ProviderConfig&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;name&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512
+          },
+          &quot;base_url&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512,
+            &quot;description&quot;: &quot;HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash.&quot;
+          },
+          &quot;api_key_env&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Required valid environment variable only in env mode; empty in managed mode.&quot;
+          },
+          &quot;model&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Optional test hint only; no model allowlist, no forwarding rewrite.&quot;
+          },
+          &quot;protocol&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;description&quot;: &quot;Probe preset hint only; not a route or content gate.&quot;
+          },
+          &quot;model_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;const&quot;: &quot;preserve&quot;
+          },
+          &quot;auth_type&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;bearer&quot;,
+              &quot;x_api_key&quot;
+            ]
+          },
+          &quot;enabled&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;,
+            &quot;default&quot;: true
+          },
+          &quot;provider_kind&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;openai&quot;,
+              &quot;deepseek&quot;,
+              &quot;claude&quot;,
+              &quot;custom&quot;
+            ],
+            &quot;description&quot;: &quot;Provider profile identity; not inferred from URL or model. Many accounts may share a kind.&quot;
+          },
+          &quot;credential_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;managed&quot;,
+              &quot;env&quot;
+            ]
+          }
+        },
+        &quot;required&quot;: [
+          &quot;name&quot;,
+          &quot;base_url&quot;,
+          &quot;api_key_env&quot;,
+          &quot;model&quot;,
+          &quot;protocol&quot;,
+          &quot;model_mode&quot;,
+          &quot;auth_type&quot;,
+          &quot;provider_kind&quot;,
+          &quot;credential_mode&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;Provider&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;name&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512
+          },
+          &quot;base_url&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512,
+            &quot;description&quot;: &quot;HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash.&quot;
+          },
+          &quot;api_key_env&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Required valid environment variable only in env mode; empty in managed mode.&quot;
+          },
+          &quot;model&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Optional test hint only; no model allowlist, no forwarding rewrite.&quot;
+          },
+          &quot;protocol&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;description&quot;: &quot;Probe preset hint only; not a route or content gate.&quot;
+          },
+          &quot;model_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;const&quot;: &quot;preserve&quot;
+          },
+          &quot;configured&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          },
+          &quot;probe&quot;: {
+            &quot;oneOf&quot;: [
+              {
+                &quot;$ref&quot;: &quot;#/components/schemas/Probe&quot;
+              },
+              {
+                &quot;type&quot;: &quot;null&quot;
+              }
+            ]
+          },
+          &quot;auth_type&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;bearer&quot;,
+              &quot;x_api_key&quot;
+            ]
+          },
+          &quot;enabled&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;,
+            &quot;default&quot;: true
+          },
+          &quot;provider_kind&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;openai&quot;,
+              &quot;deepseek&quot;,
+              &quot;claude&quot;,
+              &quot;custom&quot;
+            ],
+            &quot;description&quot;: &quot;Provider profile identity; not inferred from URL or model. Many accounts may share a kind.&quot;
+          },
+          &quot;credential_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;managed&quot;,
+              &quot;env&quot;
+            ]
+          },
+          &quot;has_api_key&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          },
+          &quot;credential_revision&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0
+          }
+        },
+        &quot;required&quot;: [
+          &quot;name&quot;,
+          &quot;base_url&quot;,
+          &quot;api_key_env&quot;,
+          &quot;model&quot;,
+          &quot;protocol&quot;,
+          &quot;model_mode&quot;,
+          &quot;configured&quot;,
+          &quot;probe&quot;,
+          &quot;auth_type&quot;,
+          &quot;provider_kind&quot;,
+          &quot;enabled&quot;,
+          &quot;credential_mode&quot;,
+          &quot;has_api_key&quot;,
+          &quot;credential_revision&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;Probe&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;ok&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          },
+          &quot;tested_at&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date-time&quot;
+          },
+          &quot;scope&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;const&quot;: &quot;custom_request_only&quot;
+          },
+          &quot;http_status&quot;: {
+            &quot;type&quot;: [
+              &quot;integer&quot;,
+              &quot;null&quot;
+            ]
+          },
+          &quot;duration_ms&quot;: {
+            &quot;type&quot;: &quot;integer&quot;,
+            &quot;minimum&quot;: 0
+          },
+          &quot;error_code&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ]
+          },
+          &quot;method&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;path&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Query omitted and known credential redacted&quot;
+          },
+          &quot;request_id&quot;: {
+            &quot;type&quot;: [
+              &quot;string&quot;,
+              &quot;null&quot;
+            ],
+            &quot;description&quot;: &quot;Allowlisted upstream request ID, max 128 characters, credential excluded&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;ok&quot;,
+          &quot;tested_at&quot;,
+          &quot;scope&quot;,
+          &quot;http_status&quot;,
+          &quot;duration_ms&quot;,
+          &quot;error_code&quot;
+        ],
+        &quot;additionalProperties&quot;: false,
+        &quot;description&quot;: &quot;A single HTTP check: success means 2xx plus completed response read, not semantic model success.&quot;
+      },
+      &quot;Snapshot&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;providers&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;additionalProperties&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Provider&quot;
+            }
+          }
+        },
+        &quot;required&quot;: [
+          &quot;providers&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;SaveCommand&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;id&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[A-Za-z0-9_-]{1,64}$&quot;
+          },
+          &quot;name&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512
+          },
+          &quot;base_url&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 512,
+            &quot;description&quot;: &quot;HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash.&quot;
+          },
+          &quot;api_key_env&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Required valid environment variable only in env mode; empty in managed mode.&quot;
+          },
+          &quot;model&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Optional test hint only; no model allowlist, no forwarding rewrite.&quot;
+          },
+          &quot;protocol&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;description&quot;: &quot;Probe preset hint only; not a route or content gate.&quot;
+          },
+          &quot;model_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;const&quot;: &quot;preserve&quot;
+          },
+          &quot;intent&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;create&quot;,
+              &quot;update&quot;
+            ]
+          },
+          &quot;auth_type&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;bearer&quot;,
+              &quot;x_api_key&quot;
+            ]
+          },
+          &quot;provider_kind&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;openai&quot;,
+              &quot;deepseek&quot;,
+              &quot;claude&quot;,
+              &quot;custom&quot;
+            ],
+            &quot;description&quot;: &quot;Provider profile identity; not inferred from URL or model. Many accounts may share a kind.&quot;
+          },
+          &quot;credential_mode&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;enum&quot;: [
+              &quot;managed&quot;,
+              &quot;env&quot;
+            ]
+          },
+          &quot;api_key&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;writeOnly&quot;: true,
+            &quot;description&quot;: &quot;Create managed account or switch env→managed requires nonempty Key; existing managed edit omitted/empty preserves original; nonempty replaces. Never accept/display stored masked text as the Key.&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;id&quot;,
+          &quot;name&quot;,
+          &quot;base_url&quot;,
+          &quot;api_key_env&quot;,
+          &quot;model&quot;,
+          &quot;protocol&quot;,
+          &quot;model_mode&quot;,
+          &quot;intent&quot;,
+          &quot;auth_type&quot;,
+          &quot;provider_kind&quot;,
+          &quot;credential_mode&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;IdCommand&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;id&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;pattern&quot;: &quot;^[A-Za-z0-9_-]{1,64}$&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;id&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;Session&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;token&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          }
+        },
+        &quot;required&quot;: [
+          &quot;token&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;Error&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;error&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+              &quot;code&quot;: {
+                &quot;type&quot;: &quot;string&quot;
+              },
+              &quot;message&quot;: {
+                &quot;type&quot;: &quot;string&quot;
+              },
+              &quot;field&quot;: {
+                &quot;type&quot;: [
+                  &quot;string&quot;,
+                  &quot;null&quot;
+                ]
+              }
+            },
+            &quot;required&quot;: [
+              &quot;code&quot;,
+              &quot;message&quot;
+            ],
+            &quot;additionalProperties&quot;: false
+          }
+        },
+        &quot;required&quot;: [
+          &quot;error&quot;
+        ],
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;ProbeCommand&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;required&quot;: [
+          &quot;id&quot;,
+          &quot;request&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;id&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;request&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;required&quot;: [
+              &quot;method&quot;,
+              &quot;path&quot;,
+              &quot;headers&quot;,
+              &quot;body&quot;
+            ],
+            &quot;properties&quot;: {
+              &quot;method&quot;: {
+                &quot;type&quot;: &quot;string&quot;
+              },
+              &quot;path&quot;: {
+                &quot;type&quot;: &quot;string&quot;
+              },
+              &quot;headers&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;additionalProperties&quot;: {
+                  &quot;type&quot;: &quot;string&quot;
+                }
+              },
+              &quot;body&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;description&quot;: &quot;Exact text bytes for console test; production proxy accepts arbitrary binary streams.&quot;
+              }
+            },
+            &quot;additionalProperties&quot;: false
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      },
+      &quot;EnabledCommand&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;required&quot;: [
+          &quot;id&quot;,
+          &quot;enabled&quot;
+        ],
+        &quot;properties&quot;: {
+          &quot;id&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;enabled&quot;: {
+            &quot;type&quot;: &quot;boolean&quot;
+          }
+        },
+        &quot;additionalProperties&quot;: false
+      }
+    }
+  },
+  &quot;tags&quot;: [
+    {
+      &quot;name&quot;: &quot;Provider&quot;,
+      &quot;description&quot;: &quot;Generic access profiles and forwarding contract; profile catalog is local to this prototype.&quot;
+    },
+    {
+      &quot;name&quot;: &quot;API KEY&quot;,
+      &quot;description&quot;: &quot;Account instances, credential references and enable/disable.&quot;
+    },
+    {
+      &quot;name&quot;: &quot;Ops&quot;,
+      &quot;description&quot;: &quot;Service status and explicit connection checks; no fabricated uptime or account balances.&quot;
+    }
+  ]
+}
+</pre></details></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:'neutral'});mermaid.run().then(()=>document.body.dataset.ready='true').catch(e=>document.body.dataset.error=e.message);</script></html>

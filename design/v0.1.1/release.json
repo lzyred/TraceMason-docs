@@ -1,0 +1,33 @@
+{
+  "version": "0.1.1",
+  "date": "2026-11-15",
+  "status": "implemented-local-integration",
+  "modules": [
+    "Provider 接入通用实现",
+    "API KEY 账号管理",
+    "Ops"
+  ],
+  "entry": "index.html",
+  "prototype": "prototype/index.html",
+  "api": "openapi.json",
+  "implementation": "development-map.json",
+  "acceptance": "acceptance.json",
+  "backend_implemented": true,
+  "prototype_revision": "runtime7",
+  "product_boundary": "upstream-api-only",
+  "excluded": [
+    "subscription-conversion",
+    "oauth-login",
+    "cookie-session-import"
+  ],
+  "ui_reference": "sub2api accounts/table/dialog/ops; API-only adaptation",
+  "frontend_navigation": [
+    "API 接入"
+  ],
+  "service_entry": "http://127.0.0.1:8766",
+  "verification": "real upstream provider credentials pending; local HTTP and browser tests passed",
+  "review_fixes": "../../../TraceMason-Service/docs/review-fixes.html",
+  "relay_entry": "http://127.0.0.1:8768",
+  "real_vendor_acceptance": "pending valid user credentials; not executed",
+  "deployment": "Docker Compose; management 8766; relay 8768; persistent database/key volumes"
+}

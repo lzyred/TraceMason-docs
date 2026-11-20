@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-15",
+  "scope": "Provider account UI prototype only",
+  "passed": [
+    "multiple accounts for same Provider",
+    "edit configured account",
+    "enable/disable",
+    "delete confirmation",
+    "unknown versus tested state",
+    "check time, latency and result",
+    "1440/390 layout",
+    "explicit provider_kind and multiple account identity",
+    "no global active/default selection",
+    "v0.1.1 contract and byte-preserving plan checks",
+    "managed-key input and edit preservation",
+    "secret absent from mock state/trace/DTO",
+    "simplified arbitrary-model check",
+    "Ops last-successful-refresh and optional refresh control",
+    "table layout / platform filter",
+    "direct create dialog / platform selection",
+    "Mermaid API-only scope / excluded subscription conversion",
+    "single API entry; Provider selection inside create dialog",
+    "inline check latency and refresh controls",
+    "separate management/gateway origin",
+    "15 backend integration tests",
+    "cancel check while other account remains usable",
+    "generated prototype from service UI and Provider catalog"
+  ],
+  "not_implemented": "Live vendor acceptance requires valid API credentials; no analytics or public-network deployment",
+  "version": "0.1.1",
+  "modules": [
+    "Provider 接入通用实现",
+    "API KEY 账号管理",
+    "Ops"
+  ],
+  "source_review": "reference-map.json",
+  "prototype_revision": "review-fixes-api4",
+  "visual_limit": "No pixel-level comparison with a running sub2api instance",
+  "frontend_navigation": [
+    "API 接入"
+  ],
+  "review_fixes": "../../../TraceMason-Service/docs/review-fixes.html",
+  "relay_entry": "http://127.0.0.1:8768",
+  "real_vendor_acceptance": "pending valid user credentials; not executed",
+  "backend_verification": "../../../TraceMason-Service/docs/verification.json"
+}

@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>备份证据索引</title><link rel="stylesheet" href="review.css"><header><a href="index.html">← 图形评审</a><span>源码与历史验收 · Git 对象索引</span></header><main style="margin:auto"><h1>备份证据索引</h1><div class="canvas"><pre class="mermaid">flowchart LR
+ B[&quot;backup/pre-restart-20261113&lt;br/&gt;c13b594a3052168257da36b6f896160eb358c56b&quot;]
+ B --&gt; F0[&quot;storage.py&lt;br/&gt;git blob 3aa8b107f2ef&quot;]
+ B --&gt; F1[&quot;server.py&lt;br/&gt;git blob a5b4063fc2ba&quot;]
+ B --&gt; F2[&quot;telemetry.py&lt;br/&gt;git blob a030bac9742b&quot;]
+ B --&gt; F3[&quot;sessions.py&lt;br/&gt;git blob 340203c12c95&quot;]
+ B --&gt; F4[&quot;security.py&lt;br/&gt;git blob 03871c9e647c&quot;]
+ B --&gt; F5[&quot;ui/app.js&lt;br/&gt;git blob d3fad4525a47&quot;]
+ B --&gt; F6[&quot;ui/reader.js&lt;br/&gt;git blob 5fde64d12248&quot;]
+ B --&gt; F7[&quot;verification/2026-11-08.md&lt;br/&gt;git blob 3e1418d2f043&quot;]
+ B --&gt; F8[&quot;verification/2026-11-08-raw-capture.md&lt;br/&gt;git blob b42cd4940616&quot;]
+ B --&gt; F9[&quot;verification/2026-11-08-reading-view.md&lt;br/&gt;git blob 3b44fc548281&quot;]
+ B --&gt; F10[&quot;verification/2026-11-08-sessions.md&lt;br/&gt;git blob f35ff69e2407&quot;]</pre></div><h2>本轮原型检查 · 2026-11-14</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ A[Chrome 浏览器检查通过] --> B[12 张 Mermaid 渲染]
+ A --> C[另存 → 测试 → 激活 / 测试过期]
+ A --> D[失败 / 缺凭据 / 编辑失效]
+ A --> E[会话 → 阅读 → 原文 / 仅用户文本]
+ A --> F[1440 / 390 布局 · 无脚本异常]
+ A --> G[无 HTTP 请求 · 仅合成数据]
+ H[服务闭环验收] -.-> I[待设计 review 后实施与实测]
+ </pre></div></main><script src="assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'neutral'});</script></html>

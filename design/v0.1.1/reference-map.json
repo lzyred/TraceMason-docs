@@ -1,0 +1,159 @@
+{
+  "version": "0.1.1",
+  "scope": "source-informed design and original prototype changes; no upstream source copied",
+  "repositories": {
+    "sub2api": {
+      "commit": "530c5e3a4f9c73ca2b0881191d0ef8e0d82c5484",
+      "license_file": "references/sub2api/LICENSE",
+      "license_header": "LGPL-3.0"
+    },
+    "new-api": {
+      "commit": "b388140acfd80369ec6243b16869daff1b4051f4",
+      "license_file": "references/new-api/LICENSE",
+      "license_header": "AGPL-3.0"
+    }
+  },
+  "adopted": [
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/account/CreateAccountModal.vue",
+      "line": 6121,
+      "mechanism": "API KEY 直接录入",
+      "application": "API KEY 账号创建：名称、Provider、根地址与凭据；不要求用户设置环境变量"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/account/EditAccountModal.vue",
+      "line": 5839,
+      "mechanism": "留空保留原凭据",
+      "application": "编辑留空保持，明确输入新值才替换；不返回原 Key"
+    },
+    {
+      "repository": "sub2api",
+      "path": "backend/internal/handler/dto/credentials_redact.go",
+      "line": 7,
+      "mechanism": "凭据状态与敏感字段分离",
+      "application": "公开账号 DTO 仅含 has_api_key/configured；写入命令允许 writeOnly api_key"
+    },
+    {
+      "repository": "sub2api",
+      "path": "backend/internal/service/admin_account.go",
+      "line": 650,
+      "mechanism": "服务端合并更新",
+      "application": "保留未提交的敏感字段；不把前端掩码当成密钥回写"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/account/AccountTestModal.vue",
+      "line": 407,
+      "mechanism": "简单检查与过程反馈",
+      "application": "先填任意模型与测试内容；高级 HTTP 请求折叠；结果不控制账号启停"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/views/admin/ops/OpsDashboard.vue",
+      "line": 394,
+      "mechanism": "Ops 刷新策略",
+      "application": "显示最后成功刷新时间；自动刷新默认关闭；请求中/隐藏页不重复请求"
+    },
+    {
+      "repository": "new-api",
+      "path": "web/src/features/channels/hooks/use-channel-mutate-form.ts",
+      "line": 73,
+      "mechanism": "编辑时省略空 Key",
+      "application": "更新契约区分未提交与替换；删除账号单独确认"
+    },
+    {
+      "repository": "new-api",
+      "path": "controller/channel.go",
+      "line": 278,
+      "mechanism": "账号列表排除 Key",
+      "application": "账号数据与密钥存储分离；查询不返回密钥正文"
+    },
+    {
+      "repository": "new-api",
+      "path": "relay/relay_adaptor.go",
+      "line": 62,
+      "mechanism": "适配器注册与选择",
+      "application": "ProviderProfile / AuthAdapter / Transport 分离；不引入模型限制和协议转换"
+    },
+    {
+      "repository": "new-api",
+      "path": "relay/channel/claude/adaptor.go",
+      "line": 116,
+      "mechanism": "Claude 认证独立适配",
+      "application": "x-api-key 与 Anthropic 版本头有独立处理；转发仍遵从本项目的原文原则"
+    },
+    {
+      "repository": "new-api",
+      "path": "relay/channel/deepseek/adaptor.go",
+      "line": 99,
+      "mechanism": "DeepSeek Bearer 认证",
+      "application": "认证由服务端凭据解析后注入；不向 UI 暴露 Key"
+    },
+    {
+      "repository": "new-api",
+      "path": "model/channel.go",
+      "line": 38,
+      "mechanism": "检查时间与响应耗时",
+      "application": "Ops 展示本次检查结果、时间和耗时；没有检查显示未知"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/layout/AppLayout.vue",
+      "line": 1,
+      "mechanism": "256px 侧栏 / 64px 顶栏 / 32px 内容间距",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/layout/AppSidebar.vue",
+      "line": 1,
+      "mechanism": "浅色导航与版本标识",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/layout/TablePageLayout.vue",
+      "line": 1,
+      "mechanism": "筛选工具栏 / 白色圆角表格 / 独立页脚",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/common/BaseDialog.vue",
+      "line": 1,
+      "mechanism": "居中弹窗 / 遮罩 / 固定头尾",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/tailwind.config.js",
+      "line": 1,
+      "mechanism": "Teal 主色 / 系统字体 / 圆角与阴影",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    },
+    {
+      "repository": "sub2api",
+      "path": "frontend/src/components/account/CreateAccountModal.vue",
+      "line": 1,
+      "mechanism": "平台分段选择 / 仅保留 API Key 类型",
+      "application": "v0.1.1 API-only prototype layout rebuild"
+    }
+  ],
+  "excluded": [
+    "OAuth/subscription conversion",
+    "multi-key scheduling pools",
+    "billing/quotas/groups",
+    "model allowlists and model remapping",
+    "automatic disable/retry/failover"
+  ],
+  "not_claimed": [
+    "full audit of either repository",
+    "runtime testing of reference repositories",
+    "production secret vault implementation",
+    "real upstream forwarding implementation"
+  ],
+  "ui_revision": "sub2api-api2",
+  "visual_validation": "source-derived layout and tokens; local screenshots reviewed; no pixel comparison against running upstream app"
+}

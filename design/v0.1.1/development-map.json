@@ -1,0 +1,158 @@
+{
+  "status": "review-fixes-implemented",
+  "replaces": "v1 Responses-only and probe-required constraints",
+  "profiles": {
+    "openai": {
+      "base_url": "https://api.openai.com/v1",
+      "auth_type": "bearer"
+    },
+    "deepseek": {
+      "base_url": "https://api.deepseek.com",
+      "auth_type": "bearer"
+    },
+    "claude": {
+      "base_url": "https://api.anthropic.com/v1",
+      "auth_type": "x_api_key"
+    }
+  },
+  "routing": {
+    "explicit": "/proxy/{account_id}/{upstream_relative_path}?query",
+    "rule": "Resolve enabled account by explicit account_id, capture immutable config and credential reference, strip proxy prefix and append raw path/query to base_url. No global default selection and no model/type/version whitelist.",
+    "examples": [
+      "/proxy/codex-main/responses -> https://api.openai.com/v1/responses",
+      "/proxy/deepseek/chat/completions -> https://api.deepseek.com/chat/completions",
+      "/proxy/claude/messages -> https://api.anthropic.com/v1/messages",
+      "/proxy/claude/messages/count_tokens -> https://api.anthropic.com/v1/messages/count_tokens"
+    ],
+    "origins": {
+      "management": "http://127.0.0.1:8766",
+      "relay": "http://127.0.0.1:8768",
+      "boundary": "disjoint route sets; browser Origin guard; no management CORS"
+    }
+  },
+  "request": {
+    "method": "preserve",
+    "query": "preserve raw query and duplicate keys",
+    "body": "stream bytes; no JSON parse/reserialize; preserve model, unknown fields, tool/image/audio/file payloads, multipart boundaries and encodings",
+    "headers": "preserve application headers including content-type/content-encoding/accept, anthropic-version, beta and future fields; remove hop-by-hop + Connection-nominated headers, incoming upstream auth and local admin token; set Host and server-owned credential; regenerate transport framing; strip local Cookie header to avoid leaking browser-local credentials",
+    "models": "no enumeration, length checks on model, version gate, type/capability allowlist, fallback insertion or override",
+    "websocket": "Raw HTTP Upgrade handshake and opaque frame streaming with flow control; preserve compression negotiation, response headers, fragments, subprotocol and close frames. Pinned aiohttp upgrade parser hook covered by integration tests."
+  },
+  "response": {
+    "status": "preserve upstream HTTP status, including errors",
+    "headers": "preserve end-to-end headers; remove hop-by-hop and reconstruct framing",
+    "body": "stream raw bytes with backpressure; propagate cancellation; never buffer until semantic completion",
+    "observability": "Bounded nonblocking in-memory metadata queue, drop-on-full; no body/query/credential; no analytics implemented."
+  },
+  "policy": {
+    "test": "Optional Ops action; does not gate account enabling",
+    "retry": "none automatically",
+    "redirects": "no automatic cross-origin follow; preserve upstream 3xx",
+    "limits": "operational resource/time limits must be configurable, documented and independent of model names/types; no arbitrary 1 MiB probe/body restriction in forwarding path",
+    "secret": "Server AES-256-GCM CredentialStore implemented, SQLite transaction with CAS. Managed Key or explicit server environment reference; no plaintext keys in public DTO or browser persistence.",
+    "disabled_account": "Reject new requests before contacting upstream; retain original snapshot for in-flight requests.",
+    "deleted_account": "Reject new requests with account not found; preserve history.",
+    "check_invalidation": "Keep probe for name-only edits; connection/credential changes invalidate probe."
+  },
+  "evidence": "TraceMason-Service/tests/test_service.py and scripts/browser-check.mjs; real vendor credentials not exercised",
+  "official_sources": [
+    "https://developers.openai.com/api/reference/overview",
+    "https://api-docs.deepseek.com/",
+    "https://platform.claude.com/docs/en/api/overview"
+  ],
+  "version": "0.1.1",
+  "modules": {
+    "provider": {
+      "responsibility": "Generic HTTP/SSE/WebSocket transport, profile presets, auth injection, opaque body forwarding",
+      "owns": [
+        "ProviderProfile",
+        "RequestSnapshot",
+        "Transport"
+      ],
+      "does_not_own": [
+        "account CRUD",
+        "enable/disable decisions",
+        "Ops UI"
+      ],
+      "implementation": [
+        "provider/profiles.py",
+        "provider/transport.py",
+        "provider/auth.py"
+      ],
+      "catalog": "/api/provider-profiles; provider/profiles.py source of presets and optional check samples"
+    },
+    "api_key_accounts": {
+      "responsibility": "Create/read/update/delete accounts; provider_kind; base_url; environment-backed API KEY reference; enable/disable",
+      "owns": [
+        "AccountConfig",
+        "CredentialRef",
+        "AccountRepository"
+      ],
+      "implementation": [
+        "accounts/service.py",
+        "accounts/repository.py",
+        "accounts/credential_store.py"
+      ],
+      "key_storage": "AES-256-GCM encrypted SQLite credential rows; independent server master key; API returns presence/revision only.",
+      "update_semantics": "No api_key or blank value on managed update retains current key; nonempty value atomically replaces; new managed or env→managed requires value. Never echo old key. Deleted credentials must not affect other accounts. Credentials tied to stable account ID, not shared default env names.",
+      "execution": "AccountService owns business and credential policy; AccountRepository owns SQL/transactions. One dedicated worker serializes DB calls; no SQL on the network event loop."
+    },
+    "ops": {
+      "responsibility": "Local management service reachability, account enable state, credential availability, latest explicit check outcome/time/latency/error",
+      "owns": [
+        "CheckResult",
+        "OpsReadModel"
+      ],
+      "implementation": [
+        "ops/service.py"
+      ],
+      "status_rule": "configured != enabled != upstream healthy; never tested is unknown; check failure does not auto-disable account",
+      "refresh": "last successful snapshot timestamp; error marks stale; opt-in 30s refresh pauses on hidden tab, open modal or in-flight operation",
+      "check_interaction": "Per-account AbortController cancellation; modal may close while check continues; other accounts remain usable; path/status/classification/redacted request ID shown.",
+      "check_result_scope": "HTTP status and stream completion only; no model-semantic success claim"
+    }
+  },
+  "product_scope": [
+    "Provider 接入通用实现",
+    "API KEY 账号管理",
+    "Ops"
+  ],
+  "migration": {
+    "backup": "c13b594: storage.py / server.py / ui/app.js",
+    "preserve": "account IDs, URL validation, env credential refs, atomic write, guards, original transport evidence",
+    "changes": "provider_kind explicit; enabled explicit; remove global active and probe-age gate; model is optional probe hint only; separate modules",
+    "old_default": "drop active pointer only after explicit design approval; preserve all account configurations"
+  },
+  "reference_map": "reference-map.json",
+  "credential_store_design": {
+    "status": "implemented; local encryption/rollback/restore tested",
+    "storage": "SQLite transaction stores encrypted credential record and account config reference together; replacing JSON-only storage is explicit v0.1.1 design adjustment",
+    "cipher": "AES-256-GCM via maintained crypto library, random nonce per write; AAD includes stable account ID and key version",
+    "master_key": "server deployment secret outside database and source tree; no key in browser; must be available before accepting managed-key writes",
+    "read": "account query returns presence and configured state only; Gateway resolves secret internally",
+    "atomicity": "check expected configuration generation inside transaction; credential replacement and metadata update commit together; rollback retains previous config and secret",
+    "audit": "record actor/account/operation/time/outcome only; redact secret request fields, never log raw save bodies",
+    "backup": "encrypted DB and deployment master key must be backed up separately; restoration test required",
+    "prototype": "discard entered key after successful mock save, persist presence/revision only; input cleared on close; no encryption claim"
+  },
+  "product_boundary": {
+    "credential": "upstream API Key (managed or server environment)",
+    "excluded": [
+      "subscription conversion",
+      "OAuth authorization",
+      "Cookie/Session extraction"
+    ],
+    "codex": "API credential only; no ChatGPT subscription conversion"
+  },
+  "frontend_navigation": [
+    "API 接入"
+  ],
+  "prototype_revision": "unified-api3",
+  "frontend": {
+    "entry": "API 接入",
+    "form": "auto ID / four basic fields / advanced settings",
+    "connection": "copy full relay URL and generic HTTP sample",
+    "listing": "disabled filter / sort / client pagination / responsive action menu",
+    "navigation": "Left main navigation for service modules; header shows current page only; mobile uses drawer, never top-level horizontal menu"
+  }
+}

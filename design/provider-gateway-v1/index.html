@@ -1,0 +1,223 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TraceMason · 图形评审</title><link rel="stylesheet" href="review.css"><body><header><a href="#">TraceMason / FOUNDATION</a><span>dev · 设计待评审 · 2026-11-14</span><a class="primary" href="prototype/index.html">打开交互原型 ↗</a></header><aside><a href="#foundation">01 · 系统底座</a><a href="#extraction">02 · 备份功能提取</a><a href="#provider">03 · Provider 生命周期</a><a href="#forward">04 · 转发与数据提取</a><a href="#data">05 · 数据关系 · 核心字段</a><a href="#lineage">06 · 数据流向与边界</a><a href="#api">07 · 接口边界 · 保留现有路径</a><a href="#interaction">08 · 产品交互路径</a><a href="#failure">09 · 状态与保障</a><a href="#evidence">10 · 证据与验收边界</a><a href="#extension">11 · 后续接入 · 不冒充已闭环</a><a href="#cs">12 · 最后评审 C/S 组织</a></aside><main><h1>系统早期评审记录</h1><h2>模型接入规则已由三代理透明转发设计替代，以新版为准。</h2><h2><a href="../v0.1.1/index.html">模型接入 · 详细开发设计与新版原型 ↗</a></h2><div class="legend"><span>实线 · 备份已有 / 当前关系</span><span>虚线 · 待验证 / 后续 / 修正提案</span><a href="provenance.html">来源 · backup/pre-restart-20261113 · c13b594 ↗</a></div><section id="foundation"><h2>01 · 系统底座</h2><div class="canvas"><pre class="mermaid">flowchart TB
+ subgraph P[第一层 · Provider 支持接入]
+ A[连接配置 · 环境变量凭据] --&gt; B[协议适配 · 模型策略] --&gt; C[测试 · 指纹校验 · 激活]
+ end
+ subgraph G[第二层 · 模型转发网关]
+ D[Codex 请求] --&gt; E[请求快照 · 安全判定] --&gt; F[上游转发 · 流式回传]
+ F --&gt; H[实际请求正文 · 响应字节 · 协议事件]
+ H --&gt; I[提取 · 用量 / 时延 / 工具 / 关联标识]
+ I --&gt; J[利用 · 会话时间线 / 阅读视图 / 原文追溯]
+ end
+ C --&gt; F
+ subgraph O[第三层 · 功能与系统保障]
+ K[安全审查 · 保留清理 · 中断恢复 · 观测]
+ L[备份其他功能 · 本地会话 / 质量 / 交付等]
+ end
+ G --&gt; O
+ O --&gt; S[最后 · C/S 服务组织与部署边界]
+ classDef future fill:#fff0db,stroke:#bc790e
+ class S future</pre></div></section><section id="extraction"><h2>02 · 备份功能提取</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ subgraph SRC[备份 c13b594 · 已核对源码]
+ S[storage.py]
+ V[server.py]
+ P[telemetry.py]
+ U[ui/app.js + reader.js]
+ X[security.py]
+ end
+ S --&gt; A[配置 → 测试指纹 → 24h 内激活]
+ V --&gt; B[Responses → JSON/SSE → 工具往返]
+ P --&gt; C[完成状态 · 用量 · 工具事件]
+ S --&gt; D[正文分块 → 原文读取 → 清理墓碑]
+ U --&gt; E[连接操作 · 阅读/原文 · 会话时间线]
+ X --&gt; F[转发前安全判断 · 管理接口保护]
+ A &amp; B &amp; C &amp; D &amp; E &amp; F --&gt; R[首期 · 提取 Codex 闭环]
+ V -.-&gt; Q[compact 路由存在 · 缺真实长上下文验收]
+ S -.-&gt; DS[DeepSeek 预设与 Chat 路由存在 · 非 Codex 闭环]
+ U -.-&gt; OUT[本地日志导入及上层功能 · 首期不提取]
+ R --&gt; N[下一步 · DeepSeek / Claude 独立验收]
+ classDef later fill:#fff0db,stroke:#bc790e
+ class Q,DS,OUT,N later</pre></div></section><section id="provider"><h2>03 · Provider 生命周期</h2><div class="canvas"><pre class="mermaid">flowchart TD
+ A[新增连接] --&gt; B[校验 URL / ID / 环境变量名]
+ B --&gt; C[保存配置 · 不保存密钥值]
+ C --&gt; D[测试 · 读取当前凭据]
+ D --&gt; E{测试通过且配置未变化?}
+ E --&gt;|否| F[保留失败结果 · 不允许切换]
+ E --&gt;|是| G[保存测试结果与配置/凭据指纹]
+ G --&gt; H{Responses + 凭据有效 + 24h 内?}
+ H --&gt;|是| I[激活连接]
+ H --&gt;|否| D
+ I --&gt; J[新请求读取新快照]
+ I --&gt; K[在途请求继续旧快照]
+ I --&gt; L[修改活动连接 → 另存副本]
+ L --&gt; B
+ C --&gt; M[修改非活动连接 → 原 ID 保存]
+ M --&gt; D
+ N[依据 · storage.py / ui/app.js] -.-&gt; L</pre></div></section><section id="forward"><h2>04 · 转发与数据提取</h2><div class="canvas"><pre class="mermaid">sequenceDiagram
+ participant C as Codex
+ participant G as Gateway / server.py
+ participant S as 安全判定
+ participant P as Provider
+ participant D as SQLite
+ C-&gt;&gt;G: POST /v1/responses
+ G-&gt;&gt;G: 固定连接与模型策略快照
+ G-&gt;&gt;S: 校验输入
+ alt 阻断
+ S--&gt;&gt;G: 拒绝
+ G--&gt;&gt;C: 明确错误
+ else 放行
+ G-&gt;&gt;D: 请求记录 + 实际发送正文
+ G-&gt;&gt;P: JSON + 服务端凭据
+ loop 每个响应分块
+ P--&gt;&gt;G: 原始字节
+ G-&gt;&gt;D: append chunk
+ G-&gt;&gt;G: 观察协议状态 / usage / 工具事件
+ G--&gt;&gt;C: 原样流式回传
+ end
+ G-&gt;&gt;D: 独立记录协议完成状态与 HTTP EOF
+ end
+ Note over G,D: 备份先落盘后回传；落盘失败降级尚无完整闭环
+ Note over C,P: 无自动重试 / 故障切换 / WebSocket</pre></div></section><section id="data"><h2>05 · 数据关系 · 核心字段</h2><div class="canvas"><pre class="mermaid">erDiagram
+ REQUESTS ||--o| CAPTURES : has
+ CAPTURES ||--o{ RESPONSE_CHUNKS : ordered_by_id
+ REQUESTS {
+ string id PK
+ string provider
+ string model
+ string kind
+ string status
+ int http_status
+ string session_id
+ string thread_id
+ string turn_id
+ string session_source
+ string association_issue
+ string request_preview
+ int first_text_ms
+ int input_tokens
+ int output_tokens
+ int cached_tokens
+ int tool_calls
+ }
+ CAPTURES {
+ string request_id PK,FK
+ string url
+ blob request_body
+ string response_type
+ boolean response_eof
+ }
+ RESPONSE_CHUNKS {
+ int id PK
+ string request_id FK
+ blob body
+ }
+ REQUEST_TOMBSTONES {
+ string id PK
+ string session_id
+ string thread_id
+ string turn_id
+ string removed_at
+ string reason
+ }</pre></div></section><section id="lineage"><h2>06 · 数据流向与边界</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ A[providers.json · active + providers] --&gt; B[请求连接快照]
+ ENV[进程环境变量] --&gt; B
+ B --&gt; C[实际发送正文 · 不含 Authorization]
+ C --&gt; DB[requests / captures / response_chunks]
+ DB --&gt; R[阅读视图 · 派生展示]
+ DB --&gt; RAW[原文 · 复制 / 下载 / 部分刷新]
+ DB --&gt; SE[按显式标识聚合会话 · 无独立 sessions 表]
+ DB --&gt; M[近期 100 条指标 · 已知用量与覆盖率]
+ DB --&gt; CL[7 天 / 数量清理 · 最近 1000 条 / 保留运行中请求]
+ CL --&gt; T[先墓碑后级联删除 · 同事务]
+ T --&gt; GAP[历史缺口 · 不补造正文]
+ M --&gt; N[未知 usage 保持 null]
+ FIX[提取修正提案 · 安全处理后的 payload 生成 preview] -.-&gt; DB
+ classDef proposal fill:#eee8ff,stroke:#8057c4
+ class FIX proposal</pre></div></section><section id="api"><h2>07 · 接口边界 · 保留现有路径</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ UI[管理界面 · loopback / Host / Origin / token] --&gt; GET[GET /api/providers]
+ UI --&gt; SAVE[POST /api/providers]
+ UI --&gt; TEST[POST /api/providers/test · id]
+ UI --&gt; ACTIVE[POST /api/providers/active · id]
+ UI --&gt; LIST[GET /api/requests]
+ LIST --&gt; DETAIL[GET /api/requests/:id]
+ DETAIL --&gt; RAW[GET /api/requests/:id/request 或 response]
+ UI --&gt; SESS[GET /api/sessions · /api/sessions/:id]
+ UI --&gt; HEALTH[GET /api/health]
+ CODEX[Codex] --&gt; RESP[POST /v1/responses · 首期]
+ LEGACY[备份已有 · 后续评审] -.-&gt; CHAT[POST /v1/chat/completions]
+ LEGACY -.-&gt; COMPACT[POST /v1/responses/compact · 待实测]
+ classDef later fill:#fff0db,stroke:#bc790e
+ class LEGACY,CHAT,COMPACT later</pre></div></section><section id="interaction"><h2>08 · 产品交互路径</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ A[连接列表] --&gt; B[新增 / 非活动编辑 / 活动另存]
+ B --&gt; C[测试结果]
+ C --&gt; D[切换连接]
+ D --&gt; E[Codex 接入]
+ E --&gt; F[请求进入网关]
+ F --&gt; G[会话列表 · 搜索 / 排序]
+ G --&gt; H[会话时间线 · thread / turn]
+ H --&gt; I[请求详情 · 默认阅读视图]
+ F --&gt; J[请求列表 · 未关联 / 探测]
+ J --&gt; I
+ I --&gt; K[请求原文]
+ I --&gt; L[响应原文]
+ I --&gt; M[概览 · 协议完成 ≠ EOF]
+ K &amp; L --&gt; N[格式化 · 原文复制 · 下载 · 刷新]
+ K --&gt; O[仅用户文本]
+ I --&gt; P[角色 / 工具名称 / 结果 / 上游推理摘要]</pre></div></section><section id="failure"><h2>09 · 状态与保障</h2><div class="canvas"><pre class="mermaid">flowchart TD
+ A[请求] --&gt; B{前置检查}
+ B --&gt;|安全拒绝| BLOCK[blocked · 不转发]
+ B --&gt;|凭据/协议失败| FAIL[failed · 可定位错误]
+ B --&gt;|通过| RUN[running]
+ RUN --&gt; DONE[协议 completed]
+ RUN --&gt; INC[协议 incomplete / failed]
+ RUN --&gt; DISC[客户端断开 · 关闭上游流]
+ RUN --&gt; RESTART[进程重启 → interrupted]
+ DONE --&gt; EOF{HTTP EOF?}
+ EOF --&gt;|是| FULL[正文已收全]
+ EOF --&gt;|否| PART[协议完成 · 正文部分保留]
+ INC &amp; DISC --&gt; PART
+ CAP[落盘异常恢复 · 待补验收] -.-&gt; RUN
+ TIME[连接/读取超时 + 总时长界限] -.-&gt; RUN
+ OBS[metadata observer 1 MiB · 非正文截断上限] -.-&gt; RUN
+ classDef gap fill:#eee8ff,stroke:#8057c4
+ class CAP gap</pre></div></section><section id="evidence"><h2>10 · 证据与验收边界</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ S[备份源码 · c13b594] --&gt; ST[storage.py · 配置/指纹/采集]
+ S --&gt; SV[server.py · 路由/流式转发]
+ S --&gt; UI[ui/app.js + reader.js · 原文/会话/阅读]
+ H[历史验收 · verification/] --&gt; C[2026-11-08 · Codex CLI 0.167.0]
+ C --&gt; TASK[修复加法夹具 · 3 请求 / 2 工具调用]
+ H --&gt; SESSION[新建/恢复会话 · 2 turn / 3 请求]
+ H --&gt; RAW[JSON 260 B / SSE 12386 B 原文一致]
+ TASK --&gt; LIMIT[仅证明当时测试上游 · 非全供应商兼容]
+ ST &amp; SV &amp; UI --&gt; EX[dev 提取后必须重新验收]
+ EX --&gt; E1[配置测试切换 · 在途快照]
+ EX --&gt; E2[真实 Codex 工具往返 · 新建/恢复会话]
+ EX --&gt; E3[字节一致 · 断连 · 清理 · 安全拒绝]
+ EX --&gt; E4[页面交互与实际接口一致]
+ P[本评审包 · 模拟原型验证] -.-&gt; E4
+ classDef future fill:#fff0db,stroke:#bc790e
+ class EX,E1,E2,E3,E4 future</pre></div></section><section id="extension"><h2>11 · 后续接入 · 不冒充已闭环</h2><div class="canvas"><pre class="mermaid">flowchart LR
+ BASE[统一 Provider 配置与生命周期] --&gt; CODEX[首期 · Codex / Responses]
+ BASE -.-&gt; DS[下一步 · DeepSeek]
+ BASE -.-&gt; CL[下一步 · Claude]
+ DS --&gt; D1[已有预设 + Chat 路由]
+ D1 --&gt; D2[待确认客户端契约 / 流事件 / 工具 / usage]
+ CL --&gt; C1[待设计原生协议与鉴权适配]
+ C1 --&gt; C2[待验证流事件 / 工具 / usage / 错误]
+ D2 &amp; C2 --&gt; GATE[各自真实端到端验收]
+ GATE --&gt; DATA[复用采集 · 关联 · 阅读 · 原文]
+ CROSS[跨协议转换 · 独立决策] -.-&gt; GATE</pre></div></section><section id="cs"><h2>12 · 最后评审 C/S 组织</h2><div class="canvas"><pre class="mermaid">flowchart TB
+ subgraph NOW[备份现状 · 本机运行]
+ UI[浏览器 UI] --&gt; HTTP[ThreadingHTTPServer]
+ CODEX[Codex] --&gt; HTTP
+ HTTP --&gt; MOD[Provider / Gateway / Storage / Security]
+ MOD --&gt; LOCAL[本地 JSON + SQLite + 0600 文件]
+ end
+ MOD --&gt; UP[远端模型供应商]
+ subgraph FUTURE[后续服务化 · 待 review]
+ CLIENT[客户端职责] --&gt; CONTRACT[接口契约]
+ CONTRACT --&gt; SERVER[服务端职责]
+ AUTH[身份 / 权限 / 数据归属 / 迁移] --&gt; SERVER
+ end
+ NOW -.-&gt; FUTURE
+ classDef proposed fill:#eee8ff,stroke:#8057c4
+ class CLIENT,CONTRACT,SERVER,AUTH proposed</pre></div></section></main><script src="assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:'base',themeVariables:{primaryColor:'#e9f2f0',primaryTextColor:'#153e3a',primaryBorderColor:'#528e83',lineColor:'#6e8191',fontFamily:'system-ui',fontSize:'15px',secondaryColor:'#edf0fa',tertiaryColor:'#f9f3e8'},flowchart:{htmlLabels:false,useMaxWidth:true},sequence:{useMaxWidth:true}});mermaid.run().then(()=>document.body.dataset.ready='true').catch(e=>{document.body.dataset.error=e.message;console.error(e)});</script></body></html>

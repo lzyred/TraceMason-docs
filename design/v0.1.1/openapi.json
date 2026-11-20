@@ -1,0 +1,1358 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TraceMason v0.1.1 · Provider / API KEY / Ops",
+    "version": "0.1.1",
+    "description": "Local API access: management origin :8766 and relay origin :8768, separate route sets. AccountService with serial database worker, encrypted credentials, single-source Provider catalog, opaque HTTP/SSE/WebSocket frame transport. Checks are optional HTTP observations, not model capability gates."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/session": {
+      "get": {
+        "operationId": "getAdminSession",
+        "responses": {
+          "200": {
+            "description": "Session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "tags": [
+          "API KEY"
+        ]
+      }
+    },
+    "/api/providers": {
+      "get": {
+        "operationId": "listProviders",
+        "responses": {
+          "200": {
+            "description": "Snapshot",
+            "headers": {
+              "ETag": {
+                "description": "Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.",
+                "schema": {
+                  "type": "string",
+                  "example": "\"cfg-opaque-token\""
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "tags": [
+          "API KEY",
+          "Ops"
+        ]
+      },
+      "post": {
+        "operationId": "saveProvider",
+        "responses": {
+          "200": {
+            "description": "Snapshot",
+            "headers": {
+              "ETag": {
+                "description": "Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.",
+                "schema": {
+                  "type": "string",
+                  "example": "\"cfg-opaque-token\""
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCommand"
+              }
+            }
+          }
+        },
+        "description": "Credential replace and config update commit atomically after CAS validation. Omitted/blank API KEY preserves existing managed secret. Public DTO always redacts secret. Changing credential/config invalidates old check result; does not auto-disable account.",
+        "tags": [
+          "API KEY"
+        ]
+      }
+    },
+    "/api/providers/test": {
+      "post": {
+        "operationId": "testProvider",
+        "responses": {
+          "200": {
+            "description": "Probe",
+            "headers": {
+              "ETag": {
+                "description": "Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.",
+                "schema": {
+                  "type": "string",
+                  "example": "\"cfg-opaque-token\""
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Probe"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProbeCommand"
+              }
+            }
+          }
+        },
+        "description": "Optional custom request; result never gates proxy eligibility. HTTP status and stream result describe only this request. Probe preset is editable.",
+        "tags": [
+          "Ops"
+        ]
+      }
+    },
+    "/api/providers/{id}": {
+      "delete": {
+        "operationId": "deleteProvider",
+        "responses": {
+          "200": {
+            "description": "Snapshot",
+            "headers": {
+              "ETag": {
+                "description": "Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.",
+                "schema": {
+                  "type": "string",
+                  "example": "\"cfg-opaque-token\""
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,64}$"
+            }
+          }
+        ],
+        "description": "Delete account after confirmation; preserve history. No global active/default account.",
+        "tags": [
+          "API KEY"
+        ]
+      }
+    },
+    "/api/providers/enabled": {
+      "post": {
+        "operationId": "setProviderEnabled",
+        "responses": {
+          "200": {
+            "description": "Snapshot",
+            "headers": {
+              "ETag": {
+                "description": "Opaque quoted strong ETag for full configuration + credential-state generation. Not a credential hash. Returned on successful config/test operations.",
+                "schema": {
+                  "type": "string",
+                  "example": "\"cfg-opaque-token\""
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_provider_id / invalid_provider / invalid_base_url / invalid_key_env / invalid_protocol / invalid_json",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin_token_required / invalid_host / invalid_origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "provider_not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "provider_exists / provider_not_configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "config_changed; refresh before retry; preserve draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "precondition_required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "config_invalid / config_write_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "invalid_size",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "invalid_content_type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact ETag from the snapshot used to open the editor/confirmation. Whole-config optimistic concurrency; no automatic retry."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnabledCommand"
+              }
+            }
+          }
+        },
+        "description": "Toggle account availability. Disable affects new requests; in-flight requests retain original snapshot.",
+        "tags": [
+          "API KEY"
+        ]
+      }
+    },
+    "/api/provider-profiles": {
+      "get": {
+        "operationId": "getProviderProfiles",
+        "responses": {
+          "200": {
+            "description": "Single-source Provider presets and separate gateway_url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "profiles",
+                    "gateway_url"
+                  ],
+                  "properties": {
+                    "profiles": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object"
+                      }
+                    },
+                    "gateway_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AdminToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-TraceMason-Token"
+      }
+    },
+    "schemas": {
+      "ProviderConfig": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash."
+          },
+          "api_key_env": {
+            "type": "string",
+            "description": "Required valid environment variable only in env mode; empty in managed mode."
+          },
+          "model": {
+            "type": "string",
+            "description": "Optional test hint only; no model allowlist, no forwarding rewrite."
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Probe preset hint only; not a route or content gate."
+          },
+          "model_mode": {
+            "type": "string",
+            "const": "preserve"
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "bearer",
+              "x_api_key"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "provider_kind": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "deepseek",
+              "claude",
+              "custom"
+            ],
+            "description": "Provider profile identity; not inferred from URL or model. Many accounts may share a kind."
+          },
+          "credential_mode": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "env"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "base_url",
+          "api_key_env",
+          "model",
+          "protocol",
+          "model_mode",
+          "auth_type",
+          "provider_kind",
+          "credential_mode"
+        ],
+        "additionalProperties": false
+      },
+      "Provider": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash."
+          },
+          "api_key_env": {
+            "type": "string",
+            "description": "Required valid environment variable only in env mode; empty in managed mode."
+          },
+          "model": {
+            "type": "string",
+            "description": "Optional test hint only; no model allowlist, no forwarding rewrite."
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Probe preset hint only; not a route or content gate."
+          },
+          "model_mode": {
+            "type": "string",
+            "const": "preserve"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "probe": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Probe"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "bearer",
+              "x_api_key"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "provider_kind": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "deepseek",
+              "claude",
+              "custom"
+            ],
+            "description": "Provider profile identity; not inferred from URL or model. Many accounts may share a kind."
+          },
+          "credential_mode": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "env"
+            ]
+          },
+          "has_api_key": {
+            "type": "boolean"
+          },
+          "credential_revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name",
+          "base_url",
+          "api_key_env",
+          "model",
+          "protocol",
+          "model_mode",
+          "configured",
+          "probe",
+          "auth_type",
+          "provider_kind",
+          "enabled",
+          "credential_mode",
+          "has_api_key",
+          "credential_revision"
+        ],
+        "additionalProperties": false
+      },
+      "Probe": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "tested_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scope": {
+            "type": "string",
+            "const": "custom_request_only"
+          },
+          "http_status": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Query omitted and known credential redacted"
+          },
+          "request_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Allowlisted upstream request ID, max 128 characters, credential excluded"
+          }
+        },
+        "required": [
+          "ok",
+          "tested_at",
+          "scope",
+          "http_status",
+          "duration_ms",
+          "error_code"
+        ],
+        "additionalProperties": false,
+        "description": "A single HTTP check: success means 2xx plus completed response read, not semantic model success."
+      },
+      "Snapshot": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          }
+        },
+        "required": [
+          "providers"
+        ],
+        "additionalProperties": false
+      },
+      "SaveCommand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "HTTPS or loopback HTTP; no whitespace/userinfo/query/fragment; preserve path and remove trailing slash."
+          },
+          "api_key_env": {
+            "type": "string",
+            "description": "Required valid environment variable only in env mode; empty in managed mode."
+          },
+          "model": {
+            "type": "string",
+            "description": "Optional test hint only; no model allowlist, no forwarding rewrite."
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Probe preset hint only; not a route or content gate."
+          },
+          "model_mode": {
+            "type": "string",
+            "const": "preserve"
+          },
+          "intent": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "bearer",
+              "x_api_key"
+            ]
+          },
+          "provider_kind": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "deepseek",
+              "claude",
+              "custom"
+            ],
+            "description": "Provider profile identity; not inferred from URL or model. Many accounts may share a kind."
+          },
+          "credential_mode": {
+            "type": "string",
+            "enum": [
+              "managed",
+              "env"
+            ]
+          },
+          "api_key": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "Create managed account or switch env→managed requires nonempty Key; existing managed edit omitted/empty preserves original; nonempty replaces. Never accept/display stored masked text as the Key."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "base_url",
+          "api_key_env",
+          "model",
+          "protocol",
+          "model_mode",
+          "intent",
+          "auth_type",
+          "provider_kind",
+          "credential_mode"
+        ],
+        "additionalProperties": false
+      },
+      "IdCommand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "field": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "ProbeCommand": {
+        "type": "object",
+        "required": [
+          "id",
+          "request"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "request": {
+            "type": "object",
+            "required": [
+              "method",
+              "path",
+              "headers",
+              "body"
+            ],
+            "properties": {
+              "method": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "body": {
+                "type": "string",
+                "description": "Exact text bytes for console test; production proxy accepts arbitrary binary streams."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnabledCommand": {
+        "type": "object",
+        "required": [
+          "id",
+          "enabled"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Provider",
+      "description": "Generic access profiles and forwarding contract; profile catalog is local to this prototype."
+    },
+    {
+      "name": "API KEY",
+      "description": "Account instances, credential references and enable/disable."
+    },
+    {
+      "name": "Ops",
+      "description": "Service status and explicit connection checks; no fabricated uptime or account balances."
+    }
+  ]
+}
