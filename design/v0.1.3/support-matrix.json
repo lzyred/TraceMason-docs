@@ -1,0 +1,235 @@
+{
+  "version": "0.1.3",
+  "status": "fixture-tested",
+  "reference_version": "4.0.34",
+  "reference_commit": "f9e40d4f",
+  "tools": [
+    {
+      "id": "claude",
+      "name": "Claude Code",
+      "operation": "切换连接",
+      "reference_source": "references/cc-switch/src-tauri/src/services/provider/claude_direct.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "operation": "切换连接",
+      "reference_source": "references/cc-switch/src-tauri/src/services/provider/codex_direct.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini CLI",
+      "operation": "切换连接",
+      "reference_source": "references/cc-switch/src-tauri/src/services/provider/gemini_direct.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "grokbuild",
+      "name": "Grok Build",
+      "operation": "切换连接",
+      "reference_source": "references/cc-switch/src-tauri/src/services/provider/grok_direct.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "claude-desktop",
+      "name": "Claude Desktop",
+      "operation": "配置直连网关；兼容性需工具实测",
+      "reference_source": "references/cc-switch/src-tauri/src/claude_desktop_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "operation": "添加或更新供应方；原生模型选择",
+      "reference_source": "references/cc-switch/src-tauri/src/opencode_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "operation": "添加或更新供应方；原生模型选择",
+      "reference_source": "references/cc-switch/src-tauri/src/openclaw_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes",
+      "operation": "添加或更新原生供应方配置",
+      "reference_source": "references/cc-switch/src-tauri/src/hermes_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "pi",
+      "name": "Pi",
+      "operation": "添加模型配置；默认模型由工具选择",
+      "reference_source": "references/cc-switch/src-tauri/src/pi_config/mod.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "mcode",
+      "name": "MiniMax Code",
+      "operation": "添加模型配置；默认模型由工具选择",
+      "reference_source": "references/cc-switch/src-tauri/src/mcode_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi Code",
+      "operation": "配置API供应方与模型；不移植OAuth",
+      "reference_source": "references/cc-switch/src-tauri/src/kimi_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "omp",
+      "name": "Oh My Pi",
+      "operation": "添加模型配置；默认模型由工具选择",
+      "reference_source": "references/cc-switch/src-tauri/src/omp_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "copilot",
+      "name": "GitHub Copilot CLI",
+      "operation": "添加BYOK模型；不移植官方登录",
+      "reference_source": "references/cc-switch/src-tauri/src/copilot_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    },
+    {
+      "id": "workbuddy",
+      "name": "WorkBuddy",
+      "operation": "添加自定义API模型；不移植官方登录",
+      "reference_source": "references/cc-switch/src-tauri/src/workbuddy_config.rs",
+      "status": "fixture-tested-live-tool-pending",
+      "acceptance": [
+        "配置读取与必要字段写入",
+        "无关字段与用户配置保留",
+        "冲突拒绝或重新预览",
+        "失败恢复",
+        "工具实际识别配置与真实调用验证"
+      ]
+    }
+  ],
+  "provider_preset_targets": [
+    "OpenAI",
+    "Anthropic / Claude",
+    "Google / Gemini",
+    "DeepSeek",
+    "Qwen / 通义千问",
+    "GLM / 智谱",
+    "Moonshot / Kimi",
+    "MiniMax",
+    "火山方舟 / 豆包",
+    "xAI / Grok",
+    "OpenRouter",
+    "SiliconFlow / 硅基流动",
+    "NVIDIA NIM",
+    "Ollama",
+    "LM Studio",
+    "TraceMason或其他自定义网关"
+  ],
+  "model_policy": "模型ID由用户填写或选用预设建议，不使用版本白名单；供应方、协议与目标工具实际兼容性仍需验收。",
+  "compatibility": "预设是配置模板，不代表所有供应方可用于所有工具；仅提供目标工具可直接使用的协议，本版不实现转换代理。",
+  "ui_policy": "默认展示已检测到或用户启用的工具；全部工具入口可搜索，不展开14个固定页签。",
+  "deferred_reference_apps": [
+    {
+      "id": "agy",
+      "reason": "本地参考主要为启动式卡片，无普通启用路径，不作为API配置切换支持承诺"
+    },
+    {
+      "id": "dsh",
+      "reason": "需另行核实用户实际需求与适配契约，不将源码枚举数当作已支持数"
+    }
+  ]
+}
