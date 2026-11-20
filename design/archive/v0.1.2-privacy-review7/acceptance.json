@@ -1,0 +1,83 @@
+{
+  "version": "0.1.2",
+  "revision": 7,
+  "cases": [
+    {
+      "id": "P01",
+      "module": "真实文本脱敏",
+      "expected": "四类敏感信息按输入内容识别替换，不采用预选命中结果",
+      "entry": "prototype/index.html#test",
+      "phase": "prototype"
+    },
+    {
+      "id": "P02",
+      "module": "一致占位符",
+      "expected": "同一值跨字段重复出现使用相同占位符，业务文本与参数保留",
+      "entry": "prototype/index.html#test",
+      "phase": "prototype"
+    },
+    {
+      "id": "P03",
+      "module": "失败关闭",
+      "expected": "未知协议、附件、坏JSON、超限、结构字段命中均无出站内容",
+      "entry": "prototype/index.html#test",
+      "phase": "prototype"
+    },
+    {
+      "id": "P04",
+      "module": "风险登记",
+      "expected": "记录类别、位置、占位符与决策；无原文和敏感值",
+      "entry": "prototype/index.html#events",
+      "phase": "prototype"
+    },
+    {
+      "id": "P05",
+      "module": "策略生效",
+      "expected": "自定义字段、类别选择、关闭确认、容量及CAS版本冲突",
+      "entry": "prototype/index.html#policy",
+      "phase": "prototype"
+    },
+    {
+      "id": "P06",
+      "module": "导出与清理",
+      "expected": "固定预览集合、过期拒绝、当前筛选导出无秘密",
+      "entry": "prototype/index.html#events",
+      "phase": "prototype"
+    },
+    {
+      "id": "P07",
+      "module": "页面与图表",
+      "expected": "1440与390三页和详情、深链刷新、Mermaid渲染",
+      "entry": "prototype/index.html",
+      "phase": "prototype"
+    },
+    {
+      "id": "S01",
+      "module": "真实出站隔离",
+      "expected": "抓包确认仅发脱敏请求，处理失败上游零请求",
+      "entry": "index.html#sequence",
+      "phase": "implementation"
+    },
+    {
+      "id": "S02",
+      "module": "敏感数据不落地",
+      "expected": "SQLite、日志、异常、导出、URL与持久缓存无测试秘密",
+      "entry": "index.html#privacy",
+      "phase": "implementation"
+    },
+    {
+      "id": "S03",
+      "module": "健壮性",
+      "expected": "分块输入、Unicode转义、三协议、超时取消、并发容量与重启",
+      "entry": "index.html#failure",
+      "phase": "implementation"
+    },
+    {
+      "id": "S04",
+      "module": "规则效果",
+      "expected": "正负语料与绕过样本记录误检漏检，不宣称百分百识别",
+      "entry": "index.html#detection",
+      "phase": "implementation"
+    }
+  ]
+}

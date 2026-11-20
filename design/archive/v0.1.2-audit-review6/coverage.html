@@ -1,0 +1,15 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>验收映射 · 原型与服务分别验收</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f8fa;color:#203a3c;font:14px/1.6 system-ui}header{padding:20px 28px;background:white;border-bottom:1px solid #dfe7e9;display:flex;gap:22px;align-items:center;flex-wrap:wrap}a{color:#087b69;text-decoration:none}header b{margin-right:auto}aside{position:fixed;width:240px;top:75px;bottom:0;padding:25px 20px;overflow:auto}aside a{display:block;font-size:12px;padding:9px}main{margin-left:240px;max-width:1580px;padding:28px 36px}h1{font-size:27px}h2{font-size:18px;margin:0 0 20px}section{scroll-margin-top:20px;background:white;border:1px solid #e0e9e9;border-radius:10px;padding:26px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}@media(max-width:760px){aside{position:static;width:auto;display:flex;white-space:nowrap;padding:10px}main{margin:0;padding:18px}header{padding:18px;gap:12px}section{padding:15px}.mermaid{min-width:620px}}</style></head><body><header><b>TraceMason v0.1.2 · 内容安全审计</b><a href="prototype/index.html">交互原型</a><a href="index.html">架构设计</a><a href="coverage.html">验收映射</a><a href="openapi.json">接口契约</a><a href="screens.html">浏览器实拍</a></header><aside><a href="#product">产品交互验收</a><a href="#backend">实施阶段硬性验收</a></aside><main><h1>验收映射 · 原型与服务分别验收</h1><section id="product"><h2>产品交互验收</h2><pre class="mermaid">flowchart TD
+ A01[A01 · 审计事件] --&gt; A01B[统一筛选、分页与同口径摘要]
+ A02[A02 · 事件详情] --&gt; A02B[输入输出方向、覆盖状态、证据与策略快照]
+ A03[A03 · 人工复核] --&gt; A03B[说明必填、意见追加、原检测结论不变]
+ A04[A04 · 重新审计] --&gt; A04B[新事件、原请求关联、原结论保留、留存片段部分覆盖]
+ A05[A05 · 配置保存] --&gt; A05B[字段校验、取消、跨页未保存提示、CAS冲突]
+ A06[A06 · 策略生效] --&gt; A06B[停用/账号/方向/类别影响新样例，历史快照不变]
+ A07[A07 · 清理] --&gt; A07B[预览固定集合、一次性确认、过期拒绝]
+ A08[A08 · 导出] --&gt; A08B[当前筛选，真实JSON下载，不含正文和证据]
+ A09[A09 · 审计运行] --&gt; A09B[失败直达详情，待审跳转精确筛选]
+ A10[A10 · 故障语义] --&gt; A10B[检测超时/格式无效/未知协议/部分覆盖不能标为安全]
+ A14[A14 · 页面质量] --&gt; A14B[桌面1440与手机390，深链刷新，图表渲染无异常]</pre></section><section id="backend"><h2>实施阶段硬性验收</h2><pre class="mermaid">flowchart TD
+ A11[A11 · 转发隔离] --&gt; A11B[检测故障、队列满、DB失败不改上游字节] --&gt; A11C[待实施验证]
+ A12[A12 · 真实检测] --&gt; A12B[检测端点鉴权、协议结果校验、证据一致性、语料误报漏报] --&gt; A12C[待实施验证]
+ A13[A13 · 生命周期] --&gt; A13B[加密、清理期限、租约与重启恢复、令牌权限] --&gt; A13C[待实施验证]</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#edf7f3",primaryBorderColor:"#70aa9b",lineColor:"#74958d",fontFamily:"system-ui"},flowchart:{htmlLabels:false}});</script></body></html>

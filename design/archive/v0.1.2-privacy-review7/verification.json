@@ -1,0 +1,52 @@
+{
+  "version": "0.1.2",
+  "revision": 7,
+  "status": "passed",
+  "scope": "local rule demo and browser product flows only",
+  "checked_at": "2026-11-15T15:25:17.734Z",
+  "checks": [
+    {
+      "id": "P01",
+      "result": "passed",
+      "evidence": "actual input-based replacement of personal information, credentials, server login and API keys; no preset risk decision"
+    },
+    {
+      "id": "P02",
+      "result": "passed",
+      "evidence": "same sensitive value shares placeholder across occurrences and fields; JSON params and clean text unchanged"
+    },
+    {
+      "id": "P03",
+      "result": "passed",
+      "evidence": "attachments, malformed/duplicate JSON refused with no sendable content; engine tests cover oversize and structural failures"
+    },
+    {
+      "id": "P04",
+      "result": "passed",
+      "evidence": "risk rows preserve safe findings only; original values absent from browser storage; feedback independent; deep-link reload and ephemeral comparison cleared"
+    },
+    {
+      "id": "P05",
+      "result": "passed",
+      "evidence": "custom field affects actual text; reduced scope confirmation; discard; real two-tab CAS conflict and reload"
+    },
+    {
+      "id": "P06",
+      "result": "passed",
+      "evidence": "filtered JSON export excludes secrets; expired preview denied; valid cleanup removes fixed filtered records"
+    },
+    {
+      "id": "P07",
+      "result": "passed",
+      "evidence": "three pages and detail at1440/390 without viewport overflow; 11 architecture,2 coverage and1 source diagrams rendered"
+    }
+  ],
+  "console_errors": 0,
+  "production_verified": false,
+  "not_verified": [
+    "S01 real egress capture/failure isolation",
+    "S02 backend storage/log leak canaries",
+    "S03 production protocol/concurrency/cancellation/restart",
+    "S04 real-world detector false positives/negatives"
+  ]
+}

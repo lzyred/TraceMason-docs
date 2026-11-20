@@ -1,0 +1,127 @@
+{
+  "version": "0.1.2",
+  "revision": 4,
+  "scope": "product specification and executable prototype",
+  "items": [
+    {
+      "id": "P01",
+      "module": "接入管理",
+      "promise": "账号添加、编辑、启停、密钥保留、删除",
+      "page": "connections",
+      "acceptance": "既有管理交互保持，账号入口贯穿检查和查询",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P02",
+      "module": "接入管理",
+      "promise": "转发策略改变实际演示结果",
+      "page": "connections",
+      "acceptance": "连接/空闲/总时长独立生效；并发拒绝未发送上游",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P03",
+      "module": "接入管理",
+      "promise": "取消与策略快照",
+      "page": "connections",
+      "acceptance": "取消关闭演示上游并释放槽位；在途请求继续使用旧修订",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P04",
+      "module": "交互记录",
+      "promise": "完整详情页面与可分享链接",
+      "page": "requests",
+      "acceptance": "独立URL、浏览器返回、刷新定位同一请求",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P05",
+      "module": "交互记录",
+      "promise": "输入输出与工具流程",
+      "page": "requests",
+      "acceptance": "新演示调用生成证据；工具调用和工具返回分属前后请求",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P06",
+      "module": "交互记录",
+      "promise": "可靠会话与冲突处理",
+      "page": "requests",
+      "acceptance": "同账号显式会话或前序响应引用；冲突不强行合并",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P07",
+      "module": "分析洞察",
+      "promise": "用量、异常和精确下钻",
+      "page": "analytics",
+      "acceptance": "同时间范围、相同记录集合；未知用量不冒充零",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P08",
+      "module": "分析洞察",
+      "promise": "性能排障与执行证据",
+      "page": "analytics",
+      "acceptance": "慢请求列表、首包/首文本/总耗时、打开执行轨迹",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P09",
+      "module": "数据治理",
+      "promise": "采集策略与脱敏",
+      "page": "governance",
+      "acceptance": "适用账号、预算、未来请求生效；旧请求不回填",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P10",
+      "module": "数据治理",
+      "promise": "管理身份和访问权限",
+      "page": "governance",
+      "acceptance": "登录错误、观察者限制、退出锁定、当前策略即时撤权",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P11",
+      "module": "数据治理",
+      "promise": "保留、删除和导出",
+      "page": "governance",
+      "acceptance": "删除内容保留元数据；导出二次检查角色/修订/过期",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P12",
+      "module": "运行状态",
+      "promise": "健康来自同一演示执行模型",
+      "page": "runtime",
+      "acceptance": "进行中、拒绝、丢块、待写和未追踪计数来自请求执行",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P13",
+      "module": "运行状态",
+      "promise": "故障恢复",
+      "page": "runtime",
+      "acceptance": "存储恢复提交待写快照；容量恢复不生成历史缺失请求",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P14",
+      "module": "跨模块",
+      "promise": "权限与修订冲突",
+      "page": "governance",
+      "acceptance": "各资源独立ETag；冲突显式重读，不静默覆盖",
+      "suite": "governance-review"
+    },
+    {
+      "id": "P15",
+      "module": "交付约束",
+      "promise": "原型与生产边界",
+      "page": "runtime",
+      "acceptance": "时间加速、响应与登录均为模拟；实际供应商验收留在实施阶段",
+      "suite": "manual-review"
+    }
+  ]
+}

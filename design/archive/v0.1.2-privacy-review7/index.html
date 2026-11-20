@@ -1,0 +1,206 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>请求敏感信息识别、发送前脱敏与风险登记 · 待评审</title><style>*{box-sizing:border-box}body{margin:0;background:#f6f8fa;color:#233e3a;font:14px/1.6 system-ui}header{padding:20px 28px;display:flex;gap:20px;flex-wrap:wrap;background:white;border-bottom:1px solid #e0e7e5}header b{margin-right:auto}a{color:#147d6b;text-decoration:none}aside{position:fixed;top:76px;bottom:0;width:235px;overflow:auto;padding:20px}aside a{display:block;padding:9px;font-size:12px}main{margin-left:235px;padding:28px 35px;max-width:1580px}h1{font-size:27px}h2{font-size:18px}section{background:white;border:1px solid #e0e9e5;border-radius:10px;padding:24px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}@media(max-width:760px){aside{position:static;width:auto;display:flex;white-space:nowrap;overflow:auto;padding:10px}main{margin:0;padding:18px}header{padding:18px;gap:12px}section{padding:14px}.mermaid{min-width:600px}}</style></head><body><header><b>TraceMason v0.1.2 · 请求隐私防护</b><a href="prototype/index.html">交互原型</a><a href="index.html">架构设计</a><a href="coverage.html">验收映射</a><a href="openapi.json">接口契约</a><a href="screens.html">浏览器实拍</a></header><aside><a href="#scope">01 · 版本目标与页面</a><a href="#architecture">02 · 网关架构与代码落点</a><a href="#sequence">03 · 先检查后外发的时序</a><a href="#detection">04 · 识别、去重与替换</a><a href="#protocol">05 · 协议覆盖与失败边界</a><a href="#states">06 · 防护决策与转发状态</a><a href="#data">07 · 风险数据模型</a><a href="#privacy">08 · 秘密生命周期与不可留存字段</a><a href="#config">09 · 策略变更与生命周期</a><a href="#failure">10 · 超时、并发与失败处理</a><a href="#acceptance">11 · 交付与验收边界</a></aside><main><h1>请求敏感信息识别、发送前脱敏与风险登记 · 待评审</h1><h2><a href="contract.json">行为约束</a> · <a href="release.json">版本状态</a> · <a href="sources.html">参考边界</a></h2><section id="scope"><h2>01 · 版本目标与页面</h2><pre class="mermaid">flowchart TD
+ USER[用户误提交个人信息 / 账号密码 / 服务器凭据 / API Key] --&gt; GOAL[发送前自动脱敏 + 风险登记]
+ BASE[v0.1.1 Provider接入底座] --&gt; GOAL
+ GOAL --&gt; P1[风险记录 / 位置 / 类型 / 处理结果]
+ GOAL --&gt; P2[脱敏策略 / 内置类别 / 业务字段 / 容量与留存]
+ GOAL --&gt; P3[脱敏验证 / 原始输入与实际出站请求对照]
+ LIMIT[本次边界] --&gt; L1[请求文本防泄露 / 不做内容违规评分]
+ LIMIT --&gt; L2[不增加外部审查模型 / 不把秘密转交第三方检测]
+ LIMIT --&gt; L3[不改模型输出 / 不恢复原始秘密 / 不做历史全文审计]
+</pre></section><section id="architecture"><h2>02 · 网关架构与代码落点</h2><pre class="mermaid">flowchart TB
+ C[客户端请求] --&gt; B[privacy/buffer.py · 完整有界缓冲]
+ B --&gt; S[privacy/policy.py · 不可变策略快照]
+ S --&gt; P[privacy/parsers · 已支持协议的请求结构]
+ P --&gt; D[privacy/detector.py · 本机规则 / 字段与上下文]
+ D --&gt; R[privacy/redactor.py · 原值到占位符的请求内映射]
+ R --&gt; V[privacy/validator.py · 结构与残留校验]
+ V --&gt; A[privacy/records.py · 最小风险元数据持久化]
+ A --&gt; G[唯一出站授权点 · SanitizedRequest]
+ G --&gt; T[既有 provider/transport.py]
+ T --&gt; AUTH[既有 Provider鉴权 / 可信凭据注入]
+ AUTH --&gt; U[上游模型]
+ U --&gt; RESPONSE[原样响应 / SSE流]
+ RESPONSE --&gt; C
+ UI[三页控制台] --&gt; API[privacy/routes.py]
+ API --&gt; S
+ API --&gt; A
+ API --&gt; TEST[privacy/preview.py · 不访问上游]
+ A --&gt; DB[(privacy.sqlite / 无正文和原值映射)]
+ ERROR[缓冲 / 解析 / 识别 / 校验 / 登记失败] --&gt; STOP[明确错误 / 不建立上游请求]
+</pre></section><section id="sequence"><h2>03 · 先检查后外发的时序</h2><pre class="mermaid">sequenceDiagram
+ participant C as 客户端
+ participant G as 网关
+ participant P as 本机隐私处理
+ participant DB as 风险记录库
+ participant U as 上游模型
+ C-&gt;&gt;G: 含敏感数据的请求
+ G-&gt;&gt;P: 冻结策略 / 完整缓冲 / 不建立上游连接
+ P-&gt;&gt;P: 识别敏感值 / 全请求一致替换
+ P-&gt;&gt;P: 校验可改写路径 / JSON结构 / 已识别原值残留
+ alt 处理失败或无法覆盖
+ P--&gt;&gt;G: blocked + 无原文错误码
+ G--&gt;&gt;C: 拒绝本次请求
+ else 已脱敏
+ P-&gt;&gt;DB: 先写最小风险记录 / 不含正文
+ DB--&gt;&gt;P: 持久化成功
+ P--&gt;&gt;G: 仅返回脱敏后字节与出站许可
+ G-&gt;&gt;U: 脱敏请求 + Provider鉴权
+ U--&gt;&gt;C: 经网关透传响应流
+ else 未命中所选规则
+ P--&gt;&gt;G: 检查通过 / 未命中不等于安全保证
+ G-&gt;&gt;U: 检查后的请求
+ end
+ Note over G,U: 检查和登记失败不允许回退发送原文
+</pre></section><section id="detection"><h2>04 · 识别、去重与替换</h2><pre class="mermaid">flowchart TD
+ TEXT[完整解码后的请求字符串 / JSON值] --&gt; R1[格式规则：邮箱 / 手机 / 身份证候选 / 常见Key前缀]
+ TEXT --&gt; R2[字段与上下文：密码 / username / api_key / host]
+ TEXT --&gt; R3[服务器：SSH登录 / 数据库连接串 / 私钥块]
+ TEXT --&gt; R4[自定义业务字段名 / 禁止任意用户正则]
+ R1 --&gt; SPAN[命中区间 / 类别 / 规则版本]
+ R2 --&gt; SPAN
+ R3 --&gt; SPAN
+ R4 --&gt; SPAN
+ SPAN --&gt; MERGE[重叠优先完整凭据块 / 最长区间优先]
+ MERGE --&gt; MAP[全请求建立唯一原值映射 / 同值同占位符]
+ MAP --&gt; REPEAT[已识别原值的其他出现位置同步替换]
+ REPEAT --&gt; CHECK[复查已知原值残留 / 不递归替换生成的占位符]
+ CHECK --&gt; OUT[业务文本保留 / 敏感值用占位符]
+ UNK[任意无标签密码或人名] --&gt; LIMIT[不能保证检出 / 业务字段与语料回归补充]
+</pre></section><section id="protocol"><h2>05 · 协议覆盖与失败边界</h2><pre class="mermaid">flowchart TD
+ REQ[请求体 / 上游路径与用户透传头] --&gt; TYPE{可完整检查并安全改写}
+ TYPE -- 是 --&gt; JSON[Responses / Chat Completions / Claude Messages]
+ JSON --&gt; STRING[扫描system / messages / input / instructions及嵌套文本]
+ STRING --&gt; PROTECTED[保护model / role / type / 工具名等结构标识]
+ PROTECTED --&gt; MATCH{结构字段是否命中秘密}
+ MATCH -- 是 --&gt; BLOCK[阻止外发 / 不静默破坏协议]
+ MATCH -- 否 --&gt; REWRITE[仅修改合法字符串值 / 重算Content-Length]
+ REWRITE --&gt; PASS[模型名不限 / stream和参数类型保留]
+ TYPE -- 否 --&gt; BLOCK
+ MEDIA[附件 / 音视频 / 图像 / 文件引用 / 压缩未知编码] --&gt; BLOCK
+ WS[WebSocket / 未知协议] --&gt; BLOCK
+ HEADER[非必要用户头 / 含秘密的URL查询] --&gt; BLOCK
+ AUTH[Provider授权密钥 / 必要可信协议头] --&gt; INJECT[在检查后独立注入 / 不进入风险正文]
+</pre></section><section id="states"><h2>06 · 防护决策与转发状态</h2><pre class="mermaid">stateDiagram-v2
+ [*] --&gt; buffering
+ buffering --&gt; inspecting: 请求完整且预算内
+ buffering --&gt; blocked: 超限或读取失败
+ inspecting --&gt; replacing: 有敏感命中
+ inspecting --&gt; validated: 所选规则未命中
+ inspecting --&gt; blocked: 不支持或识别超时
+ replacing --&gt; validated: 残留与结构校验通过
+ replacing --&gt; blocked: 替换或校验失败
+ validated --&gt; recording: 有风险
+ recording --&gt; authorized: 记录持久化成功
+ recording --&gt; blocked: 风险记录不可写
+ validated --&gt; authorized: 未命中无需风险登记
+ authorized --&gt; forwarding: 建立唯一上游请求
+ forwarding --&gt; completed
+ forwarding --&gt; upstream_failed
+ blocked --&gt; [*]
+ completed --&gt; [*]
+ upstream_failed --&gt; [*]
+ note right of authorized
+ 防护结果redacted或unchanged不等于上游成功
+ 风险库独立保存forward_state
+ end note
+</pre></section><section id="data"><h2>07 · 风险数据模型</h2><pre class="mermaid">erDiagram
+ PRIVACY_POLICY ||--o{ PRIVACY_RISK : snapshot
+ PRIVACY_RISK ||--o{ PRIVACY_FINDING : has
+ PRIVACY_RISK ||--o{ PRIVACY_FEEDBACK : append
+ PRIVACY_POLICY {
+ int revision PK
+ json categories
+ json custom_field_rules
+ int max_bytes
+ int deadline_ms
+ int retention_days
+ string ruleset_version
+ datetime created_at
+ }
+ PRIVACY_RISK {
+ string id PK
+ string request_id
+ string account_id_snapshot
+ string protocol
+ string action
+ string forward_state
+ string reason_code
+ int policy_revision FK
+ string ruleset_version
+ string source
+ datetime expires_at
+ datetime created_at
+ }
+ PRIVACY_FINDING {
+ string id PK
+ string risk_id FK
+ string category
+ string rule_id
+ string safe_path
+ string placeholder
+ int occurrence_count
+ }
+ PRIVACY_FEEDBACK {
+ string id PK
+ string risk_id FK
+ string verdict
+ string actor
+ datetime created_at
+ }
+ PRIVACY_OPERATION {
+ string id PK
+ string actor
+ string action
+ int affected_count
+ datetime created_at
+ }
+</pre></section><section id="privacy"><h2>08 · 秘密生命周期与不可留存字段</h2><pre class="mermaid">flowchart LR
+ RAW[请求原文] --&gt; MEM[有界内存 / 禁止日志与持久缓存]
+ MEM --&gt; MAP[临时替换映射 / 仅当前请求]
+ MAP --&gt; SAN[脱敏请求]
+ SAN --&gt; UP[上游模型]
+ SAN --&gt; DISCARD[转发结束释放引用 / 不保证运行时物理内存擦除]
+ MAP --&gt; DISCARD
+ META[风险类型 / 受控路径 / 占位符 / 决策 / 策略版本] --&gt; DB[(风险库)]
+ NO[明确不存] --&gt; N1[原始秘密 / 原文摘要 / 原值哈希]
+ NO --&gt; N2[出站全文 / 可逆映射 / 任意自由文本反馈]
+ DB --&gt; TTL[默认30天 / 到期不可读 / 定期清理]
+ TTL --&gt; CLEAN[风险与命中明细及反馈级联清理]
+ EXPORT[导出] --&gt; SAFE[只导出元数据 / 同筛选条件]
+</pre></section><section id="config"><h2>09 · 策略变更与生命周期</h2><pre class="mermaid">flowchart TD
+ EDIT[编辑策略版本N] --&gt; CAS{提交expected_revision N}
+ CAS -- 不匹配 --&gt; CONFLICT[409 / 保留草稿 / 重新载入]
+ CAS -- 匹配 --&gt; SHRINK{关闭保护类别}
+ SHRINK -- 是 --&gt; CONFIRM[展示失去覆盖的类别 / 明确确认]
+ SHRINK -- 否 --&gt; COMMIT[保存并原子激活N+1]
+ CONFIRM --&gt; COMMIT
+ COMMIT --&gt; NEW[新请求使用N+1]
+ OLD[处理中请求] --&gt; FREEZE[继续使用开始时的策略与规则快照]
+ COMMIT --&gt; RET[缩短期限收紧历史expires_at / 延长仅新记录]
+ DEL[清理预览] --&gt; TOKEN[固定ID集合 / 60秒 / 单次令牌]
+ TOKEN --&gt; RECHECK[确认时复核操作者 / 策略版本 / 有效期]
+ RECHECK --&gt; DELETE[仅删除预览集合 / 新增记录保留]
+</pre></section><section id="failure"><h2>10 · 超时、并发与失败处理</h2><pre class="mermaid">flowchart TD
+ R[请求进入] --&gt; ADMIT{全局缓冲槽与字节预算}
+ ADMIT -- 不足 --&gt; BUSY[503 privacy_busy / 上游零请求]
+ ADMIT -- 足够 --&gt; BUFFER[请求上限默认64KiB / 最大1024KiB]
+ BUFFER --&gt; WORK[独立处理Worker / 总检查默认1000ms]
+ WORK --&gt; TIMEOUT{检查时限内完成}
+ TIMEOUT -- 否 --&gt; STOP[取消等待 / 废弃迟到结果 / 不外发]
+ TIMEOUT -- 是 --&gt; VERIFY[结构与已知秘密残留复查]
+ VERIFY --&gt; LOG[带风险请求先持久化最小登记]
+ LOG -- 失败 --&gt; STOP
+ LOG -- 成功 --&gt; SEND[发送唯一检查后版本]
+ CANCEL[客户端取消 / 进程重启] --&gt; DROP[释放缓冲 / 不重放原请求]
+ RESTART[启动恢复] --&gt; MARK[旧forwarding标记interrupted / 不猜测上游执行结果]
+</pre></section><section id="acceptance"><h2>11 · 交付与验收边界</h2><pre class="mermaid">flowchart TD
+ NOW[当前：交互原型 / 架构 / 接口评审] --&gt; REVIEW[用户review]
+ REVIEW --&gt; IMPL[实施本机识别与脱敏闸门]
+ IMPL --&gt; WIRE[接入真实Provider转发 / 风险库 / Docker持久卷]
+ WIRE --&gt; TEST[真实上游抓包验收]
+ TEST --&gt; T1[敏感原值不出现 / 普通内容保持]
+ TEST --&gt; T2[超时或失败时上游请求数为零]
+ TEST --&gt; T3[原文与原值映射不进入日志数据库导出]
+ TEST --&gt; T4[规则语料评估漏检误检 / 三协议 / 跨块及转义]
+ MOCK[本轮原型测试] --&gt; UI[真实文本替换与页面流程 / 不代表生产网关已防护]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#eef8f3",primaryBorderColor:"#6eac97",lineColor:"#71988b",fontFamily:"system-ui"},flowchart:{htmlLabels:false}})</script></body></html>

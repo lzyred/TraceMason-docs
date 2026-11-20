@@ -1,0 +1,255 @@
+{
+  "version": "0.1.2",
+  "status": "implementation-entry-review",
+  "cases": [
+    {
+      "id": "UI01",
+      "scenario": "请求筛选、分页、详情",
+      "expected": "筛选汇总一致；详情三态独立",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI02",
+      "scenario": "空态/加载/失败/采集降级",
+      "expected": "可恢复操作与真实状态文案",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI03",
+      "scenario": "保留策略与清理",
+      "expected": "取消不修改；确认仅清理超策略已结束记录",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI04",
+      "scenario": "1440/390宽度",
+      "expected": "左侧导航/移动抽屉；无整页横向溢出",
+      "stage": "prototype"
+    },
+    {
+      "id": "BE01",
+      "scenario": "未知模型、未知协议",
+      "expected": "原样转发；语义与usage未知",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE02",
+      "scenario": "队列满、数据库锁",
+      "expected": "转发不等待；采集降级可见",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE03",
+      "scenario": "HTTP200语义失败；完成后断连",
+      "expected": "三态准确保留，不互相覆盖",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE04",
+      "scenario": "重启、删除账号、过期清理",
+      "expected": "请求恢复中断；快照可读；删除子记录",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE05",
+      "scenario": "SSE逐字节UTF8、多行、超大事件",
+      "expected": "受限解析不影响字节透传",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE06",
+      "scenario": "Claude累计usage和缓存字段",
+      "expected": "不重复累计；缺失null",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE07",
+      "scenario": "认证参数、正文、恶意路径",
+      "expected": "无密钥/正文落盘；安全渲染",
+      "stage": "implementation"
+    },
+    {
+      "id": "LIVE01",
+      "scenario": "Codex/OpenAI、DeepSeek、Claude",
+      "expected": "真实凭据验证流式/非流式和取消；记录证据",
+      "stage": "vendor-acceptance"
+    },
+    {
+      "id": "UI05",
+      "scenario": "账号检查/取消到请求详情",
+      "expected": "三平台任意模型名检查产生记录；取消不伪造完成",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI06",
+      "scenario": "采集降级和历史请求",
+      "expected": "全局健康不改变历史完整性",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI07",
+      "scenario": "多标签页策略修改",
+      "expected": "冲突要求重新读取；保存与记录刷新后保留",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI08",
+      "scenario": "分析异常下钻",
+      "expected": "精确记录集合，不用模糊搜索替代",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI09",
+      "scenario": "启用采集后检查",
+      "expected": "新请求有脱敏内容，历史不回填",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI10",
+      "scenario": "工具和显式会话",
+      "expected": "同账号关联；无依据则独立请求",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI11",
+      "scenario": "只读身份和deny策略",
+      "expected": "内容拒绝且配置不可写",
+      "stage": "prototype"
+    },
+    {
+      "id": "UI12",
+      "scenario": "运行异常定位",
+      "expected": "受影响记录可查；未追踪只有数量",
+      "stage": "prototype"
+    },
+    {
+      "id": "BE08",
+      "scenario": "流式跨块脱敏与加密",
+      "expected": "敏感跨块字符串不得落盘；内容限额不影响转发",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE09",
+      "scenario": "认证与授权",
+      "expected": "服务端拒绝越权，策略立即撤销内容访问",
+      "stage": "implementation"
+    },
+    {
+      "id": "BE10",
+      "scenario": "关联歧义和清理",
+      "expected": "不跨账号关联，不按相似内容推断；过期目标明确",
+      "stage": "implementation"
+    },
+    {
+      "id": "P01",
+      "scenario": "账号添加、编辑、启停、密钥保留、删除",
+      "expected": "既有管理交互保持，账号入口贯穿检查和查询",
+      "stage": "prototype",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P02",
+      "scenario": "转发策略改变实际演示结果",
+      "expected": "连接/空闲/总时长独立生效；并发拒绝未发送上游",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P03",
+      "scenario": "取消与策略快照",
+      "expected": "取消关闭演示上游并释放槽位；在途请求继续使用旧修订",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P04",
+      "scenario": "完整详情页面与可分享链接",
+      "expected": "独立URL、浏览器返回、刷新定位同一请求",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P05",
+      "scenario": "输入输出与工具流程",
+      "expected": "新演示调用生成证据；工具调用和工具返回分属前后请求",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P06",
+      "scenario": "可靠会话与冲突处理",
+      "expected": "同账号显式会话或前序响应引用；冲突不强行合并",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P07",
+      "scenario": "用量、异常和精确下钻",
+      "expected": "同时间范围、相同记录集合；未知用量不冒充零",
+      "stage": "prototype",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P08",
+      "scenario": "性能排障与执行证据",
+      "expected": "慢请求列表、首包/首文本/总耗时、打开执行轨迹",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P09",
+      "scenario": "采集策略与脱敏",
+      "expected": "适用账号、预算、未来请求生效；旧请求不回填",
+      "stage": "prototype",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P10",
+      "scenario": "管理身份和访问权限",
+      "expected": "登录错误、观察者限制、退出锁定、当前策略即时撤权",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P11",
+      "scenario": "保留、删除和导出",
+      "expected": "删除内容保留元数据；导出二次检查角色/修订/过期",
+      "stage": "prototype",
+      "suite": "gateway-review"
+    },
+    {
+      "id": "P12",
+      "scenario": "健康来自同一演示执行模型",
+      "expected": "进行中、拒绝、丢块、待写和未追踪计数来自请求执行",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P13",
+      "scenario": "故障恢复",
+      "expected": "存储恢复提交待写快照；容量恢复不生成历史缺失请求",
+      "stage": "prototype",
+      "suite": "workflow-review"
+    },
+    {
+      "id": "P14",
+      "scenario": "权限与修订冲突",
+      "expected": "各资源独立ETag；冲突显式重读，不静默覆盖",
+      "stage": "prototype",
+      "suite": "governance-review"
+    },
+    {
+      "id": "P15",
+      "scenario": "原型与生产边界",
+      "expected": "时间加速、响应与登录均为模拟；实际供应商验收留在实施阶段",
+      "stage": "prototype",
+      "suite": "manual-review"
+    }
+  ],
+  "not_run": [
+    "Production v0.1.2 backend implementation and integration tests",
+    "Real supplier credentials and network acceptance",
+    "Production database, cryptography, authentication and concurrency load testing"
+  ],
+  "revision": 4
+}

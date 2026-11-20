@@ -1,0 +1,38 @@
+{
+  "version": "0.1.2",
+  "stage": "executable-product-review",
+  "product_entry": "prototype/index.html",
+  "architecture_entry": "index.html",
+  "contract": "contract.json",
+  "acceptance": "acceptance.json",
+  "verification": "verification.json",
+  "baseline": "v0.1.1",
+  "production_changed": false,
+  "prototype_data": "Synthetic response execution and fixtures; settings drive execution outcomes. No live vendor calls.",
+  "navigation": [
+    "模型网关 / 接入管理",
+    "模型网关 / 交互记录",
+    "模型网关 / 分析洞察",
+    "模型网关 / 数据治理",
+    "模型网关 / 运行状态"
+  ],
+  "implementation_requires": "product and architecture review",
+  "backup_migration": {
+    "branch": "backup/pre-restart-20261113",
+    "status": "source inspected, not migrated",
+    "sources": [
+      "telemetry.py:ResponseObserver",
+      "storage.py:begin/finish/prune/request_detail/session_summary",
+      "test_server.py:ObserverTests",
+      "test_server.py:test_client_close_after_completed_event_is_not_cancellation",
+      "test_server.py:test_restart_marks_running_interrupted_and_retains_results"
+    ]
+  },
+  "revision": 4,
+  "openapi": "openapi.json",
+  "review_url": "http://127.0.0.1:8772/design/v0.1.2/prototype/index.html",
+  "coverage": "coverage.html",
+  "entry_scope": "Complete five-module product review with22 grouped browser acceptance checks; production implementation remains separate",
+  "status": "superseded",
+  "superseded_by": "scope.html"
+}

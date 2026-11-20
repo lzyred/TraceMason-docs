@@ -1,0 +1,32 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TraceMason v0.1.2 · 内容安全审计范围</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#18302e;font:15px/1.6 system-ui}header,main{max-width:1180px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}a{color:#0f766e}h1{font-size:30px}h2{font-size:19px}section{background:white;border:1px solid #dce5e3;border-radius:12px;padding:24px;margin:20px 0;overflow:auto}.mermaid{margin:0}.mermaid svg{max-width:100%;height:auto}</style></head><body><header><b>TraceMason · v0.1.2</b><a href="release.json">版本范围记录</a></header><main><h1>第二版 · 只做模型内容安全审计</h1><section><h2>已确认范围与待评审设计</h2><pre class="mermaid">flowchart TD
+ A[用户确认：仅模型内容安全审计] --> B[沿用 v0.1.1 Provider 接入底座]
+ A --> C[审计专用产品原型：待设计评审]
+ A --> D[审计专用架构与接口：待设计评审]
+ E[原五板块方案与测试结果] --> F[已替代 / 不作为新版验收依据]
+</pre></section><section><h2>产品闭环 · 设计提案</h2><pre class="mermaid">flowchart LR
+ A[审计配置：范围 / 检测服务 / 风险类别] --> B[输入与输出文本审计]
+ B --> C[审计事件：风险 / 证据 / 请求关联]
+ C --> D[查看详情 / 筛选 / 复核]
+ D --> A
+ B --> E[审计运行：队列 / 失败 / 未覆盖内容]
+ E --> A
+</pre></section><section><h2>执行边界 · 设计假设</h2><pre class="mermaid">flowchart TB
+ CLIENT[客户端] --> GATE[既有转发网关] --> PROVIDER[任意已配置模型]
+ PROVIDER --> GATE --> CLIENT
+ GATE -.有界采集输入输出文本.-> QUEUE[异步审计队列]
+ QUEUE --> ENGINE[审计引擎 / 冻结策略版本]
+ ENGINE --> EVENT[风险结论 + 证据 + 覆盖范围]
+ QUEUE --> FAILURE[排队失败 / 超时 / 解析失败]
+ FAILURE --> UNKNOWN[未完成审计：不可标为安全]
+ EVENT --> STORE[受控内容存储 / 查看权限 / 保留期]
+ LIMIT[二进制或未知协议] --> UNSUPPORTED[未覆盖：不限制模型转发]
+</pre></section><section><h2>参考实现与本次范围</h2><pre class="mermaid">flowchart LR
+ REF[sub2api Prompt Audit] --> CONFIG[配置 / 事件详情 / 运行状态 / 清理流程]
+ CONFIG --> DESIGN[本项目审计设计]
+ OUTPUT[输出流重组 / 截断与完整性] --> DESIGN
+ BASE[v0.1.1 接入与基础 Ops] --> DESIGN
+ OUT[本次不纳入] --> A[通用用量与性能分析]
+ OUT --> B[会话与工具链分析平台]
+ OUT --> C[订阅转换与计费]
+ OUT --> D[自动拦截与内容改写]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'neutral',flowchart:{htmlLabels:false}})</script></body></html>

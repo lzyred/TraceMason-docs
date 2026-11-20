@@ -1,0 +1,289 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TraceMason v0.1.2 · 产品与架构评审</title><style>*{box-sizing:border-box}body{margin:0;background:#f7f9fb;color:#172b35;font:14px/1.5 system-ui}header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:18px 30px;background:#fff;border-bottom:1px solid #dfe7ea}a{color:#087f75;text-decoration:none}header a{background:#0f766e;color:#fff;padding:10px 18px;border-radius:8px}aside{position:fixed;width:230px;padding:24px 18px;height:calc(100vh - 75px);overflow:auto}aside a{display:block;padding:10px;font-size:13px}main{margin-left:230px;padding:25px 35px;max-width:1700px}h1{font-size:28px}h2{font-size:19px}section{scroll-margin-top:90px;margin-bottom:35px}.canvas{padding:28px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}.canvas{margin-bottom:20px}h3{font-size:15px;font-weight:500;margin:20px 0 12px}.links{display:flex;gap:18px;margin:20px 0}@media(max-width:760px){aside{position:static;width:auto;height:auto;display:flex;overflow:auto;padding:10px}aside a{white-space:nowrap}main{margin:0;padding:18px}header{padding:15px;gap:12px}header span{display:none}.canvas{padding:12px;min-width:0}.mermaid svg{min-width:600px}}</style></head><body><div role="status" style="position:relative;z-index:10000;padding:14px 24px;background:#fff1cf;color:#573900;border-bottom:1px solid #d9ad56;font:14px/1.5 system-ui">此页属于已替代的五板块方案，不作为 v0.1.2 实施或验收依据。当前版本仅做模型内容安全审计；专用原型与架构待评审。 <a href="scope.html" style="color:#704500;text-decoration:underline">查看当前范围 →</a></div><header><b>TraceMason v0.1.2</b><span>设计评审 · 尚未实施</span><a href="prototype/index.html">打开交互原型 →</a></header><aside><a href="#scope">01 · 菜单与服务职责</a><a href="#journeys">02 · 跨页面用户闭环</a><a href="#architecture">03 · 运行架构与边界</a><a href="#forward">04 · 入口、策略与转发状态</a><a href="#capture">05 · 采集与脱敏</a><a href="#association">06 · 交互、工具与关联</a><a href="#data">07 · 统一数据模型</a><a href="#analysis">08 · 统计与下钻</a><a href="#security">09 · 查看权限与数据生命周期</a><a href="#recovery">10 · 容量、故障与恢复</a><a href="#implementation">11 · 开发顺序与验收门槛</a><a href="#execution">执行规则与策略验证</a><a href="#tool-roundtrip">工具调用跨请求闭环</a><a href="#governance-state">身份、权限与导出状态机</a></aside><main><h1>模型网关 · 接入、交互与数据价值</h1><div class="links"><a href="coverage.html">承诺与验收映射</a><a href="screens.html">页面实拍</a><a href="openapi.json">OpenAPI 契约</a><a href="contract.json">实现约束</a><a href="acceptance.json">验收映射</a></div><section id="scope"><h2>01 · 菜单与服务职责</h2><h3>五个子菜单 · 一个网关入口</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ G[模型网关] --&gt; A[接入管理]
+ G --&gt; B[交互记录]
+ G --&gt; C[分析洞察]
+ G --&gt; D[数据治理]
+ G --&gt; E[运行状态]
+ A --&gt; A1[账号 / 密钥 / 入口 / 转发策略]
+ B --&gt; B1[请求事实 / 内容 / 工具 / 可靠关联]
+ C --&gt; C1[趋势 / 用量 / 性能 / 异常下钻]
+ D --&gt; D1[采集 / 脱敏 / 权限 / 生命周期]
+ E --&gt; E1[连接 / 队列 / 存储 / 影响范围]</pre></div></section><section id="journeys"><h2>02 · 跨页面用户闭环</h2><h3>三条主路径</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ A[接入管理 · 添加账号] --&gt; B[发送检查 · 任意模型]
+ B --&gt; C[产生 source=probe 请求]
+ C --&gt; D[交互详情 · 请求ID直达]
+ E[分析洞察 · 异常分布] --&gt; F[同范围同条件过滤]
+ F --&gt; D
+ H[运行状态 · 采集降级] --&gt; I[已知受影响记录]
+ I --&gt; D
+ H --&gt; J[数据治理 · 策略与预算]
+ J --&gt; K[只对新请求生效]
+ D --&gt; L[输入输出 / 工具 / 关联链路]
+ L --&gt; M[未采集 / 不支持 / 已过期 / 无权限明确区分]</pre></div></section><section id="architecture"><h2>03 · 运行架构与边界</h2><h3>数据面与管理面</h3><div class="canvas"><pre class="mermaid">flowchart TB
+ CLIENT[API客户端] --&gt; ENTRY[8768 · 账号入口]
+ UI[五板块控制台] --&gt; ADMIN[8766 · 会话认证与权限]
+ ENTRY --&gt; ROUTE[账号与转发策略快照]
+ ROUTE --&gt; TRANS[Provider HTTP / SSE / WebSocket]
+ TRANS &lt;--&gt; UP[任意配置上游]
+ TRANS -.不等待.-&gt; DISPATCH[有界观测 Dispatcher]
+ ADMIN --&gt; ACC[Account / RelayPolicy Service]
+ ADMIN --&gt; DATA[Observation Query / Analytics / Governance / Ops]
+ ACC --&gt; CFG[(账号库与策略)]
+ DISPATCH --&gt; OBS[观测线程 · 协议解析与脱敏]
+ OBS --&gt; DB[(请求与脱敏内容库)]
+ DATA --&gt; DB
+ DATA --&gt; HEALTH[当前实例运行指标]</pre></div><h3>Provider 能力与模块落点</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ PROFILE[Provider Profile · 默认地址与认证] --&gt; AUTH[认证注入]
+ TRANSPORT[通用 Transport] --&gt; HTTP[HTTP / SSE 原字节]
+ TRANSPORT --&gt; WS[WebSocket 原始帧]
+ PARSE[独立 Parser Registry] --&gt; RESP[OpenAI Responses]
+ PARSE --&gt; CHAT[Chat Completions / DeepSeek兼容]
+ PARSE --&gt; MSG[Claude Messages]
+ PARSE --&gt; UNKNOWN[未知协议 · 仅传输元数据]
+ MODEL[任意模型名] --&gt; TRANSPORT
+ LIMIT[解析失败或预算超限] --&gt; PARTIAL[仅标记观测不完整]
+ PARTIAL -.不限制.-&gt; TRANSPORT</pre></div></section><section id="forward"><h2>04 · 入口、策略与转发状态</h2><h3>每账号入口与策略快照</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ URL[proxy / account_id / raw_path] --&gt; ACCOUNT{账号存在且启用}
+ ACCOUNT -- 否 --&gt; REJECT[404或409 · 明确错误]
+ ACCOUNT -- 是 --&gt; SNAP[冻结账号配置与relay_revision]
+ SNAP --&gt; CAP{并发槽位可用}
+ CAP -- 否 --&gt; RATE[429 · 不排队不重试]
+ CAP -- 是 --&gt; CONN[连接上游 · connect timeout]
+ CONN --&gt; STREAM[原样流式转发 · idle timeout]
+ STREAM --&gt; END[结束 / 总时长超时 / 客户端取消]
+ END --&gt; RELEASE[取消上游并释放并发]
+ CONF[修改超时与并发] --&gt; NEXT[仅新请求使用新修订]
+ NEXT --&gt; SNAP</pre></div><h3>传输与模型状态独立</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ REQUEST[请求] --&gt; T[传输 running / complete / failed / cancelled / interrupted]
+ REQUEST --&gt; S[模型 pending / completed / incomplete / failed / unknown / unsupported]
+ REQUEST --&gt; U[用量 known / partial / missing / pending / unsupported]
+ REQUEST --&gt; O[观测 full / partial]
+ HTTP[HTTP429已读取完成] --&gt; H[传输complete · 调用结果上游拒绝]
+ CANCEL[完成事件后断连] --&gt; C[传输cancelled · 模型completed]
+ RESTART[服务重启] --&gt; R[旧running变interrupted · 保留已确认事实]</pre></div></section><section id="capture"><h2>05 · 采集与脱敏</h2><h3>请求开始时冻结采集策略</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ START[新请求] --&gt; POLICY[冻结capture_revision和适用账号]
+ POLICY --&gt; META[始终采集受限元数据]
+ POLICY --&gt; MODE{启用脱敏内容}
+ MODE -- 否 --&gt; NONE[not_collected · 不可回填]
+ MODE -- 是 --&gt; PROTOCOL{支持内容协议}
+ PROTOCOL -- 否 --&gt; UNSUPPORTED[unsupported · 转发继续]
+ PROTOCOL -- 是 --&gt; EXTRACT[受限解析文本与工具参数]
+ EXTRACT --&gt; MASK[凭据排除 + 邮箱电话可选脱敏]
+ MASK --&gt; BUDGET{内容字节预算}
+ BUDGET -- 超限 --&gt; TRUNCATE[脱敏后截断 · truncated]
+ BUDGET -- 范围内 --&gt; CONTENT[available]
+ CONTENT --&gt; ENCRYPT[独立密钥引用加密落盘]
+ TRUNCATE --&gt; ENCRYPT
+ ERROR[解析/脱敏异常] --&gt; DROP[丢弃该内容 · 标记partial]
+ META --&gt; DB[(元数据)]
+ ENCRYPT --&gt; DB2[(脱敏内容)]</pre></div><h3>采集完整性与运行状态</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ GLOBAL[当前队列或存储降级] --&gt; HEALTH[全局健康指标]
+ GAP[某请求发生数据缺口] --&gt; ROW[仅该请求 observation=partial]
+ GLOBAL -.不回写历史.-&gt; OLD[已确认完整的历史记录]
+ HEALTH --&gt; UNKNOWN[未追踪请求只有数量 · 不伪造记录]
+ ROW --&gt; EVIDENCE[保留已确认值 · 未知不记零]</pre></div></section><section id="association"><h2>06 · 交互、工具与关联</h2><h3>可靠关联优先级</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ RAW[已识别请求事件] --&gt; EXPLICIT{显式会话标识}
+ EXPLICIT -- 有 --&gt; SCOPE[校验格式与长度 · account_id命名空间]
+ EXPLICIT -- 无 --&gt; PREV{可验证的previous_response_id}
+ PREV -- 有 --&gt; LOOKUP[同账号查response_id]
+ LOOKUP --&gt; MATCH{唯一匹配且无冲突}
+ MATCH -- 是 --&gt; EDGE[保存引用边与来源]
+ MATCH -- 否 --&gt; UNASSIGNED[独立请求 · 原因冲突或缺失]
+ PREV -- 无 --&gt; UNASSIGNED
+ SCOPE --&gt; GROUP[会话与turn分组]
+ GROUP --&gt; EDGE
+ TOOL[tool call_id与tool result] --&gt; BIND[同账号同关联范围匹配]
+ BIND --&gt; EDGE
+ EDGE --&gt; UI[输入输出 / 工具时间线 / 关联链路]
+ CONTENT[相似内容或时间接近] -.不用于硬关联.-&gt; UNASSIGNED</pre></div></section><section id="data"><h2>07 · 统一数据模型</h2><h3>请求、内容与关系</h3><div class="canvas"><pre class="mermaid">erDiagram
+ REQUEST_RECORD ||--|| REQUEST_OBSERVATION : has
+ REQUEST_RECORD ||--o| REQUEST_USAGE : has
+ REQUEST_RECORD ||--o| CAPTURE_CONTENT : contains
+ REQUEST_RECORD ||--o{ TOOL_EVENT : emits
+ REQUEST_RECORD ||--o{ REQUEST_LINK : source
+ REQUEST_RECORD {
+ string request_id PK
+ string account_id_snapshot
+ string account_name_snapshot
+ string provider_kind
+ string session_key &quot;nullable scoped&quot;
+ string turn_id &quot;nullable&quot;
+ int relay_revision
+ int capture_revision
+ string transport_state
+ string semantic_state
+ }
+ CAPTURE_CONTENT {
+ string request_id PK,FK
+ string state
+ bytes encrypted_redacted_payload
+ string key_ref
+ int stored_bytes
+ datetime expires_at
+ }
+ TOOL_EVENT {
+ string event_id PK
+ string request_id FK
+ string call_id &quot;nullable&quot;
+ string kind
+ string tool_name
+ int ordinal
+ }
+ REQUEST_LINK {
+ string link_id PK
+ string source_request_id FK
+ string target_request_id &quot;nullable pruned&quot;
+ string type
+ string provenance
+ }
+ REQUEST_USAGE {
+ string request_id PK,FK
+ string state
+ int input_tokens &quot;nullable&quot;
+ int output_tokens &quot;nullable&quot;
+ }
+ REQUEST_OBSERVATION {
+ string request_id PK,FK
+ string completeness
+ string reason
+ string instance_id
+ int last_sequence
+ }</pre></div><h3>独立配置与审计</h3><div class="canvas"><pre class="mermaid">erDiagram
+ API_ACCOUNT ||--|| RELAY_POLICY : owns
+ RELAY_POLICY {
+ string account_id PK
+ int connect_timeout_s
+ int idle_timeout_s
+ int total_timeout_s
+ int max_concurrency
+ int revision
+ }
+ CAPTURE_POLICY {
+ int singleton_id PK
+ string mode
+ string account_scope
+ int content_max_bytes
+ int content_days
+ string access_mode
+ int revision
+ }
+ RETENTION_POLICY {
+ int singleton_id PK
+ int days
+ int max_records
+ int revision
+ }
+ AUDIT_EVENT {
+ string id PK
+ string actor_id
+ string action
+ string target_id
+ datetime occurred_at
+ }</pre></div></section><section id="analysis"><h2>08 · 统计与下钻</h2><h3>同一口径与可追溯筛选</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ F[时间范围与保留数据] --&gt; TX[只读事务 · as_of]
+ TX --&gt; L[请求列表与同范围summary]
+ TX --&gt; A[按Provider / 账号 / 模型聚合]
+ A --&gt; M[调用量 / 已确认完成 / 异常分布]
+ A --&gt; U[已知Token总量与known/total覆盖]
+ A --&gt; P[首字节与总耗时P95 · 样本量]
+ A --&gt; TREND[固定UTC时间桶]
+ M --&gt; FILTER[精确过滤条件 · 不使用模糊搜索替代]
+ U --&gt; FILTER
+ P --&gt; FILTER
+ FILTER --&gt; L
+ L --&gt; DETAIL[交互详情与采集证据]
+ SCORE[质量评分 / 任务收益 / 费用估算] --&gt; OUT[本版不推断]</pre></div></section><section id="security"><h2>09 · 查看权限与数据生命周期</h2><h3>权限服务端执行</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ LOGIN[管理会话 · 管理员或观察者] --&gt; AUTHZ[统一授权]
+ AUTHZ --&gt; READ[两角色可读元数据与聚合]
+ AUTHZ --&gt; WRITE[仅管理员修改配置与发起检查]
+ AUTHZ --&gt; CONTENT{管理员且当前策略允许内容查看}
+ CONTENT -- 是 --&gt; AUDIT[审计后读取或导出脱敏内容]
+ CONTENT -- 否 --&gt; DENY[403 · 不返回内容字段]
+ CLIENT[API转发客户端] --&gt; ISOLATE[转发端口无管理路由]
+ REVIEW[原型身份切换] --&gt; MOCK[仅演示权限 · 生产使用服务端会话]</pre></div><h3>保留、清理与导出</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ META[元数据保留策略] --&gt; TIMER[定时清理已结束请求]
+ CP[内容保留策略] --&gt; EXP[expires_at取请求捕获上限与当前缩短期限最小值]
+ EXP --&gt; DELETE[删除内容 · 元数据仍可查]
+ TIMER --&gt; CASCADE[删除关联用量/工具/内容 · 外链显示已过期]
+ PURGE[管理员确认删除全部内容] --&gt; DELETE
+ EXPORT[导出预览] --&gt; CHECK[再次校验权限与策略修订]
+ CHECK --&gt; FILE[仅保留元数据或脱敏内容 · JSON]
+ FILE --&gt; LOG[审计导出范围与条数]
+ LOG --&gt; NOTICE[本地导出副本不随服务端删除撤回]</pre></div></section><section id="recovery"><h2>10 · 容量、故障与恢复</h2><h3>有界观测与非阻塞转发</h3><div class="canvas"><pre class="mermaid">flowchart TD
+ ADMIT[4096生命周期槽位 · 每槽4KiB] --&gt; ACCEPT{接纳成功}
+ ACCEPT -- 否 --&gt; COUNT[untracked_requests加一 · 转发继续]
+ ACCEPT -- 是 --&gt; SLOT[预留start/finish同一槽位]
+ SLOT --&gt; BYTES[8MiB字节队列 · 2048事件]
+ BYTES --&gt; PARSE[128个解析上下文 · 每个1MiB]
+ PARSE --&gt; CONTENT[内容预算 · 每请求上限且全局16MiB]
+ BYTES -- 满 --&gt; PARTIAL[该请求partial · 停止其内容解析]
+ SLOT --&gt; FINAL[终态写回预留槽位]
+ FINAL --&gt; DB{串行提交成功}
+ DB -- 是 --&gt; RELEASE[释放槽位]
+ DB -- 否 --&gt; RETRY[0.1至5秒退避 · 合并受限快照]
+ RETRY --&gt; DB
+ RESTART[重启] --&gt; REC[旧running恢复为interrupted]
+ REC --&gt; LIMIT[未落盘内容无法补回]</pre></div></section><section id="implementation"><h2>11 · 开发顺序与验收门槛</h2><h3>设计完整 · 分批实施</h3><div class="canvas"><pre class="mermaid">flowchart LR
+ A[批次1 · 账号入口与转发策略] --&gt; B[批次2 · 观测与数据治理]
+ B --&gt; C[批次3 · 内容与工具关联]
+ C --&gt; D[批次4 · 分析与运行状态]
+ D --&gt; E[真实三供应商验收]
+ A --&gt; T1[任意模型 / 流式取消 / 并发隔离]
+ B --&gt; T2[旁路失败不阻塞 / 脱敏 / 权限 / 清理]
+ C --&gt; T3[流式边界 / 关联冲突 / 内容缺失]
+ D --&gt; T4[口径一致 / 精确下钻 / 未知不造零]
+ E --&gt; T5[用户凭据 / 不使用模拟结果替代]
+ R[本轮原型与契约] --&gt; REVIEW[评审后进入生产实现]</pre></div></section><section id="execution"><h2>执行规则与策略验证</h2><div class="canvas"><pre class="mermaid">sequenceDiagram
+ participant UI as 账号检查
+ participant R as 路由与策略
+ participant U as 上游
+ participant O as 请求观测
+ UI-&gt;&gt;R: 任意模型与原始请求
+ R-&gt;&gt;R: 冻结配置与relay_revision
+ alt 并发槽位已满
+ R--&gt;&gt;UI: 429 gateway_concurrency
+ R-&gt;&gt;O: 本地拒绝 · 未发送上游
+ else 接纳成功
+ R-&gt;&gt;U: 原样发送
+ alt 连接/空闲/总时长超时
+ R-&gt;&gt;U: 关闭连接
+ R-&gt;&gt;O: 区分超时阶段
+ else 客户端取消
+ R-&gt;&gt;U: 关闭连接
+ R-&gt;&gt;O: cancelled · 保留已确认模型状态
+ else 正常结束
+ U--&gt;&gt;R: 流式数据与完成事件
+ R-&gt;&gt;O: 传输、语义、用量分别记录
+ end
+ R-&gt;&gt;R: finally释放并发槽位
+ end</pre></div></section><section id="tool-roundtrip"><h2>工具调用跨请求闭环</h2><div class="canvas"><pre class="mermaid">sequenceDiagram
+ participant C as 客户端
+ participant G as 网关
+ participant U as 模型上游
+ participant T as 外部工具
+ C-&gt;&gt;G: 请求A · 会话标识
+ G-&gt;&gt;U: 原样转发A
+ U--&gt;&gt;C: 经网关返回tool call_id
+ C-&gt;&gt;T: 执行工具 · 网关不执行工具
+ T--&gt;&gt;C: 结果
+ C-&gt;&gt;G: 请求B · tool result + 前序响应引用
+ G-&gt;&gt;G: 同账号校验关联唯一性与冲突
+ G-&gt;&gt;U: 原样转发B
+ U--&gt;&gt;C: 经网关返回最终输出
+ Note over G: 请求A与B分别落库，工具结果按call_id关联
+ Note over C,T: 原型由合成客户端演示这一轮交互</pre></div></section><section id="governance-state"><h2>身份、权限与导出状态机</h2><div class="canvas"><pre class="mermaid">flowchart TD
+ ANON[未登录] --&gt; LOGIN[管理员或观察者登录]
+ LOGIN --&gt; CHECK{口令验证与失败限流}
+ CHECK -- 失败 --&gt; ANON
+ CHECK -- 成功 --&gt; SESSION[8小时会话 · HttpOnly cookie与CSRF]
+ SESSION --&gt; META[可读元数据]
+ SESSION --&gt; ROLE{管理员}
+ ROLE -- 是 --&gt; WRITE[配置与检查]
+ ROLE -- 否 --&gt; DENY[拒绝写操作与内容查看]
+ ROLE -- 是 --&gt; POLICY{当前内容访问策略允许}
+ POLICY -- 是 --&gt; PREVIEW[内容读取或导出预览]
+ POLICY -- 否 --&gt; DENY
+ PREVIEW --&gt; RECHECK[确认时复核角色/修订/数据存在/预览有效期]
+ RECHECK --&gt; EXPORT[导出并审计]
+ SESSION --&gt; LOGOUT[退出/过期 · 会话撤销]
+ LOGOUT --&gt; ANON</pre></div></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'base',themeVariables:{primaryColor:'#ecfdf5',primaryTextColor:'#173c36',primaryBorderColor:'#5ba89b',lineColor:'#73938d',fontFamily:'system-ui'},flowchart:{htmlLabels:false,useMaxWidth:true}});</script></body></html>

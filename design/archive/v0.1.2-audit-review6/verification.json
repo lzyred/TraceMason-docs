@@ -1,0 +1,71 @@
+{
+  "version": "0.1.2",
+  "revision": 6,
+  "status": "passed",
+  "scope": "synthetic audit prototype browser interactions only",
+  "checked_at": "2026-11-15T14:36:32.591Z",
+  "checks": [
+    {
+      "id": "A01",
+      "result": "passed",
+      "evidence": "three navigation entries; filters and pagination operate on same dataset"
+    },
+    {
+      "id": "A02",
+      "result": "passed",
+      "evidence": "full-page request identity, coverage, evidence and policy snapshot survive deep-link reload"
+    },
+    {
+      "id": "A03",
+      "result": "passed",
+      "evidence": "reasoned human review persists without changing detector decision"
+    },
+    {
+      "id": "A04",
+      "result": "passed",
+      "evidence": "reaudit creates child with original request and partial redacted snapshot; parent unchanged"
+    },
+    {
+      "id": "A05",
+      "result": "passed",
+      "evidence": "cancel, retention validation, successful save and real two-tab revision conflict/reload"
+    },
+    {
+      "id": "A06",
+      "result": "passed",
+      "evidence": "direction/category/enable policy affects new samples; old snapshots unchanged"
+    },
+    {
+      "id": "A10",
+      "result": "passed",
+      "evidence": "timeout, invalid response, unsupported and partial examples never present full safe result"
+    },
+    {
+      "id": "A09",
+      "result": "passed",
+      "evidence": "runtime pending count drills to exact pending event filter"
+    },
+    {
+      "id": "A08",
+      "result": "passed",
+      "evidence": "downloaded JSON matches filtered risks and excludes body/evidence/review reasons"
+    },
+    {
+      "id": "A07",
+      "result": "passed",
+      "evidence": "preview expires; confirmed filtered deletion clears exact risks; empty state shown"
+    },
+    {
+      "id": "A14",
+      "result": "passed",
+      "evidence": "three pages and detail at1440/390 without viewport overflow;11 architecture,2 coverage and1 source diagrams render"
+    }
+  ],
+  "console_errors": 0,
+  "production_verified": false,
+  "not_verified": [
+    "A11 real forwarding isolation",
+    "A12 live detector quality and protocol integration",
+    "A13 backend encryption retention leases restart and authorization"
+  ]
+}

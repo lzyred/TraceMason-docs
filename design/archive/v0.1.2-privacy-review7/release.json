@@ -1,0 +1,26 @@
+{
+  "version": "0.1.2",
+  "revision": 7,
+  "focus": "请求敏感信息识别、发送前自动脱敏、风险登记",
+  "stage": "design-review",
+  "baseline": "v0.1.1",
+  "navigation": [
+    "风险记录",
+    "脱敏策略",
+    "脱敏验证"
+  ],
+  "product_entry": "prototype/index.html",
+  "architecture_entry": "index.html",
+  "openapi": "openapi.json",
+  "contract": "contract.json",
+  "acceptance": "acceptance.json",
+  "coverage": "coverage.html",
+  "verification": "verification.json",
+  "sources": "sources.html",
+  "screenshots": "screens.html",
+  "production_changed": false,
+  "implementation_requires": "用户review后再实施真实服务",
+  "review_url": "http://127.0.0.1:8772/design/v0.1.2/prototype/index.html",
+  "archive": "../archive/v0.1.2-audit-review6/",
+  "prototype_data": "Ephemeral supplied text, actual local replacement; no external calls; only safe risk metadata persisted"
+}

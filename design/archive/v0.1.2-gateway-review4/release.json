@@ -1,0 +1,47 @@
+{
+  "version": "0.1.2",
+  "revision": 5,
+  "stage": "scope-reset-design-pending",
+  "focus": "模型内容安全审计",
+  "scope_entry": "scope.html",
+  "baseline": "v0.1.1",
+  "production_changed": false,
+  "implementation_requires": "审计产品原型与架构设计评审",
+  "confirmed_scope": [
+    "第二版只做模型内容安全审计"
+  ],
+  "proposed_navigation": [
+    "内容安全审计 / 审计事件",
+    "内容安全审计 / 审计配置",
+    "内容安全审计 / 审计运行"
+  ],
+  "design_assumptions": [
+    "输入与输出中的可识别文本纳入设计",
+    "异步审计，不改变转发结果",
+    "不限制转发模型版本或类型；未支持的审计内容明确标记"
+  ],
+  "excluded": [
+    "通用用量与性能分析平台",
+    "会话与工具链分析产品",
+    "订阅转换与计费",
+    "自动拦截与内容改写"
+  ],
+  "reference": "sub2api Prompt Audit 的配置、事件、运行与清理流程；输出流审计须另行设计核验",
+  "prototype_status": "previous five-module prototype superseded; audit-specific prototype pending",
+  "architecture_status": "previous architecture superseded; audit-specific architecture pending",
+  "verification_status": "prior verification applies only to superseded review4; no audit release verification yet",
+  "superseded_artifacts": [
+    "index.html",
+    "prototype/index.html",
+    "contract.json",
+    "openapi.json",
+    "acceptance.json",
+    "coverage.html",
+    "coverage.json",
+    "screens.html",
+    "verification.json",
+    "verification-workflow.json",
+    "verification-governance.json"
+  ],
+  "previous_release": "release-review4-superseded.json"
+}

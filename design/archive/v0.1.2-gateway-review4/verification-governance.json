@@ -1,0 +1,17 @@
+{
+  "version": "0.1.2",
+  "revision": 4,
+  "scope": "governance and contract review",
+  "checks": [
+    "capture account scope, redaction,4KiB truncation and three providers arbitrary models",
+    "current deny policy immediately blocks historical content",
+    "stale capture policy refuses overwrite and reloads latest revision",
+    "retention save and confirmed expired-request cleanup",
+    "actual redacted-content JSON download excludes original email",
+    "content purge preserves request metadata and shows deleted state",
+    "analytics exact anomaly predicate remains linked to records",
+    "19 design diagrams and promise-to-acceptance map rendered"
+  ],
+  "console_errors": 0,
+  "checked_at": "2026-11-15T11:32:14.384Z"
+}

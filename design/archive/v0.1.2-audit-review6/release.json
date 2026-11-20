@@ -1,0 +1,26 @@
+{
+  "version": "0.1.2",
+  "revision": 6,
+  "focus": "模型内容安全审计",
+  "stage": "design-review",
+  "product_entry": "prototype/index.html",
+  "architecture_entry": "index.html",
+  "contract": "contract.json",
+  "openapi": "openapi.json",
+  "acceptance": "acceptance.json",
+  "coverage": "coverage.html",
+  "verification": "verification.json",
+  "sources": "sources.html",
+  "screenshots": "screens.html",
+  "baseline": "v0.1.1",
+  "navigation": [
+    "审计事件",
+    "审计配置",
+    "审计运行"
+  ],
+  "production_changed": false,
+  "implementation_requires": "产品原型与架构设计完成用户review后再实施",
+  "archive": "../archive/v0.1.2-gateway-review4/",
+  "prototype_data": "Synthetic, no live requests; not proof of detection accuracy or backend completion",
+  "review_url": "http://127.0.0.1:8772/design/v0.1.2/prototype/index.html"
+}

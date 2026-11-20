@@ -1,0 +1,2943 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TraceMason v0.1.2 内容安全审计 API",
+    "version": "0.1.2",
+    "description": "设计契约，尚未部署。v0.1.1 Provider/API KEY/Ops接口不变。仅异步审计；不阻断或改写模型调用。"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8766",
+      "description": "本机管理服务；实施后提供审计API"
+    }
+  ],
+  "security": [
+    {
+      "LocalAdminToken": []
+    }
+  ],
+  "paths": {
+    "/api/audit/config": {
+      "get": {
+        "operationId": "getAuditConfig",
+        "summary": "读取审计配置（无密钥明文）",
+        "description": "读取审计配置（无密钥明文）",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateAuditConfig",
+        "summary": "CAS保存策略并加载不可变快照",
+        "description": "409保留用户草稿；保存成功返回revision，运行状态单独报告active_revision。停用不取消已接纳任务。",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/detector/probe": {
+      "post": {
+        "operationId": "probeAuditDetector",
+        "summary": "使用固定无敏感样例检查鉴权和结果协议",
+        "description": "显式人工操作才发往指定地址；不携带历史内容。该能力原型不发送网络请求，待实施验证。禁止重定向；限定超时与响应大小。",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProbeResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProbeWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/samples": {
+      "post": {
+        "operationId": "submitAuditSample",
+        "summary": "使用已保存策略提交用户输入的检测样例",
+        "description": "真实服务显式发送样例至已配置检测器；source=sample。原型仅使用合成样例模拟，不证明真实检测能力。范围外409，不偷偷改账号或策略。",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "202": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events": {
+      "get": {
+        "operationId": "listAuditEvents",
+        "summary": "同条件筛选分页审计事件",
+        "description": "同条件筛选分页审计事件",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "running",
+                "risk",
+                "clear",
+                "failed",
+                "unsupported",
+                "skipped"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/api/audit/summary": {
+      "get": {
+        "operationId": "getAuditSummary",
+        "summary": "与事件列表同口径计数",
+        "description": "与事件列表同口径计数",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "running",
+                "risk",
+                "clear",
+                "failed",
+                "unsupported",
+                "skipped"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ]
+      }
+    },
+    "/api/audit/events/{event_id}": {
+      "get": {
+        "operationId": "getAuditEvent",
+        "summary": "查询元数据、检测条目和复核历史",
+        "description": "查询元数据、检测条目和复核历史",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "事件不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "内容不可用或已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/audit/events/{event_id}/content": {
+      "get": {
+        "operationId": "getAuditContent",
+        "summary": "按期限授权读取脱敏正文与证据",
+        "description": "当前时刻校验expires_at；读取记录操作日志。不可用410；响应Cache-Control:no-store；不返回原始待审载荷。",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "事件不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "内容不可用或已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ]
+      }
+    },
+    "/api/audit/events/{event_id}/reviews": {
+      "post": {
+        "operationId": "reviewAuditEvent",
+        "summary": "追加人工复核，不修改原检测结论",
+        "description": "追加人工复核，不修改原检测结论",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "201": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "事件不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "内容不可用或已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events/{event_id}/reaudit": {
+      "post": {
+        "operationId": "reauditEvent",
+        "summary": "按当前策略对留存片段创建新审计",
+        "description": "按当前策略对留存片段创建新审计",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "202": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "事件不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "内容不可用或已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReauditWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events/deletion-preview": {
+      "post": {
+        "operationId": "previewAuditDeletion",
+        "summary": "生成固定事件集合的清理预览",
+        "description": "生成固定事件集合的清理预览",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePreviewWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events/deletion-confirm": {
+      "post": {
+        "operationId": "confirmAuditDeletion",
+        "summary": "消费单次令牌并清理预览集合",
+        "description": "消费单次令牌并清理预览集合",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "预览过期或已消费",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteConfirm"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/events/export": {
+      "post": {
+        "operationId": "exportAuditResults",
+        "summary": "导出当前筛选的元数据JSON",
+        "description": "最多10000条/20MiB；超过返回413并提示缩小范围；Content-Disposition attachment；不含正文、证据引用文字、复核说明。",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Export"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/runtime": {
+      "get": {
+        "operationId": "getAuditRuntime",
+        "summary": "读取当前实例运行快照",
+        "description": "读取当前实例运行快照",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Runtime"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit/operations": {
+      "get": {
+        "operationId": "listAuditOperations",
+        "summary": "分页查看无正文的管理动作日志",
+        "description": "分页查看无正文的管理动作日志",
+        "tags": [
+          "内容安全审计"
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "参数无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "管理令牌或本机边界无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "版本冲突或状态不允许",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "请求或导出范围过大",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "存储或内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "LocalAdminToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-TraceMason-Token",
+        "description": "沿用既有本机GET /api/session令牌及Host/Origin边界；本版本不声明提供远程多用户鉴权。所有audit路由均验证。"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "request_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "request_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "DetectorPublic": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "adapter": {
+            "type": "string",
+            "enum": [
+              "structured_json",
+              "qwen3guard"
+            ]
+          },
+          "has_secret": {
+            "type": "boolean"
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 30000
+          }
+        },
+        "required": [
+          "name",
+          "base_url",
+          "model",
+          "adapter",
+          "has_secret",
+          "timeout_ms"
+        ],
+        "additionalProperties": false
+      },
+      "DetectorWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "adapter": {
+            "type": "string",
+            "enum": [
+              "structured_json",
+              "qwen3guard"
+            ]
+          },
+          "secret": {
+            "type": "string",
+            "maxLength": 8192,
+            "writeOnly": true,
+            "description": "Omitted or empty retains current versioned secret; never echoed."
+          },
+          "clear_secret": {
+            "type": "boolean"
+          },
+          "timeout_ms": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 30000
+          }
+        },
+        "required": [
+          "name",
+          "base_url",
+          "model",
+          "adapter",
+          "timeout_ms"
+        ],
+        "additionalProperties": false
+      },
+      "Config": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "account_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "directions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pii",
+                "jailbreak",
+                "harmful"
+              ]
+            }
+          },
+          "content_limit_kib": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 1024
+          },
+          "content_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "metadata_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "workers": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "queue_capacity": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 4096
+          },
+          "detector": {
+            "$ref": "#/components/schemas/DetectorPublic"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "revision",
+          "enabled",
+          "account_ids",
+          "directions",
+          "categories",
+          "content_limit_kib",
+          "content_days",
+          "metadata_days",
+          "workers",
+          "queue_capacity",
+          "detector",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "ConfigUpdate": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "account_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "directions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "input",
+                "output"
+              ]
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pii",
+                "jailbreak",
+                "harmful"
+              ]
+            }
+          },
+          "content_limit_kib": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 1024
+          },
+          "content_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "metadata_days": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          },
+          "workers": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "queue_capacity": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 4096
+          },
+          "detector": {
+            "$ref": "#/components/schemas/DetectorWrite"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "enabled",
+          "account_ids",
+          "directions",
+          "categories",
+          "content_limit_kib",
+          "content_days",
+          "metadata_days",
+          "workers",
+          "queue_capacity",
+          "detector"
+        ],
+        "additionalProperties": false
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "account_id_snapshot": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "input",
+              "output"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "risk",
+              "clear",
+              "failed",
+              "unsupported",
+              "skipped"
+            ]
+          },
+          "coverage": {
+            "type": "string",
+            "enum": [
+              "full",
+              "partial",
+              "none"
+            ]
+          },
+          "coverage_reason": {
+            "type": "string"
+          },
+          "category_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "critical"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "detector_model": {
+            "type": "string"
+          },
+          "detector_adapter": {
+            "type": "string"
+          },
+          "review": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "confirmed",
+              "false_positive"
+            ]
+          },
+          "review_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "sample",
+              "reaudit"
+            ]
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "not_collected",
+              "expired",
+              "deleted",
+              "unavailable"
+            ]
+          },
+          "content_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metadata_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sequence",
+          "request_id",
+          "account_id_snapshot",
+          "provider",
+          "model",
+          "direction",
+          "status",
+          "coverage",
+          "coverage_reason",
+          "category_ids",
+          "severity",
+          "error_code",
+          "policy_revision",
+          "detector_model",
+          "detector_adapter",
+          "review",
+          "review_revision",
+          "parent_id",
+          "attempt",
+          "source",
+          "latency_ms",
+          "content_state",
+          "content_expires_at",
+          "metadata_expires_at",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "Finding": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "category": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "evidence_state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "not_provided",
+              "expired",
+              "deleted"
+            ]
+          },
+          "detector_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "severity",
+          "evidence_state",
+          "detector_version"
+        ],
+        "additionalProperties": false
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "confirmed",
+              "false_positive"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "说明随内容期限过期；过期后返回null，仅保留复核状态与时间"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "result",
+          "reason",
+          "actor",
+          "created_at",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "EventDetail": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/Event"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          },
+          "related_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "unknown_categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "event",
+          "findings",
+          "reviews",
+          "related_event_ids",
+          "unknown_categories"
+        ],
+        "additionalProperties": false
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "quote": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "finding_id",
+          "quote",
+          "start",
+          "end"
+        ],
+        "additionalProperties": false
+      },
+      "Content": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string"
+          },
+          "redacted": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "event_id",
+          "text",
+          "redacted",
+          "evidence",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "Filter": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "provider": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "input",
+              "output"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "risk",
+              "clear",
+              "failed",
+              "unsupported",
+              "skipped"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "since": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "EventPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "additionalProperties": false
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "risk": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "clear": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "completed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "partial_completed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unreviewed_risks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unresolved": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          }
+        },
+        "required": [
+          "total",
+          "risk",
+          "clear",
+          "completed",
+          "partial_completed",
+          "unreviewed_risks",
+          "unresolved",
+          "filter"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewWrite": {
+        "type": "object",
+        "properties": {
+          "expected_review_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "unreviewed",
+              "confirmed",
+              "false_positive"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "expected_review_revision",
+          "result",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ReauditWrite": {
+        "type": "object",
+        "properties": {
+          "expected_policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_policy_revision"
+        ],
+        "additionalProperties": false
+      },
+      "JobAccepted": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending"
+            ]
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "event_id",
+          "status",
+          "policy_revision"
+        ],
+        "additionalProperties": false
+      },
+      "SampleWrite": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "input",
+              "output"
+            ]
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1048576
+          },
+          "expected_policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "account_id",
+          "direction",
+          "model",
+          "text",
+          "expected_policy_revision"
+        ],
+        "additionalProperties": false
+      },
+      "ProbeWrite": {
+        "type": "object",
+        "properties": {
+          "detector": {
+            "$ref": "#/components/schemas/DetectorWrite"
+          }
+        },
+        "required": [
+          "detector"
+        ],
+        "additionalProperties": false
+      },
+      "ProbeResult": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "result_valid": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "checked_at",
+          "latency_ms",
+          "error_code",
+          "capabilities",
+          "result_valid"
+        ],
+        "additionalProperties": false
+      },
+      "DeletePreviewWrite": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "description": "Provide either filter or ids, exactly one; at most10000 terminal events. pending/running excluded and reported."
+      },
+      "DeletePreview": {
+        "type": "object",
+        "properties": {
+          "confirmation_token": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excluded_active_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "snapshot_max_sequence": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "filter_hash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmation_token",
+          "count",
+          "excluded_active_count",
+          "expires_at",
+          "policy_revision",
+          "snapshot_max_sequence",
+          "filter_hash"
+        ],
+        "additionalProperties": false
+      },
+      "DeleteConfirm": {
+        "type": "object",
+        "properties": {
+          "confirmation_token": {
+            "type": "string"
+          },
+          "confirm": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "confirmation_token",
+          "confirm"
+        ],
+        "additionalProperties": false
+      },
+      "DeleteResult": {
+        "type": "object",
+        "properties": {
+          "deleted_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "deleted_count"
+        ],
+        "additionalProperties": false
+      },
+      "ExportWrite": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          }
+        },
+        "required": [
+          "filter"
+        ],
+        "additionalProperties": false
+      },
+      "Export": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          },
+          "exported_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "content_included": {
+            "type": "boolean",
+            "const": false
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        },
+        "required": [
+          "filter",
+          "exported_at",
+          "content_included",
+          "events"
+        ],
+        "additionalProperties": false
+      },
+      "Runtime": {
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "health": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "healthy",
+              "degraded",
+              "unavailable"
+            ]
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "active_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "config_load_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "queue_depth": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "queue_capacity": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "worker_active": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "worker_limit": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dropped_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "partial_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "detector_last_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detector_last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "database_state": {
+            "type": "string",
+            "enum": [
+              "writable",
+              "unwritable"
+            ]
+          },
+          "payload_expired_total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sampled_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "instance_id",
+          "started_at",
+          "enabled",
+          "health",
+          "expected_revision",
+          "active_revision",
+          "config_load_error",
+          "queue_depth",
+          "queue_capacity",
+          "worker_active",
+          "worker_limit",
+          "dropped_total",
+          "failed_total",
+          "partial_total",
+          "detector_last_checked_at",
+          "detector_last_error",
+          "database_state",
+          "payload_expired_total",
+          "sampled_at"
+        ],
+        "additionalProperties": false
+      },
+      "Operation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "action": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "actor",
+          "event_ids",
+          "count",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "OperationPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Operation"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "additionalProperties": false
+      },
+      "DetectorResult": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "risk",
+              "clear"
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "pii",
+                    "jailbreak",
+                    "harmful"
+                  ]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "critical"
+                  ]
+                },
+                "quote": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "category",
+                "severity",
+                "quote",
+                "start",
+                "end"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "checked_categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "pii",
+                "jailbreak",
+                "harmful"
+              ]
+            }
+          },
+          "unknown_categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "decision",
+          "findings",
+          "checked_categories",
+          "unknown_categories"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

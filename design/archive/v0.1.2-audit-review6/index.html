@@ -1,0 +1,217 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>审计产品与架构 · 待评审</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f8fa;color:#203a3c;font:14px/1.6 system-ui}header{padding:20px 28px;background:white;border-bottom:1px solid #dfe7e9;display:flex;gap:22px;align-items:center;flex-wrap:wrap}a{color:#087b69;text-decoration:none}header b{margin-right:auto}aside{position:fixed;width:240px;top:75px;bottom:0;padding:25px 20px;overflow:auto}aside a{display:block;font-size:12px;padding:9px}main{margin-left:240px;max-width:1580px;padding:28px 36px}h1{font-size:27px}h2{font-size:18px;margin:0 0 20px}section{scroll-margin-top:20px;background:white;border:1px solid #e0e9e9;border-radius:10px;padding:26px;margin:24px 0;overflow:auto}.mermaid{display:flex;justify-content:center}.mermaid svg{max-width:100%;height:auto}@media(max-width:760px){aside{position:static;width:auto;display:flex;white-space:nowrap;padding:10px}main{margin:0;padding:18px}header{padding:18px;gap:12px}section{padding:15px}.mermaid{min-width:620px}}</style></head><body><header><b>TraceMason v0.1.2 · 内容安全审计</b><a href="prototype/index.html">交互原型</a><a href="index.html">架构设计</a><a href="coverage.html">验收映射</a><a href="openapi.json">接口契约</a><a href="screens.html">浏览器实拍</a></header><aside><a href="#scope">01 · 版本范围与用户闭环</a><a href="#architecture">02 · 服务架构与代码落点</a><a href="#sequence">03 · 转发与异步检测时序</a><a href="#content">04 · 输入、输出与流式覆盖</a><a href="#states">05 · 结论、覆盖与复核独立</a><a href="#data">06 · 数据结构与索引</a><a href="#privacy">07 · 内容保护与检测服务边界</a><a href="#config">08 · 策略修改与重审</a><a href="#operations">09 · 容量、失败与恢复</a><a href="#api">10 · 页面、服务与接口映射</a><a href="#acceptance">11 · 实施顺序与验收门槛</a></aside><main><h1>审计产品与架构 · 待评审</h1><h2><a href="contract.json">行为与数据约束</a> · <a href="release.json">版本状态</a> · <a href="sources.html">源码借鉴边界</a></h2><section id="scope"><h2>01 · 版本范围与用户闭环</h2><pre class="mermaid">flowchart TB
+ BASE[v0.1.1 Provider / API KEY / 基础 Ops] --&gt; V[v0.1.2 内容安全审计]
+ subgraph IN[本次交付]
+ direction LR
+ E[审计事件] --&gt; E1[筛选 / 证据 / 人工复核 / 留存片段重审]
+ C[审计配置] --&gt; C1[检测端点 / 模型 / 协议 / 范围 / 留存]
+ R[审计运行] --&gt; R1[队列 / 未覆盖 / 失败 / 具体事件]
+ end
+ V --&gt; E
+ V --&gt; C
+ V --&gt; R
+ subgraph OUT[本次不实施]
+ O1[通用用量与性能分析 / 会话与工具链分析]
+ O2[订阅计费 / 自动拦截 / 内容改写 / 多租户]
+ end
+</pre></section><section id="architecture"><h2>02 · 服务架构与代码落点</h2><pre class="mermaid">flowchart TB
+ CLIENT[API 客户端] &lt;--&gt; T[provider/transport.py · HTTP / SSE 原样转发]
+ T &lt;--&gt; PROVIDER[Codex / DeepSeek / Claude / 任意模型名称]
+ T -.有界 offer 不等待检测或数据库.-&gt; Q[audit/dispatcher.py · 内存事件队列]
+ Q --&gt; P[audit/parsers · 识别输入与输出文本]
+ P --&gt; J[audit/jobs.py · 加密载荷与持久任务]
+ J --&gt; W[audit/worker.py · 独立并发 / 租约]
+ W --&gt; AD[audit/detectors · JSON 或 Qwen3Guard 适配器]
+ AD --&gt; GUARD[用户配置的审计检测服务]
+ W --&gt; DB[(独立 audit.sqlite · WAL)]
+ UI[web/audit · 三页与详情] --&gt; HTTP[server.py · audit/routes.py]
+ HTTP --&gt; CS[audit/config.py · CAS 与不可变快照]
+ HTTP --&gt; QS[audit/query.py / review.py / retention.py]
+ CS --&gt; DB
+ QS --&gt; DB
+ W --&gt; METRIC[audit/runtime.py · 当前实例指标]
+ HTTP --&gt; METRIC
+ KEY[既有 CredentialStore 模式 / 独立审计密钥派生] --&gt; J
+ KEY --&gt; CS
+</pre></section><section id="sequence"><h2>03 · 转发与异步检测时序</h2><pre class="mermaid">sequenceDiagram
+ participant C as 客户端
+ participant G as 转发网关
+ participant U as 上游模型
+ participant D as 审计 Dispatcher
+ participant W as 审计 Worker
+ participant A as 检测服务
+ participant S as 审计库
+ C-&gt;&gt;G: 请求 / 冻结账号与策略版本
+ G-&gt;&gt;U: 原样转发
+ G--&gt;&gt;D: offer 输入数据块 / 不等待
+ U--&gt;&gt;G: 响应或 SSE 数据块
+ G--&gt;&gt;C: 立即转发
+ G--&gt;&gt;D: offer 输出数据块 / 完整性标记
+ D-&gt;&gt;S: 加密内容 + 每方向任务事务
+ W-&gt;&gt;S: 获取任务租约与冻结策略
+ W-&gt;&gt;A: 指定范围内的待审文本
+ A--&gt;&gt;W: 结构化结论与证据
+ W-&gt;&gt;S: 事务保存结果 / 删除临时载荷
+ Note over G,D: 队列满只记丢失计数；不阻塞转发
+ Note over W,A: 超时或格式无效标记失败；不伪造安全结论
+</pre></section><section id="content"><h2>04 · 输入、输出与流式覆盖</h2><pre class="mermaid">flowchart TD
+ RAW[请求 / 响应文本] --&gt; PROTO{协议是否识别}
+ PROTO -- 否 --&gt; NO[unsupported · 转发不受限]
+ PROTO -- 是 --&gt; EXTRACT[Responses / Chat Completions / Messages 适配解析]
+ EXTRACT --&gt; INPUT[输入：所选请求内全部文本角色]
+ EXTRACT --&gt; OUTPUT[输出：重组文本增量直到终态或断流]
+ INPUT --&gt; BOUND[每方向默认64KiB / 最大1024KiB]
+ OUTPUT --&gt; BOUND
+ BOUND --&gt; FULL{预算内且完整收到}
+ FULL -- 是 --&gt; COMPLETE[coverage full：所选文本完整]
+ FULL -- 否 --&gt; PART[coverage partial：截断 / 数据块丢失 / 流中断]
+ PART --&gt; SCAN[只检测已保留文本片段]
+ COMPLETE --&gt; SCAN
+ TOOLS[工具参数 / 二进制 / 音视频 / WebSocket] --&gt; UNCOVERED[不做工具链或多模态分析 / 明示未覆盖]
+ ERROR[上游HTTP错误或无模型内容] --&gt; SKIP[skipped / upstream_error 或 no_text]
+</pre></section><section id="states"><h2>05 · 结论、覆盖与复核独立</h2><pre class="mermaid">stateDiagram-v2
+ [*] --&gt; pending: 任务持久化
+ pending --&gt; running: 获得租约
+ running --&gt; risk: 合法命中类别与证据
+ running --&gt; clear: 合法结果未命中已选类别
+ running --&gt; failed: 超时 / 鉴权 / 格式无效 / 进程中断
+ [*] --&gt; unsupported: 内容协议不支持
+ [*] --&gt; skipped: 停用 / 范围外 / 无文本
+ risk --&gt; [*]
+ clear --&gt; [*]
+ failed --&gt; [*]
+ note right of clear
+ coverage partial 必须显示“已审片段未发现风险”
+ 不支持 / 未审计 / 失败不能转成 clear
+ end note
+ note right of risk
+ review 独立：unreviewed / confirmed / false_positive
+ 人工意见追加留痕，不覆盖检测结论
+ end note
+</pre></section><section id="data"><h2>06 · 数据结构与索引</h2><pre class="mermaid">erDiagram
+ AUDIT_POLICY ||--o{ AUDIT_EVENT : freezes
+ AUDIT_EVENT ||--o| AUDIT_PAYLOAD : temporary
+ AUDIT_EVENT ||--o| AUDIT_CONTENT : retained
+ AUDIT_EVENT ||--o{ AUDIT_FINDING : contains
+ AUDIT_EVENT ||--o{ AUDIT_REVIEW : appends
+ AUDIT_EVENT ||--o| AUDIT_JOB : processes
+ AUDIT_EVENT ||--o{ AUDIT_EVENT : reaudits
+ AUDIT_POLICY {
+ int revision PK
+ string config_json
+ string secret_ref
+ datetime created_at
+ }
+ AUDIT_EVENT {
+ string id PK
+ string request_id
+ string account_id_snapshot
+ string provider
+ string model
+ string direction
+ string status
+ string coverage
+ string coverage_reason
+ int policy_revision FK
+ string parent_id FK
+ int attempt
+ string error_code
+ datetime content_expires_at
+ datetime metadata_expires_at
+ datetime created_at
+ }
+ AUDIT_JOB {
+ string event_id PK
+ string lease_owner
+ datetime lease_expires_at
+ string status
+ }
+ AUDIT_PAYLOAD {
+ string event_id PK
+ bytes ciphertext
+ datetime expires_at
+ }
+ AUDIT_CONTENT {
+ string event_id PK
+ bytes redacted_ciphertext
+ string state
+ }
+ AUDIT_FINDING {
+ string id PK
+ string event_id FK
+ string category
+ string severity
+ string evidence_ref
+ string detector_version
+ }
+ AUDIT_REVIEW {
+ string id PK
+ string event_id FK
+ string result
+ string reason
+ string actor
+ datetime created_at
+ }
+</pre></section><section id="privacy"><h2>07 · 内容保护与检测服务边界</h2><pre class="mermaid">flowchart LR
+ EXTRACT[提取正文 / 排除鉴权头与凭据字段] --&gt; TEMP[待审文本临时加密 / TTL最多30分钟]
+ TEMP --&gt; GUARD[仅发往用户配置的检测服务]
+ GUARD --&gt; VALIDATE[校验类别 / 枚举 / 证据归属 / 结果长度]
+ VALIDATE --&gt; MASK[正文与证据统一脱敏]
+ MASK --&gt; STORE[加密留存 / 默认7天]
+ STORE --&gt; READ[本机管理边界 + 管理令牌]
+ READ --&gt; LOG[记录内容读取动作 / 不记正文]
+ EXPIRE[内容过期或删除] --&gt; WIPE[删除正文和证据 / 保留受限元数据]
+ META[元数据默认30天] --&gt; DELETE[级联清理事件 / 内容 / 复核]
+ CONFIG[缩短保留期] --&gt; SHORT[收紧既有期限]
+ CONFIG --&gt; EXTEND[延长只影响新事件]
+ LIMIT[凭据模式无法保证识别所有秘密] --&gt; TRUST[检测端点是内容接收方 / 配置时明确告知]
+</pre></section><section id="config"><h2>08 · 策略修改与重审</h2><pre class="mermaid">flowchart TD
+ EDIT[读取配置 revision N] --&gt; SAVE[PUT config / expected_revision N]
+ SAVE --&gt; CAS{当前版本仍为N}
+ CAS -- 否 --&gt; CONFLICT[409 / 重新载入 / 禁止覆盖]
+ CAS -- 是 --&gt; COMMIT[事务保存 N+1 / 记录变更]
+ COMMIT --&gt; LOAD[原子加载策略与检测凭据引用]
+ LOAD --&gt; NEW[仅新任务使用 N+1]
+ OLD[执行中的任务] --&gt; SNAP[继续使用冻结策略与凭据引用]
+ EVENT[历史事件] --&gt; RE{可用内容未过期}
+ RE -- 否 --&gt; GONE[410 / 不可重审]
+ RE -- 是 --&gt; CHILD[按当前策略新建子事件 / 请求ID保持]
+ CHILD --&gt; PART[只能检测留存脱敏片段 / coverage partial]
+ CHILD --&gt; KEEP[原事件与原结论不变]
+</pre></section><section id="operations"><h2>09 · 容量、失败与恢复</h2><pre class="mermaid">flowchart TD
+ OFFER[数据块入观测队列] --&gt; FULL{内存事件或字节预算已满}
+ FULL -- 是 --&gt; DROP[增加 dropped / 已知事件标记 partial]
+ DROP --&gt; CONTINUE[转发继续 / 不补造未知请求]
+ FULL -- 否 --&gt; PERSIST[独立写入线程 / audit.sqlite]
+ PERSIST --&gt; DURABLE[任务与临时加密载荷同事务]
+ DURABLE --&gt; LEASE[Worker 获取租约]
+ LEASE --&gt; DETECT[检测超时上限30秒 / 结果上限256KiB]
+ DETECT --&gt; RESULT[结果与完成状态事务提交]
+ DBERR[数据库不可写] --&gt; PAUSE[停止审计接纳 / 展示降级与丢失计数]
+ PAUSE --&gt; DBBACK[数据库恢复后仅接纳新事件]
+ RESTART[进程重启] --&gt; INTERRUPTED[租约过期 running 标记 interrupted失败]
+ RESTART --&gt; PENDING[未过期 pending 可继续处理]
+ EXPIRED[临时载荷过期] --&gt; FAILED[失败 payload_expired]
+ FAILED --&gt; MANUAL[有留存内容时可人工新建重审]
+</pre></section><section id="api"><h2>10 · 页面、服务与接口映射</h2><pre class="mermaid">flowchart LR
+ UI1[审计事件列表] --&gt; A1[GET events / GET summary / POST export]
+ UI2[事件详情与复核] --&gt; A2[GET event / GET content / POST reviews / POST reaudit]
+ UI3[清理预览与确认] --&gt; A3[POST deletion-preview / POST deletion-confirm]
+ UI4[审计配置] --&gt; A4[GET config / PUT config / POST probe / POST samples]
+ UI5[审计运行] --&gt; A5[GET runtime / GET operations]
+ A1 --&gt; QUERY[audit.query / 相同过滤语义]
+ A2 --&gt; EVENT[audit.events / review / jobs]
+ A3 --&gt; RET[audit.retention / 固定快照 / 一次性令牌]
+ A4 --&gt; CONF[audit.config / detector capabilities]
+ A5 --&gt; RUN[audit.runtime / operations]
+</pre></section><section id="acceptance"><h2>11 · 实施顺序与验收门槛</h2><pre class="mermaid">flowchart TD
+ DESIGN[当前：审计原型与契约评审] --&gt; REVIEW[用户完成评审后进入服务实施]
+ REVIEW --&gt; B1[一：持久任务 / 策略快照 / 检测适配器]
+ B1 --&gt; B2[二：三协议输入输出 / SSE重组 / 原样转发回归]
+ B2 --&gt; B3[三：事件与复核 / 重审 / 留存清理]
+ B3 --&gt; B4[四：前端接真实API / Docker卷与密钥 / 重启恢复]
+ B4 --&gt; TEST[真实故障测试 + 检测器语料测试 + 浏览器验收]
+ TEST --&gt; GATE{通过接口与行为契约}
+ GATE -- 是 --&gt; RELEASE[发布 v0.1.2]
+ GATE -- 否 --&gt; FIX[修复后重新验证]
+ MOCK[本轮浏览器验证] --&gt; BOUND[仅证明样例交互 / 不证明检测准确率或后端完成]
+</pre></section></main><script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:"strict",theme:"base",themeVariables:{primaryColor:"#edf7f3",primaryBorderColor:"#70aa9b",lineColor:"#74958d",fontFamily:"system-ui"},flowchart:{htmlLabels:false}});</script></body></html>

@@ -1,0 +1,234 @@
+{
+  "version": "0.1.2",
+  "revision": 7,
+  "stage": "design-review",
+  "focus": "请求敏感信息识别、发送前自动脱敏、风险登记",
+  "navigation": [
+    "风险记录",
+    "脱敏策略",
+    "脱敏验证"
+  ],
+  "architecture": {
+    "baseline": "v0.1.1 Python/aiohttp Provider / API KEY / Ops",
+    "management_port": 8766,
+    "gateway_port": 8768,
+    "mode": "synchronous pre-forward local protection; not asynchronous after-the-fact auditing",
+    "modules": [
+      "privacy/buffer.py",
+      "privacy/policy.py",
+      "privacy/parsers/",
+      "privacy/detector.py",
+      "privacy/redactor.py",
+      "privacy/validator.py",
+      "privacy/records.py",
+      "privacy/routes.py",
+      "privacy/preview.py"
+    ],
+    "gate": "provider transport accepts only SanitizedRequest produced by completed privacy validation; cannot reuse original raw bytes on exception; upstream socket creation only after authorization",
+    "response": "upstream response and SSE streaming unchanged; no output safety review this release"
+  },
+  "scope": {
+    "categories": {
+      "personal": [
+        "email",
+        "mainland mobile",
+        "ID format candidate",
+        "labelled name/address"
+      ],
+      "account": [
+        "username/password/context fields"
+      ],
+      "server": [
+        "labelled host/IP",
+        "SSH login",
+        "database connection URI",
+        "private-key block"
+      ],
+      "key": [
+        "recognized provider key prefixes",
+        "Bearer",
+        "api_key/token fields"
+      ]
+    },
+    "accounts": "all configured accounts; no silent unprotected account routing",
+    "models": "arbitrary model/version strings; model names not used as privacy allowlist",
+    "non_goals": [
+      "harmful content/jailbreak moderation",
+      "external guard model",
+      "output interception",
+      "subscription conversion",
+      "general gateway analytics",
+      "recoverable original-secret vault",
+      "automatic restoration of secrets in model output",
+      "multimodal/OCR/WebSocket inspection"
+    ],
+    "limits": "unlabelled arbitrary passwords/names cannot be guaranteed; addresses/ID formats can false-positive; demonstrate specific supported patterns, evaluate recall and precision before release"
+  },
+  "policy": {
+    "default_categories": [
+      "personal",
+      "account",
+      "server",
+      "key"
+    ],
+    "no_master_bypass": true,
+    "disable_category": "explicit confirmation listing lost coverage required; categories disabled apply only to new request snapshots; not a global failure bypass",
+    "at_least_one_category": true,
+    "custom_fields": "exact case-insensitive ASCII identifiers2..40 chars, max32; field matching in nested JSON and labelled config text; no plaintext secret values and no arbitrary regex stored",
+    "revision": "CAS expected_revision; atomic save/activate;409 reload; in-flight policy and rule versions immutable",
+    "activation_failure": "reject new protected requests, no fallback to unvalidated configuration",
+    "max_kib": {
+      "default": 64,
+      "min": 4,
+      "max": 1024
+    },
+    "deadline_ms": {
+      "default": 1000,
+      "min": 50,
+      "max": 5000
+    },
+    "retention_days": {
+      "default": 30,
+      "min": 1,
+      "max": 365
+    }
+  },
+  "request_inspection": {
+    "formats": [
+      "UTF-8 application/json Responses",
+      "UTF-8 application/json Chat Completions",
+      "UTF-8 application/json Claude Messages"
+    ],
+    "paths": "support standard POST model invocation endpoint aliases configured at provider layer; unknown callable endpoint fail closed, no provider-model whitelist",
+    "assembly": "fully read/decode before first upstream request; bounded body across transfer chunks and UTF8 boundaries; reject duplicate JSON keys and non-finite numbers; decoded strings scanned once; invalid JSON/encoding refused",
+    "scope": "all user-controlled request string values including system/instructions/messages/input, nested tool arguments/results when presented as text or string leaves; no tool execution or semantic chain reconstruction",
+    "structural": "model/role/type/tool names/IDs and structural keys are scanned but not rewritten; if sensitive matches here reject rather than break tool routing; protect numerics/bools and schema types; sensitive numeric credential fields reject pending typed adaptation",
+    "unknown_shapes": "unknown textual JSON fields recursively inspected; opaque/encrypted/base64 strings and image/audio/file parts or references which cannot be inspected are rejected when detected, not represented as checked; no promise to detect all obfuscation",
+    "multimodal": "reject multimodal body/attachments/files or references, WS, unsupported encodings/protocols; no fallback original forwarding; errors name coverage limitation, not model incompatibility",
+    "routing_headers": "user-supplied URL query and nonessential passthrough headers cannot bypass inspection. Preserve only documented safe protocol headers (content-type, accept, anthropic-version, bounded beta flags) after value validation; reject unexpected secret-bearing headers/query; strip cookies and caller auth before trusted Provider injection. Original path never echoed in errors/logs. No downstream arbitrary header passthrough in protected mode.",
+    "provider_auth": "existing stored Provider credentials remain separate trusted egress auth; never scan them as user content and never include in privacy metadata",
+    "limits": "max depth32, max string leaves4096, bounded scanner operations, per-request max bytes; no unbounded decode/decompress or recursive nested-code execution"
+  },
+  "redaction": {
+    "method": "detect candidate spans, normalize overlaps, build request-local value map, replace only permitted string paths, then validate request",
+    "precedence": "whole private key / full connection URI first, longest overlapping span next, deterministic rule priority ties",
+    "consistency": "identical observed original values share placeholder across all in-scope string leaves within one request, no cross-request identity table; labelled matches cause identical other occurrences to be replaced too",
+    "placeholders": "[类别_N] ; reserve existing literal placeholder names before generating, no collision with user content; no equality proof across requests",
+    "preservation": "request structure and ordinary text preserved; new Content-Length and content-type; remove stale content digest/signature headers; preserve stream/options/numbers/bools/tool routing fields; normalization of JSON whitespace permitted",
+    "verification": "all recognized sensitive original spans removed; new placeholders excluded from residual test; reparse and compare structure/unchanged fields before egress; unknown secrets not claimed absent",
+    "no_restore": "mapping destroyed after request; upstream response placeholders are not restored to secrets",
+    "error": "replace/residual/structural failures block request; never bypass"
+  },
+  "failure": {
+    "invalid_json": 400,
+    "uninspectable_content": 422,
+    "unsupported_protocol": 422,
+    "request_too_large": 413,
+    "sensitive_protocol_field": 422,
+    "sensitive_field_name": 422,
+    "residual_sensitive_value": 422,
+    "detector_timeout": 503,
+    "privacy_busy": 503,
+    "policy_unavailable": 503,
+    "risk_store_unavailable": 503,
+    "semantics": "no upstream request for any preprocessing failure; return stable code plus gateway request_id, no original fragments; not HTTP200 mock success",
+    "duplicate_json_key": 400
+  },
+  "execution": {
+    "buffering": "request admission acquires max32 slots/global32MiB; bounded64KiB default per-request; no sleeping holding excess buffers; body read deadline15s returns408",
+    "worker": "CPU scanning on bounded worker executor outside aiohttp event loop; deadline monitored by parent; expired work may finish but cannot obtain egress authorization; no auto request replay",
+    "cancel": "cancel or worker late result discards buffer and authorization; release slots exactly once; no original request retry",
+    "risk_write": "redacted request must commit minimal decision+findings before upstream open; store failure blocks; blocked requests attempt metadata write best-effort because egress already denied; ordinary unmatched request no risk row, only non-content counters",
+    "forward_state": "authorized -> forwarding -> completed/upstream_failed/client_cancelled/interrupted; immutable privacy decision independent; zero claim of upstream success from redaction result",
+    "restart": "mark historical forwarding interrupted; no replay and no original reconstruction; ephemeral raw bytes lost; durable records remain"
+  },
+  "data": {
+    "database": "separate privacy.sqlite WAL on existing persistent data volume; small serialized writes before authorization; no raw request storage",
+    "tables": [
+      "privacy_policy",
+      "privacy_risk",
+      "privacy_finding",
+      "privacy_feedback",
+      "privacy_operation",
+      "privacy_delete_preview"
+    ],
+    "risk": [
+      "opaque generated id/request_id",
+      "account_id_snapshot from configured catalog",
+      "protocol enum",
+      "action redacted/blocked",
+      "reason enum",
+      "safe findings",
+      "policy/ruleset versions",
+      "source gateway/preview",
+      "forward_state",
+      "created_at/expires_at"
+    ],
+    "finding": [
+      "category enum",
+      "rule_id catalog ID",
+      "safe_path structural path with arbitrary user keys normalized to [field]",
+      "placeholder generated by detector",
+      "occurrence_count"
+    ],
+    "never_store": [
+      "original input",
+      "outbound full body",
+      "raw secret",
+      "reversible map",
+      "raw value hash or fingerprint",
+      "free-form user reason",
+      "raw model name copied from payload",
+      "raw headers/URL",
+      "raw upstream errors"
+    ],
+    "feedback": "append-only enum correct/false_positive; no free-text, no auto allowlist",
+    "privacy": "minimal metadata may still describe use; trusted-local token protection, file permissions0600; DB backups contain metadata only; worker errors use enums, stack traces must not include content",
+    "memory": "do not claim Python/JS secure zeroization; clear references and bound lifetime, avoid core dumps and debug payload logging"
+  },
+  "retention": {
+    "default_days": 30,
+    "read": "filter expired at query time; background purge60s",
+    "shorten": "min(old_expiry,created_at+new_period) for existing rows; current policy updates cleanup atomically",
+    "extend": "new rows only; no resurrection",
+    "cascade": "findings/feedback/preview references cleared; operation metadata only with count, no contents",
+    "delete": "preview fixed terminal IDs excluding in-flight forwarding; max10000; token actor+policy_revision+ids expires60s single-use; confirm rechecks transaction,410 expiry409 revision conflict; new arrivals never included"
+  },
+  "api": {
+    "namespace": "/api/privacy",
+    "all_routes": "existing trusted-local Host/Origin boundary + X-TraceMason-Token including GETs; no remote multiuser auth claim",
+    "preview": "explicit local-only POST, user text transmitted only to local service, no model/detector request; returns transformed request and safe findings with Cache-Control:no-store; request logs disabled; raw body not reflected; policy current revision required",
+    "record_preview": "explicit record_result default false; prototype checkbox-style test action records only safe risk metadata, source=validation distinct from gateway",
+    "query": "filter action/category/account/source/since/until/id; same predicate summary/list/export, page<=100; unknown latency null",
+    "export": "JSON metadata only max10000/20MiB;413 narrow scope; no original fields ever",
+    "body_sensitive": "preview response contains outgoing redacted request; not assumed secret-free against unknown rules, must never persist it automatically"
+  },
+  "prototype": {
+    "entry": "prototype/index.html",
+    "revision": 7,
+    "engine": "local rule-based demonstrator actually scans supplied text; no preset risk decision",
+    "storage_key": "tm-privacy-v012-r7",
+    "persistence": "only safe policy identifiers and risk metadata; raw input/output/map current test page only; switch page/reload discards",
+    "real_network": false,
+    "production_implemented": false,
+    "tested_accuracy": "supported fixture patterns only, no universal recall claim",
+    "limitations": [
+      "no live upstream",
+      "no server auth and durable DB integration",
+      "browser does not enforce real network deadlines",
+      "not all protocol/header/encoding edge cases implemented in browser",
+      "production canary tests required"
+    ],
+    "field_mapping": {
+      "finding.path": "API Finding.safe_path",
+      "risk.account": "API Risk.account_id_snapshot resolved through configured catalog",
+      "risk.source": "fixture is review-only; validation maps to API validation",
+      "risk.forward_state": "all prototype records represent no actual upstream call; production records distinguish authorized/forwarding/completed/errors"
+    }
+  },
+  "reference": {
+    "sub2api": "borrow configuration/event/delete interaction patterns; asynchronous audit engine not used as egress protection",
+    "new_api": "existing Provider auth/url reference only; no protocol conversion imposed",
+    "backup": "old observation/retention insights only; no original-content persistence reused or migration claimed"
+  }
+}

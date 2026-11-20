@@ -1,0 +1,103 @@
+{
+  "revision": 6,
+  "items": [
+    {
+      "id": "A01",
+      "module": "审计事件",
+      "entry": "prototype/index.html#events",
+      "expected": "统一筛选、分页与同口径摘要",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A02",
+      "module": "事件详情",
+      "entry": "prototype/index.html#event/audit-1014",
+      "expected": "输入输出方向、覆盖状态、证据与策略快照",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A03",
+      "module": "人工复核",
+      "entry": "prototype/index.html#event/audit-1014",
+      "expected": "说明必填、意见追加、原检测结论不变",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A04",
+      "module": "重新审计",
+      "entry": "prototype/index.html#event/audit-1014",
+      "expected": "新事件、原请求关联、原结论保留、留存片段部分覆盖",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A05",
+      "module": "配置保存",
+      "entry": "prototype/index.html#config",
+      "expected": "字段校验、取消、跨页未保存提示、CAS冲突",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A06",
+      "module": "策略生效",
+      "entry": "prototype/index.html#config",
+      "expected": "停用/账号/方向/类别影响新样例，历史快照不变",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A07",
+      "module": "清理",
+      "entry": "prototype/index.html#events",
+      "expected": "预览固定集合、一次性确认、过期拒绝",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A08",
+      "module": "导出",
+      "entry": "prototype/index.html#events",
+      "expected": "当前筛选，真实JSON下载，不含正文和证据",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A09",
+      "module": "审计运行",
+      "entry": "prototype/index.html#runtime",
+      "expected": "失败直达详情，待审跳转精确筛选",
+      "validation": "浏览器验证"
+    },
+    {
+      "id": "A10",
+      "module": "故障语义",
+      "entry": "prototype/index.html#events",
+      "expected": "检测超时/格式无效/未知协议/部分覆盖不能标为安全",
+      "validation": "样例浏览器验证"
+    },
+    {
+      "id": "A11",
+      "module": "转发隔离",
+      "entry": "index.html#sequence",
+      "expected": "检测故障、队列满、DB失败不改上游字节",
+      "validation": "实施时服务集成测试"
+    },
+    {
+      "id": "A12",
+      "module": "真实检测",
+      "entry": "index.html#privacy",
+      "expected": "检测端点鉴权、协议结果校验、证据一致性、语料误报漏报",
+      "validation": "实施时真实端点与固定语料验证"
+    },
+    {
+      "id": "A13",
+      "module": "生命周期",
+      "entry": "index.html#operations",
+      "expected": "加密、清理期限、租约与重启恢复、令牌权限",
+      "validation": "实施时存储与故障注入测试"
+    },
+    {
+      "id": "A14",
+      "module": "页面质量",
+      "entry": "prototype/index.html",
+      "expected": "桌面1440与手机390，深链刷新，图表渲染无异常",
+      "validation": "浏览器验证"
+    }
+  ]
+}

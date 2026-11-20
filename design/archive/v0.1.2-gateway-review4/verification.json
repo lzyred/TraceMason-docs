@@ -1,0 +1,43 @@
+{
+  "version": "0.1.2",
+  "revision": 4,
+  "scope": "product prototype and design only",
+  "checked_at": "2026-11-15T11:32:14.384Z",
+  "checks": [
+    "saved connect timeout determines outcome and logical duration",
+    "same upstream wait succeeds after increasing connection budget",
+    "concurrency rejects second call; cancellation releases active slot",
+    "idle and total timeout are separate observable outcomes",
+    "in-flight request freezes old relay revision; next request uses new policy",
+    "generated tool roundtrip spans two real review requests; full-page deep link survives reload",
+    "conflicting explicit and response-reference association stays unassigned",
+    "slow request appears in performance analysis and opens phase evidence",
+    "unwritable storage queues actual request snapshots; recovery commits them",
+    "capacity saturation keeps forwarding but counts untracked call; recovery invents no row",
+    "restart interrupts active request and retains explicit interruption evidence",
+    "unknown protocol forwards; HTTP200 incomplete remains semantic incomplete",
+    "login errors, observer denial, logout lock and administrator login",
+    "five pages and full detail inspected at desktop and mobile widths",
+    "capture account scope, redaction,4KiB truncation and three providers arbitrary models",
+    "current deny policy immediately blocks historical content",
+    "stale capture policy refuses overwrite and reloads latest revision",
+    "retention save and confirmed expired-request cleanup",
+    "actual redacted-content JSON download excludes original email",
+    "content purge preserves request metadata and shows deleted state",
+    "analytics exact anomaly predicate remains linked to records",
+    "19 design diagrams and promise-to-acceptance map rendered"
+  ],
+  "console_errors": 0,
+  "production_changed": false,
+  "backend_implemented": false,
+  "vendor_acceptance": false,
+  "evidence": [
+    "verification-workflow.json",
+    "verification-governance.json"
+  ],
+  "limitations": [
+    "Synthetic upstream and accelerated clock; no live supplier traffic",
+    "Role/session behavior demonstrated in browser; server authorization still requires implementation",
+    "Browser storage is review state, not production SQLite/encrypted content implementation"
+  ]
+}

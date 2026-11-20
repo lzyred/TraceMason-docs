@@ -1,0 +1,256 @@
+{
+  "version": "0.1.2",
+  "revision": 6,
+  "status": "design-review",
+  "focus": "模型内容安全审计",
+  "navigation": [
+    "审计事件",
+    "审计配置",
+    "审计运行"
+  ],
+  "baseline": {
+    "service": "TraceMason-Service v0.1.1 Python / aiohttp / SQLite / CredentialStore",
+    "management_port": 8766,
+    "gateway_port": 8768,
+    "scope": "沿用Provider/API KEY/基础Ops，不重做通用网关分析"
+  },
+  "non_goals": [
+    "订阅转换",
+    "计费",
+    "通用用量性能分析",
+    "工具链与会话分析",
+    "自动拦截或修改响应",
+    "多用户/多租户权限体系",
+    "多模态内容检测",
+    "WebSocket载荷审计"
+  ],
+  "mode": {
+    "default": "off for new deployment; prototype fixture enabled",
+    "enabled": "async only",
+    "forwarding": "不await审计任务、数据库或检测器；队列拥塞不回压原始转发",
+    "no_model_allowlist": true
+  },
+  "content": {
+    "protocols": [
+      "OpenAI Responses",
+      "OpenAI Chat Completions / DeepSeek compatible",
+      "Claude Messages"
+    ],
+    "directions": [
+      "input",
+      "output"
+    ],
+    "input": "所选请求内system/developer/user/assistant可识别文本；不从相似内容拼接会话",
+    "output": "文本增量按content index重组，正常结束/异常断流/字节预算达到后提交每方向一个任务；已审文本以字节范围记录",
+    "excluded": "工具JSON参数/结果、图片音视频、二进制、压缩编码无法安全解析时及WebSocket；明确unsupported/partial，不限制转发",
+    "coverage": "full仅指配置范围内文本完整；未覆盖工具或二进制必须随coverage_reason列出；partial无命中只显示已审片段未发现风险",
+    "max_text_kib": {
+      "default": 64,
+      "min": 4,
+      "max": 1024
+    },
+    "parser_buffer_limit_bytes": 1048576,
+    "global_dispatcher_bytes": 33554432,
+    "dispatcher_event_limit": 512,
+    "finalize": "唯一(request_id,direction,attempt)；流结束只提交一次；无文本skipped；HTTP>=400不把错误页当模型输出"
+  },
+  "detection": {
+    "adapters": [
+      "structured_json",
+      "qwen3guard"
+    ],
+    "model": "自由字符串，不依据名称推断能力",
+    "categories": {
+      "pii": "隐私与敏感信息",
+      "jailbreak": "提示注入与越权",
+      "harmful": "有害内容；具体子类别由适配器映射"
+    },
+    "result": "必须含decision、findings；findings含category/severity/quote/start/end；证据区间匹配受检文本；未知类别保留unknown_categories；出现未知结论或枚举invalid_detector_result；未完成类别不能生成完整clear",
+    "json_protocol": "/chat/completions，消息将被审文本作为不可信数据；返回JSON对象；校验schema与证据，不接受任意散文或模型自报成功",
+    "qwen3guard": "专用解析器将安全等级与风险类别映射，不能提供逐字证据时evidence_state=not_provided；禁止编造引用；通过固定语料与输出样本验证后启用",
+    "timeout_ms": {
+      "default": 10000,
+      "min": 100,
+      "max": 30000
+    },
+    "max_result_bytes": 262144,
+    "retry": "不自动重试检测HTTP；人工重审建立新事件",
+    "scope_notice": "所选文本会发送至用户配置的检测端点；内容不得写入普通日志；本轮原型无网络调用"
+  },
+  "events": {
+    "key": "UUID/ULID + monotonic sequence for delete snapshot",
+    "statuses": [
+      "pending",
+      "running",
+      "risk",
+      "clear",
+      "failed",
+      "unsupported",
+      "skipped"
+    ],
+    "coverage": [
+      "full",
+      "partial",
+      "none"
+    ],
+    "review": [
+      "unreviewed",
+      "confirmed",
+      "false_positive"
+    ],
+    "directions_separate": true,
+    "snapshot": [
+      "account identity",
+      "provider",
+      "model",
+      "policy_revision",
+      "detector model/adapter",
+      "category set",
+      "input/output coverage"
+    ],
+    "terminal_immutable": true,
+    "risk_levels": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "unknown_is_not_clear": true,
+    "source": [
+      "gateway",
+      "sample",
+      "reaudit"
+    ],
+    "nullable_latency": "unknown is null, never zero"
+  },
+  "review": {
+    "append_only": true,
+    "reason": "1..500 trimmed characters; no content snippets in operation log",
+    "actor": "existing trusted-local administrator identity; not multiuser authentication",
+    "conflict": "expected_review_revision; concurrent review returns409",
+    "false_positive": "人工标注独立于detector decision；不自动改变规则或训练模型",
+    "reason_storage": "复核说明加密留存，跟随content_expires_at；过期只保留复核枚举/操作者/时间，不返回说明正文"
+  },
+  "reaudit": {
+    "requires": "当前启用且账号方向在范围；留存内容尚未过期；只重审脱敏片段",
+    "new_event": true,
+    "parent": "parent_id/request_id/direction retained; latest config snapshot; attempts unique transactionally",
+    "coverage": "partial/redacted_snapshot; result does not represent original text",
+    "errors": [
+      "409 audit_disabled_or_out_of_scope",
+      "410 content_unavailable"
+    ],
+    "retention": "child content expiry never exceeds source content expiry"
+  },
+  "config": {
+    "CAS": "expected_revision in PUT;409 conflict; reload cannot silently overwrite",
+    "secrets": "write-only replace, empty retains; no API echoes; credentials frozen by versioned secret reference retained while jobs use it",
+    "activation": "commit then atomic snapshot; runtime exposes expected_revision/active_revision/load_error; failed load keeps last valid config, disables new audits on cold-start failure",
+    "validation": "at least1 account/direction/category when enabled; content_days<=metadata_days; HTTP(S) URL with no embedded credentials/query/fragment; deny redirect; outbound user-selected private/local detectors permitted only explicitly configured, no user request may choose target"
+  },
+  "storage": {
+    "database": "separate audit.sqlite WAL; serialized writer off relay event loop; dedicated persistent volume audit-data",
+    "tables": [
+      "audit_policy",
+      "audit_event",
+      "audit_job",
+      "audit_payload",
+      "audit_content",
+      "audit_finding",
+      "audit_review",
+      "audit_operation",
+      "audit_deletion_preview"
+    ],
+    "indexes": [
+      "created_at DESC,id DESC",
+      "request_id,direction",
+      "status,created_at",
+      "account_id_snapshot,created_at",
+      "category,event_id",
+      "unique request_id,direction,attempt"
+    ],
+    "encryption": "AES-GCM with dedicated audit content key derived separately from credential key; AAD event_id+policy_revision+payload_kind; key file0600, separate volume; no plaintext body in SQLite/logs/backups",
+    "temporary": "pre-redaction detector text encrypted TTL <=30min; deleted on terminal outcome; chosen detector receives necessary content; no blanket claim that all secrets can be recognized",
+    "retained": "redact body and evidence together; default7d; evidence spans refer to retained safe content or evidence unavailable; credentials excluded structurally; PII redaction occurs after detector inspection",
+    "metadata": "default30d; cascade content/findings/reviews/jobs/payload; operation metadata default90d no content",
+    "expire": "GET checks expires_at synchronously; cleanup worker every60s; policy shortening min(old_expiry,created_at+new_days); extension only new events; expired cannot resurrect"
+  },
+  "queue": {
+    "workers": {
+      "default": 2,
+      "min": 1,
+      "max": 8
+    },
+    "capacity": {
+      "default": 128,
+      "min": 8,
+      "max": 4096
+    },
+    "admission": "bounded dispatcher nonblocking; separate durable capacity transaction; no acknowledged durable job until encrypted payload+job+event atomically commit",
+    "dropped": "count instance/process epoch and reason, never invent per-request record when admission failed; existing affected records partial",
+    "lease": "claim pending atomically; heartbeat; lease60s; expired running becomes failed/interrupted on startup, no automatic duplicate detector call",
+    "restart": "unexpired pending with payload resumes; stale running fails; temporary TTL expired fails payload_expired; in-memory uncommitted losses cannot be recovered",
+    "shutdown": "stop new audit admissions; bounded5s flush; forwarding shutdown follows existing service policy",
+    "database_failure": "mark runtime degraded and stop admission; after successful health probe accept new jobs; never fabricate lost history",
+    "attribution": "detector availability and audit health separate from upstream request outcome"
+  },
+  "auth": {
+    "reuse": "existing loopback Host/Origin/Sec-Fetch-Site boundary and GET /api/session token bootstrap",
+    "audit_routes": "X-TraceMason-Token required on ALL audit APIs including content GET; server-side check; browser fixture does not implement auth",
+    "deployment": "trusted local administration only; container management port binds loopback; remote/multiuser exposure requires separate authentication design",
+    "body": "4KiB metadata defaults; config/probe sample max1MiB; JSON only writes; logs no credentials/content"
+  },
+  "query": {
+    "fields": [
+      "q exact-ID or model substring",
+      "status",
+      "provider",
+      "account_id",
+      "direction",
+      "category",
+      "since inclusive RFC3339 UTC",
+      "until exclusive RFC3339 UTC"
+    ],
+    "summary": "same normalized predicate as list; counts by direction event, not request count; dropped counter excluded from denominator",
+    "pagination": "page>=1,page_size1..100 default20, created_at DESC,id DESC; total scoped",
+    "export": "same predicate, metadata only, maximum10000 rows and20MiB;413 if exceeded; no content/review reason/evidence"
+  },
+  "delete": {
+    "preview": "filtered terminal events only; pending/running excluded; fixed id snapshot max10000; normalized filter hash+actor+config_revision+snapshot ids+expiry60s; single-use server token",
+    "confirm": "transaction consume token and delete same IDs;409 stale config,410 expired;403 wrong actor; added events never included; return actual deleted_count",
+    "retention": "same cascade; operation log retains action/count/id references without content"
+  },
+  "prototype": {
+    "entry": "prototype/index.html",
+    "storage": "synthetic fixture data only in localStorage tm-content-audit-v012-r6; never store typed API keys",
+    "limitations": [
+      "no real detector requests",
+      "no backend authentication or encryption",
+      "no durable workers or actual fault injection",
+      "no accuracy claims",
+      "local fixture export/deletion do not affect production",
+      "检测服务检查仅演示校验流程，不证明真实端点连通；样例输入仅做示例脱敏，不能提供真实敏感数据保障"
+    ],
+    "review_scope": "flows and state labels only; backend correctness requires production_gate acceptance cases"
+  },
+  "reference_sources": [
+    "references/sub2api/frontend/src/features/prompt-audit",
+    "references/sub2api/backend/internal/securityaudit",
+    "references/new-api/relay/channel/adapter.go"
+  ],
+  "implementation_modules": [
+    "audit/config.py",
+    "audit/dispatcher.py",
+    "audit/parsers/",
+    "audit/detectors/",
+    "audit/jobs.py",
+    "audit/worker.py",
+    "audit/repository.py",
+    "audit/query.py",
+    "audit/review.py",
+    "audit/retention.py",
+    "audit/runtime.py",
+    "audit/routes.py",
+    "web/audit/"
+  ]
+}

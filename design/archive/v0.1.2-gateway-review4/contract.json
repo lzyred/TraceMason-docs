@@ -1,0 +1,455 @@
+{
+  "version": "0.1.2",
+  "status": "review-not-implemented",
+  "baseline": "v0.1.1",
+  "backup": "backup/pre-restart-20261113@c13b594a3052168257da36b6f896160eb358c56b",
+  "transport": "unchanged arbitrary paths/models/types; no parser gates forwarding",
+  "security": {
+    "read": "authenticated management session: administrator or observer; server-side authorization",
+    "write": "administrator + CSRF token + If-Match resource revision",
+    "persist_bodies": "no raw body persistence; optional encrypted REDACTED extracted content only",
+    "persist_query": false,
+    "upstream_id": "allowlisted response headers; bounded and redacted",
+    "path": "redact credential-like segments; omit query; bounded",
+    "account_snapshot": "immutable nonsecret names and identifiers survive account deletion",
+    "content": "administrator AND current capture access_mode=admin; checked on every read/export; no content fields in list or analytics"
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/requests",
+      "query": {
+        "since": "ISO UTC inclusive",
+        "until": "ISO UTC exclusive",
+        "provider": "optional",
+        "account_id": "optional",
+        "source": "gateway|probe",
+        "transport": "optional enum",
+        "attention": "optional boolean",
+        "q": "literal case-insensitive substring id/account/model; escape SQL LIKE wildcards; max200",
+        "cursor": "opaque started_at+request_id keyset with filter hash and upper tuple; 400 cursor_filter_mismatch if reused with different filters",
+        "limit": "1..100 default25; prototype requests8",
+        "defaults": "since=now-24h, until=now; UTC; since<until; max90d; 400 invalid_query otherwise"
+      },
+      "response": {
+        "items": "RequestRecord[]",
+        "next_cursor": "string|null",
+        "scope": "retained_records; cleanup and new refresh may change counts; each response internally consistent",
+        "as_of": "ISO UTC",
+        "summary": {
+          "total": "integer",
+          "semantic_completed": "integer confirmed",
+          "attention": "integer derived from decision order",
+          "input_tokens": "integer|null sum of known records only",
+          "output_tokens": "integer|null sum of known records only",
+          "usage_known_count": "integer",
+          "usage_total_count": "integer"
+        },
+        "consistency": "items and filtered summary read in one SQLite read transaction; UI replaces both atomically"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/requests/{id}",
+      "response": "RequestRecord + usage + observation; 404 request_not_found"
+    },
+    {
+      "method": "GET",
+      "path": "/api/observation/health",
+      "response": {
+        "state": "healthy|degraded",
+        "queue_depth": "integer",
+        "dropped_events": "integer since instance start",
+        "write_failures": "integer since instance start",
+        "instance_id": "string",
+        "last_write_at": "ISO|null",
+        "untracked_requests": "integer since instance start; admission slots exhausted",
+        "tracked_partial_requests": "integer since instance start",
+        "pending_terminal_writes": "integer"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/observation/retention",
+      "response": {
+        "days": 7,
+        "max_records": 10000,
+        "revision": 1
+      },
+      "headers": {
+        "ETag": "policy-1"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/observation/retention",
+      "body": {
+        "days": "1..90",
+        "max_records": "100..1000000"
+      },
+      "errors": [
+        "400 invalid_policy",
+        "403 admin_token_required",
+        "409 policy_conflict"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/observation/cleanup-preview",
+      "response": {
+        "eligible": "integer estimate",
+        "revision": "integer",
+        "as_of": "ISO UTC"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/observation/cleanup",
+      "body": {},
+      "response": {
+        "deleted": "actual integer",
+        "revision": "integer"
+      },
+      "errors": [
+        "403 admin_token_required",
+        "409 policy_conflict"
+      ]
+    }
+  ],
+  "observation_limits": {
+    "queue_byte_budget": 8388608,
+    "queue_event_budget": 2048,
+    "per_event_parse_bytes": 1048576,
+    "active_parser_budget": 128,
+    "nonstream_parse_bytes": 1048576,
+    "request_model_inspection_bytes": 65536,
+    "policy": "budget exhausted => partial; discard parsing bytes, preserve forwarding; bounded request metadata, bounded lifecycle markers; never claim lossless capture",
+    "terminal_event_loss": "finish updates pre-reserved lifecycle slot, never enqueues into byte queue; dirty snapshots retained until committed; no unbounded terminal queue",
+    "request_model": "bounded JSON inspection only; unknown null; no body mutation",
+    "websocket": "transport metadata only; semantic/usage unsupported",
+    "claude": "message_start input/cache usage; message_delta output usage; message_stop completion; no double accumulation of cumulative values",
+    "lifecycle_slots": 4096,
+    "context_max_bytes": 4096,
+    "database_failure": "single writer retries latest coalesced dirty snapshots with 0.1..5s exponential backoff; no raw payload retention; full slots stop observation admissions only",
+    "lifecycle_release": "only after terminal snapshot committed; idempotent monotonic sequence updates",
+    "untracked": "increment process-local untracked_requests and show degraded; no fabricated request row",
+    "shutdown": "5s bounded flush, then exit; restart reconciles persisted old-instance running records; unpersisted rows may be absent",
+    "request_body_budget": "64KiB per admitted request for model metadata; exhausted => model null, request payload untouched",
+    "byte_chunk_limit": "copy at most remaining global budget; if whole chunk cannot fit, drop observation chunk and mark context partial; original bytes still forwarded",
+    "parser_budget_exhausted": "preserve transport observation; semantic/usage unknown unless already confirmed; mark context partial; never resume an SSE parser after a byte gap",
+    "memory_bound": "lifecycle 16MiB + queued chunks 8MiB + parsers <=128MiB + request inspection <=8MiB for parser admitted contexts; no body buffers for non-admitted parser contexts; additional global content buffer16MiB, on exhaustion drop content and mark partial",
+    "pending_visibility": "pending dirty snapshots are bounded in-memory state, explicitly persist_state=pending; durable query may still show last committed row. Health exposes pending count. Recovery upserts dirty terminal metadata; lost chunks remain partial."
+  },
+  "data": {
+    "db": "requests.sqlite3 WAL separate from accounts",
+    "indexes": [
+      "started_at DESC, request_id DESC",
+      "account_id_snapshot, started_at",
+      "provider_kind, started_at",
+      "transport_state, started_at"
+    ],
+    "idempotency": "request_id primary key; upsert only newer sequence; terminal snapshot includes bounded immutable context and may create row if start was not committed",
+    "cleanup": "only terminal rows; age cutoff UTC or rank beyond newest max_records among terminal records; cascade children in one transaction; requests running excluded",
+    "recovery": "old instance running=>interrupted/service_restarted; retain confirmed semantic and usage",
+    "usage": "unknown fields null; known only when input/output valid; partial if one known; totals sum only fully known records; cache fields shown separately using provider semantics",
+    "latency": "monotonic elapsed; first byte vs first recognized text; null for unobserved",
+    "account_snapshot": "physical columns embedded in request_record; no account_snapshot table and no FK to account configuration",
+    "retention_policy": "independent singleton table; not FK from each request",
+    "write_order": "observations and retention mutations serialized on one writer; reads on separate connections in read transactions",
+    "retention_delete_race": "terminal slots released after successful commit; writer processes final updates before cleanup; no older terminal update may resurrect a pruned row",
+    "query_attention": "http_status>=400 OR semantic in failed/incomplete OR transport in failed/interrupted OR cancelled without semantic completed",
+    "input_tokens_definition": "normalized total input tokens; OpenAI/DeepSeek upstream reported total input; Claude input_tokens + cache_read_input_tokens + cache_creation_input_tokens when all required values known, missing optional cache fields treated according to protocol presence semantics; no guessed values. Cache display fields are included in normalized input and never added again to total.",
+    "entities": [
+      "request_record with embedded account snapshot and policy revisions",
+      "request_usage",
+      "request_observation",
+      "capture_content encrypted redacted payload",
+      "tool_event bounded metadata",
+      "request_link provenance edge",
+      "relay_policy per account",
+      "capture_policy singleton",
+      "retention_policy singleton",
+      "audit_event"
+    ],
+    "tool_retention": "tool metadata survives content-only purge; arguments and results deleted with content; parent request deletion cascades tool metadata"
+  },
+  "record_schema": {
+    "request_id": "string immutable local ID",
+    "account_id_snapshot": "string",
+    "account_name_snapshot": "string",
+    "provider_kind": "string",
+    "source": [
+      "gateway",
+      "probe"
+    ],
+    "method": "string",
+    "path_redacted": "string <=2048 no query",
+    "model": "string|null <=200 observed only",
+    "started_at": "ISO UTC",
+    "finished_at": "ISO UTC|null",
+    "transport_state": [
+      "running",
+      "complete",
+      "cancelled",
+      "interrupted",
+      "failed"
+    ],
+    "http_status": "integer|null",
+    "semantic_state": [
+      "pending",
+      "completed",
+      "incomplete",
+      "failed",
+      "unknown",
+      "unsupported"
+    ],
+    "error_stage": [
+      "connect",
+      "upstream_response",
+      "model_result",
+      "client_transport",
+      "service_lifecycle",
+      null,
+      "gateway_admission",
+      "connect_timeout",
+      "idle_timeout",
+      "total_timeout"
+    ],
+    "error_code": "safe enum|null no upstream raw message",
+    "upstream_request_id": "string|null <=200 allowlist characters",
+    "first_byte_ms": "nonnegative integer|null",
+    "first_text_ms": "nonnegative integer|null",
+    "duration_ms": "nonnegative integer|null",
+    "bytes_received": "nonnegative integer",
+    "usage": {
+      "state": [
+        "pending",
+        "known",
+        "partial",
+        "missing",
+        "unsupported"
+      ],
+      "input_tokens": "nonnegative integer|null",
+      "output_tokens": "nonnegative integer|null",
+      "cached_tokens": "nonnegative integer|null",
+      "cache_creation_tokens": "nonnegative integer|null",
+      "parser_version": "string|null"
+    },
+    "observation": {
+      "completeness": [
+        "full",
+        "partial"
+      ],
+      "reason": [
+        "queue_drop",
+        "parse_limit",
+        "parse_error",
+        "write_error",
+        null
+      ],
+      "instance_id": "string",
+      "last_sequence": "nonnegative integer"
+    },
+    "relay_revision": "integer snapshot",
+    "capture_revision": "integer snapshot",
+    "content_state": "available/truncated/not_collected/unsupported/expired/deleted/parse_error",
+    "session_key": "string|null account scoped",
+    "turn_id": "string|null",
+    "persist_state": "pending|committed; local pending projection clearly marked",
+    "response_id": "string|null upstream body response identifier, separate from header request id"
+  },
+  "module_map": {
+    "provider/transport.py": "emit bounded lifecycle and byte observation; no parsing or database I/O",
+    "provider/tunnel.py": "transport metadata only; websocket payload parsing deferred",
+    "observation/dispatcher.py": "byte/event bounds, offer without await, overflow counters",
+    "observation/parsers/": "protocol/content-type and event recognition, no model allowlist; Responses, Chat Completions, Messages",
+    "observation/repository.py": "isolated sqlite writes, request idempotency, read projection",
+    "observation/query.py": "filtered paginated records and same-scope aggregation",
+    "observation/retention.py": "policy CAS, cleanup preview/transaction, startup reconciliation",
+    "web/requests.js": "list/detail/filter/pagination/policy UI through API client",
+    "governance/service.py": "capture policy CAS, effective access and expiry, content purge, export authorization",
+    "observation/content.py": "bounded extract/redact/encrypt; no raw persistence",
+    "observation/association.py": "same-account explicit/response-id linking with conflict reasons",
+    "analytics/service.py": "shared filter DSL, aggregate, trend and exact drill predicates",
+    "security/session.py": "admin/observer sessions, CSRF and server-side permissions",
+    "provider/relay_policy.py": "account-scoped immutable relay config and concurrency slots",
+    "web/gateway.js": "review implementation of five navigation modules; production split per module",
+    "provider/profiles.py": "single-source Provider authentication/default catalog, model-free; protocol parser capability registry separate"
+  },
+  "revision": 4,
+  "ui_contract": {
+    "result_order": [
+      "http_status>=400: upstream rejection + code",
+      "transport failed/interrupted: failure stage",
+      "semantic failed/incomplete: model outcome",
+      "transport running: in progress",
+      "cancelled without semantic completed: client cancellation",
+      "semantic completed: confirmed completion",
+      "otherwise: transport state + unknown semantic"
+    ],
+    "health_vs_record": "global health never rewrites historical record completeness; per-record missing reason persisted at capture time",
+    "filters": "active filters always visible; account shortcut resets conflicting filters; header shows retained scope",
+    "policy": "cancel discards edits; save persists; cleanup uses saved revision; 409 requires reload; preview count estimate, actual count returned",
+    "probe": "account check emits same observation flow with source=probe; returned request_id links detail; cancel records cancelled; no fabricated completion",
+    "prototype": "isolated localStorage of account snapshots and observation metadata only; no plaintext API keys; review test responses simulated and marked; no upstream request"
+  },
+  "schema_source": "openapi.json components.schemas; diagrams summarize these physical entities, contract.json defines behavior",
+  "probe_response": "POST /api/providers/test adds local observation request_id when admitted; nullable if observation unavailable; must not claim a record exists for untracked request",
+  "scope": {
+    "navigation": [
+      "接入管理",
+      "交互记录",
+      "分析洞察",
+      "数据治理",
+      "运行状态"
+    ],
+    "excluded": [
+      "subscription conversion",
+      "automatic retry/failover",
+      "billing",
+      "quality scoring",
+      "CS"
+    ],
+    "implementation": "four batches under one version design"
+  },
+  "capture": {
+    "default": "metadata",
+    "modes": [
+      "metadata",
+      "redacted"
+    ],
+    "scope": "one account_id or *; account deletion does not rewrite snapshots",
+    "revision": "capture-N ETag; begin freezes revision; update affects new requests; 409 reload required",
+    "data": "recognized text input/output and tool parameters/results only; multimodal binary/unknown protocol not collected",
+    "redaction": "remove credentials, Authorization/Cookie and known key fields; optional email and mainland phone masking; redact before encrypt/store/log; failure drops content, not forwarding; cross-chunk tokens require bounded assembly before redaction; patterns do not guarantee all-sensitive-data removal",
+    "bounds": "4..1024KiB per request, default64; full redacted text byte cap; mark truncated; global content processing buffer16MiB; binary excluded",
+    "storage": "AES-GCM using dedicated content key reference and request_id+capture_revision AAD; separate key volume; no plaintext body on disk or in logs",
+    "expiry": "capture-time expires_at immutable upper bound; policy shortening can shorten existing expiry; extension never resurrects or extends old content; parent request cleanup cascades content",
+    "view_states": [
+      "available",
+      "truncated",
+      "not_collected",
+      "unsupported",
+      "expired",
+      "deleted",
+      "denied",
+      "parse_error"
+    ],
+    "access": "current policy deny revokes content access immediately, even for already captured records; observer gets403; audit content reads",
+    "tools": "tool_name/call_id/type/order as metadata; arguments/results only within encrypted content and permission checks; no executing tools",
+    "cancel": "partial observed content may remain, marked incomplete; never fabricate tool output or model completion",
+    "audit": "append-only action metadata; no content values; retention default90days separately; observer cannot read audit or export"
+  },
+  "association": {
+    "namespace": "account_id_snapshot + explicit session identifier",
+    "explicit": "X-TraceMason-Session-Id and X-TraceMason-Turn-Id length1..200 allowlisted; local headers stripped before upstream forwarding",
+    "implicit": "same-account unique previous_response_id matching recorded upstream response.id; header request-id is not response.id",
+    "conflicts": "do not merge; association_state=conflict and preserve independent request",
+    "tools": "match call_id only within same account+verified association, distinguish missing result and pruned target",
+    "retry": "never infer retries by similar prompt/time; explicit parent id/retry attempt reserved optional fields, no automatic retries this version",
+    "privacy": "identifiers treated as untrusted bounded metadata, no prompt-similarity session invention",
+    "tool_roundtrip": "call and result may arrive in different HTTP requests. Tool execution belongs to client/external tool. Gateway only observes; no fabricated execution outcome or hidden retries."
+  },
+  "relay_policy": {
+    "defaults": {
+      "connect_timeout_s": 10,
+      "idle_timeout_s": 120,
+      "total_timeout_s": 0,
+      "max_concurrency": 0
+    },
+    "ranges": {
+      "connect_timeout_s": [
+        1,
+        120
+      ],
+      "idle_timeout_s": [
+        10,
+        3600
+      ],
+      "total_timeout_s": [
+        0,
+        86400
+      ],
+      "max_concurrency": [
+        0,
+        10000
+      ]
+    },
+    "semantics": "0 disables total/concurrency limit; nonzero total>=connect; all HTTP/SSE/WS share account concurrency; incoming/outgoing transport progress resets idle; monotonic timers; client cancel closes upstream and releases slot",
+    "revision": "relay-account-N ETag; freeze with account snapshot at request start; runtime changes affect new requests only",
+    "errors": "unknown account404; disabled409; saturated429; connect/idle/total timeout504 before headers else terminate stream and record failure; no automatic retry/failover; error payload passthrough from upstream",
+    "admission": "concurrency rejection is local429 with error_stage=gateway_admission, transport_state=failed; not upstream rejection. Acquisition occurs before upstream connection, release exactly once in finally."
+  },
+  "analytics": {
+    "scope": "same retained dataset as requests; filters normalized at service boundary; UTC since inclusive/until exclusive",
+    "dimensions": [
+      "provider_kind",
+      "account_id_snapshot",
+      "model"
+    ],
+    "metrics": [
+      "total",
+      "semantic_completed",
+      "attention",
+      "input_tokens",
+      "output_tokens",
+      "usage_known_count",
+      "usage_total_count",
+      "first_byte_p95_ms",
+      "duration_p95_ms",
+      "sample_count"
+    ],
+    "p95": "nearest-rank ceil(.95*n), finite observed values only; duration only terminal; null for no sample",
+    "drill": "return exact normalized predicate with dimension equality + outcome category + absolute time bounds; list accepts same predicate; no string-search approximation",
+    "trend": "UTC fixed-width buckets, zero for empty bucket, explicit bucket_start/bucket_end; retention gaps disclosed",
+    "exclusions": "no task-success, quality or monetary-value inference",
+    "tools": "observed call/result event count and distinct requests with tool events; no tool-success inference; no dedup of repeated call_id across unrelated requests"
+  },
+  "auth_design": {
+    "management": "bootstrap admin secret loaded from file0600/env, never committed; password-authenticated server session HttpOnly SameSite=Strict; observer secret independently configured; no public registration",
+    "sessions": "POST session/login with role and secret; rate-limited failures; server generates CSRF token; logout invalidates; 8h max session; existing host/origin checks retained",
+    "authorization": "observer GET metadata/query/analytics/health only; admin mutations, tests and exports; admin content additionally subject to capture access policy",
+    "review": "role picker only simulates server authorization; not production authentication",
+    "gateway": "local loopback deployment baseline; downstream public/multi-tenant credential issuance outside version; upstream API keys are not management passwords",
+    "prototype_limit": "Prototype demonstrates authorization with role picker only. Real login/session UI and backend are required in implementation; this prototype never sends real credentials."
+  },
+  "endpoints_source": "Complete endpoint and schema inventory is openapi.json; endpoints array below covers baseline observation endpoints only.",
+  "product_review": {
+    "entry": "coverage.html",
+    "full_detail": "#interaction/{request_id}; page not drawer; back and reload retain identity",
+    "simulation": "all request execution in browser synthetic, 1 logical upstream second=80ms wall time; metrics display logical durations; no external supplier calls",
+    "cases": [
+      "normal",
+      "tools with follow-up client request",
+      "slow",
+      "connect_timeout",
+      "idle_timeout",
+      "incomplete",
+      "429 upstream",
+      "unknown protocol",
+      "continuous output for cancellation and concurrency"
+    ],
+    "untracked": "saturated observer does not create request row; transport still runs; returns nullable request_id and recorded flag",
+    "role_flow": "demo-only credentials admin-demo/viewer-demo; login, wrong password, limited attempts, observer read, logout gate; server implementation must never use these credentials"
+  },
+  "runtime_actions": {
+    "retry_writes": "admin POST /api/observation/retry-writes requests an immediate bounded writer retry; does not clear actual storage fault",
+    "restart": "prototype fault scenario only; production restart remains deployment operation, not a general management API",
+    "fault_injection": "review toolbar only; NEVER shipped as production endpoints"
+  },
+  "exports": {
+    "preview_ttl_s": 60,
+    "recheck": "admin role, content access, current policy revision, request existence and content expiry at confirm; 409 invalidates preview; separate read snapshot for download",
+    "audit": "record identity/scope/count, never exported values",
+    "maximum_records": 10000,
+    "size_limit_bytes": 52428800,
+    "over_limit": "413 export_too_large; narrow filters or use paginated metadata query"
+  },
+  "analysis_drill": {
+    "slow_threshold_ms": 8000,
+    "semantics": "terminal duration >= threshold, exact normalized since/until and dimension equality",
+    "upstream_error": "upstream HTTP>=400 only; exclude local concurrency/validation",
+    "local_error": "separate category gateway_admission/connect_timeout/idle_timeout/total_timeout",
+    "performance": "first_byte, first_text, total separate, null stays null; initial diagnosis is direction for checking, not inferred root cause"
+  }
+}
