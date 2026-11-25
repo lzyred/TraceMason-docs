@@ -1,0 +1,81 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>客户端身份与网关授权 · 产品与架构评审</title><style>
+*{box-sizing:border-box}body{margin:auto;max-width:1120px;padding:32px 24px 80px;background:#f5f7fa;color:#203246;font:16px/1.6 system-ui,sans-serif}h1{font-size:32px}h2{font-size:20px}section{margin:18px 0;padding:16px 24px;background:white;border:1px solid #d6dfe8;border-radius:12px;overflow:auto}nav{display:flex;flex-wrap:wrap;gap:16px}a{color:#20528b}.mermaid{text-align:center}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #dae2eb}
+</style><h1>客户端身份与网关授权</h1><nav><a href="prototype.html">Server / Mini 交互原型</a><a href="#now">当前配置</a><a href="#products">产品分工</a><a href="#request">请求链路</a><a href="#rotate">七天轮换</a><a href="#data">数据与验收</a></nav>
+<section id="now"><h2>当前 Server · 已回读凭据状态</h2><table><tr><th>账号</th><th>协议 / 模型</th><th>上游鉴权</th><th>配置状态</th></tr><tr><td>ceduax-codex</td><td>Responses · gpt-6.2-sol</td><td>Bearer</td><td>已启用，默认模型已返回正文</td></tr><tr><td>ceduax-claude</td><td>Messages · claude-sonnet-5-5</td><td>Bearer</td><td>已启用，默认模型已返回正文</td></tr><tr><td>ceduax-gemini</td><td>generateContent · gemini-4-argon</td><td>x-goog-api-key</td><td>账号目录列出 4 个模型，尚未取得生成回复</td></tr></table></section>
+<section id="products"><h2>目标产品 · 谁操作，看到什么</h2><pre class="mermaid">
+flowchart LR
+ A[Server 用户] --> P[Provider 接入与账号管理]
+ A --> C[客户端管理]
+ C --> I[创建 client_id 与显示名称]
+ I --> G[勾选已启用线路并发放一次性激活凭据]
+ C --> O[查看最近使用与到期时间 · 撤销授权]
+ U[Mini 用户] --> L[设备与服务器 · 输入服务地址并激活]
+ L --> R[显示客户端名称与授权线路]
+ R --> T[按工具预览网关地址与模型 · 确认应用]
+ T --> S[线路状态 · 已生效 / 等待空闲 / 需要登录]
+</pre></section>
+<section id="request"><h2>目标架构 · 跨设备请求与认证边界</h2><pre class="mermaid">
+flowchart LR
+ subgraph M[用户设备]
+ Mini[Mini 身份与轮换服务] --> K[系统钥匙串 · 登录凭据与待应用 Key]
+ Mini --> AD[Codex / Claude / Gemini 配置适配器]
+ AD --> CLI[原生 CLI · 网关端点与七天 Key]
+ end
+ subgraph S[私有 Server]
+ AUTH[身份服务 · 激活 / 续签 / 撤销] --> DB[身份与授权库]
+ GW[网关鉴权 · 到期 / 撤销 / 线路权限] --> PR[隐私审计与拦截]
+ PR --> P[Provider 适配器 · 替换认证头]
+ V[上游加密凭据库] --> P
+ GW --> LOG[请求 ID / client_id / 账号 / 处置]
+ end
+ Mini <-->|HTTPS 控制面| AUTH
+ CLI -->|HTTPS 数据面| GW
+ DB --> GW
+ P --> UP[上游模型]
+</pre></section>
+<section id="rotate"><h2>目标交互 · 轮换与空闲重载</h2><pre class="mermaid">
+sequenceDiagram
+ participant S as Server
+ participant M as Mini
+ participant C as 原生 CLI
+ M->>S: 以 client_id 与激活证明登录
+ S-->>M: 登录会话、授权线路、七天 Key 与服务端到期时间
+ M->>C: 用户确认后写入网关配置
+ M->>S: 到期前使用登录会话续领，重试复用轮换编号
+ S-->>M: 下一代 Key 与到期时间
+ M->>M: 新 Key 暂存钥匙串
+ alt 活跃会话或活动状态未知
+ M->>M: 显示等待空闲，保留现有配置
+ else 已确认空闲
+ M->>C: 校验配置版本，原子写入并按工具重载
+ M->>S: 确认本代生效，旧代停止接受新请求
+ end
+ alt 旧 Key 已到期
+ S-->>C: 新请求返回凭据已过期
+ M->>M: 提示等待空闲或用户确认重新打开 CLI
+ end
+</pre><p>评审假设：七天由 Server 计时；已受理的流式响应允许完成。多个 CLI 共用一代 Key 时，Mini 等相关工具全部空闲再切换，逐工具记录写入结果，全部确认后退役旧代。历史会话文件不参与活跃判断。</p></section>
+<section id="data"><h2>目标数据 · 权限与审计归属</h2><pre class="mermaid">
+erDiagram
+ USER ||--o{ CLIENT : owns
+ CLIENT ||--o{ GRANT : receives
+ PROVIDER_ACCOUNT ||--o{ GRANT : permits
+ CLIENT ||--o{ LOGIN_SESSION : authenticates
+ CLIENT ||--o{ KEY_GENERATION : rotates
+ CLIENT ||--o{ REQUEST_AUDIT : originates
+ PROVIDER_ACCOUNT ||--o{ REQUEST_AUDIT : routes
+ CLIENT { string client_id PK
+ string owner_id
+ string display_name
+ string status }
+ KEY_GENERATION { string key_id PK
+ string client_id FK
+ string token_digest
+ datetime expires_at
+ datetime revoked_at }
+ REQUEST_AUDIT { string request_id PK
+ string client_id FK
+ string account_id FK
+ string decision }
+</pre></section><section><h2>评审与验收</h2><table><tr><th>场景</th><th>预期</th></tr><tr><td>客户端改名 / 撤销单条线路</td><td>历史按稳定 ID 关联；撤销后该线路的新请求被拒绝</td></tr><tr><td>离线到期 / 重复续领 / 配置被外部修改</td><td>恢复网络后续领；相同轮换编号复用结果；配置冲突时停在待处理</td></tr><tr><td>CLI 长期开启且活动不可确认</td><td>保持待切换，可由用户确认退出；记录实际生效时间</td></tr><tr><td>远程部署</td><td>现有 Compose 仅发布回环端口；部署带 TLS 的客户端入口，保留管理面的访问边界</td></tr><tr><td>实现范围</td><td>现有 Provider 账号、隐私网关、Mini 原生配置读写可复用。客户端身份、线路授权、临时 Key、活动检测及轮换协调待实现</td></tr></table></section>
+<script src="../../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'neutral'});</script></html>

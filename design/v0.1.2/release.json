@@ -66,11 +66,11 @@
     ],
     "runtime_image": "sha256:262cb424bca872c31b581c6a54657bf931cf9ee397aa1d73a0785b8d3aad22fd",
     "ruleset": "local-context-3",
-    "follow_up": "../v0.1.3/index.html",
+    "follow_up": "../../../TraceMason-App/design/v0.1.3/index.html",
     "baseline_manifest": "../../releases/v0.1.2/manifest.json",
     "baseline_bundle": "../../releases/v0.1.2/source-and-design.tar.gz",
     "git_tag_created": false
   },
   "release_note": "release.html",
-  "next_version_plan": "../v0.1.3/index.html"
+  "next_version_plan": "../../../TraceMason-App/design/v0.1.3/index.html"
 }

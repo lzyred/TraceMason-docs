@@ -1,0 +1,38 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini Build 30 · 状态与实施计划</title>
+<style>*{box-sizing:border-box}body{margin:auto;max-width:1140px;padding:32px 22px 70px;font:16px/1.65 system-ui;color:#213544;background:#fafcfb}h1,h2{line-height:1.2}h2{margin:36px 0 14px}table{border-collapse:collapse;width:100%;background:white}td,th{padding:10px 12px;border:1px solid #cddbd6;text-align:left;vertical-align:top}th{background:#e5f1ec}td:first-child{min-width:6em;font-weight:600}details{border-top:1px solid #bdcec7;padding:12px 0}summary{cursor:pointer;font-weight:650}a{color:#146454}pre{overflow:auto}section{overflow-x:auto}</style>
+<h1>Mini Build 30 · 状态与实施计划</h1><p>2026-11-24　｜　本机 Client + Server　｜　Codex、Claude Code、Gemini CLI</p>
+<nav><a href="#matrix">状态清单</a> · <a href="#plan">实施批次</a> · <a href="#accept">交付证据</a> · <a href="index.html">历史验收</a> · <a href="../../../TraceMason-App/design/v0.1.3-r10/prototype.html">R10 设备原型</a></nav>
+<h2>从账号到可用配置</h2><pre class="mermaid">flowchart LR
+ A[Server 保存账号] --> B[设备绑定并获授权]
+ B --> C[按账号读上游目录]
+ C --> D[Mini 选择模型并测试]
+ D --> E[预览并写入本机配置]
+ E --> F[真实 CLI 收到回复]
+ F --> G[按请求查看隐私处置]
+ G --> H[空闲轮换与恢复]
+</pre>
+<section><h2>Build 31 复核</h2><p>三种工具的原生 Store 分别从已保存连接和磁盘当前配置创建测试，设备账号、请求地址、请求头和非默认模型通过回归。不同主机或错误凭据未匹配设备身份。DMG 隔离启动后，Debug 回报 Build 31、已读配置及编辑器可用，WindowServer 已注册窗口。屏幕可见性检测未通过，尚未从窗口点选并发送。</p></section><section><h2>Gemini 流式请求对照</h2><p>同机 Server、ceduax-gemini、gemini-3.8-flash、streamGenerateContent。经设备入口的最小请求在 120.02 秒收到 HTTP 504，审计 c433f08078134c12a91a189d06c21f4c 为 failed，临时身份已撤销。容器内用相同账号直接请求已配置的上游，126.02 秒内未取得 HTTP 响应头。故障在绕过 Mini 及网关转发处理时也能复现，上游内部原因待确认。</p></section><section><h2>Build 32 · 两个 CLI 同时续领</h2><p>隔离设备、实际 CLI、测试上游。第六天，先让 Claude 配置与保存记录冲突，Gemini 随后完成新代写入、回读和验证；客户端仍持有待确认代。恢复 Claude 配置并重启后，完成两端确认并使用第二代。另修复 macOS 对同一临时目录返回 /private/var 与 /var 时的误报。</p></section><section><h2>Build 32 · 设备撤销与资料同步</h2><p>本机隔离 Server。受信测试证书的 HTTPS 设备激活和会话查询成功。设备会话、网关临时 Key 请求资料目录均返回 401，资料配对令牌请求设备会话也返回 401。撤销网关设备后，用两份独立的资料配对令牌在本机 HTTP 同步入口完成 Session 与 Skill 上传、重复上传、版本冲突、历史读取与恢复。Skill 在预览后被修改时拒绝覆盖，重新核对后恢复成功。本次使用 Swift 同步组件和合成文件。</p></section><section><h2>Build 32 · 安装包可见窗口与真实 Gemini CLI</h2><p>从 DMG 复制到独立目录，用 macOS Launch Services 打开，已在当前屏幕检测到正常大小的主窗口；Debug 回报 Build 32 并读到隔离配置。模型菜单的实际点选仍待验收。设备目录列出的 gemini-3.1-pro-preview 经真实 CLI 测试在 133 秒超时，审计 5ff9211652364255bbc2a27c628ee7df 关联本次设备和第一代凭据，结果 release / failed。临时身份已撤销。</p></section><section id="matrix"><h2>状态清单</h2><table><tr><th>环节</th><th>已核对的事实</th><th>仍需证明或修复</th></tr>
+<tr><td>安装基线</td><td>本次读到 /Applications 中的版本为 27；Build 30 DMG 的 SHA-256 匹配。进程查询时未发现名为 TraceMasonClient 的运行实例。</td><td>从独立安装目录启动 30，记录运行路径、Build、Server 版本。保留用户当前安装。</td></tr>
+<tr><td>上游账号</td><td>本次从本机管理 API 得到 Codex 9、Claude 16、Gemini 9 项，三者来源均为 account。</td><td>设备授权目录与管理目录逐账号比对；账号取消授权后，已打开的选择器也要可识别失败。</td></tr>
+<tr><td>身份与凭据</td><td>历史设备接口验证了激活、授权、撤销。客户端有独立设备会话和网关临时 Key。</td><td>在 30 实际窗口覆盖首次绑定、重启、重新绑定、撤销、服务离线，核对可见名称及客户端 ID。</td></tr>
+<tr><td>网页选模型</td><td>浏览器回归在测试上游选择第二项，校验请求正文并成功发送。网页提供刷新与手填。</td><td>在已部署页面验证三种协议。Gemini 的选中 ID 体现在 URL 路径里。</td></tr>
+<tr><td>Mini 已保存连接</td><td>30 源码已把设备凭据传给目录组件。Build 29 的测试窗口漏传。</td><td>已安装程序中点开菜单，记录账号、实际选项和发出的模型。核对手填、空目录、过期凭据及重试。</td></tr>
+<tr><td>Mini 当前配置</td><td>diagnoseNative 从磁盘重建 Connection；构造时没有填 deviceAccount、deviceClientID。目录组件依赖 deviceAccount 发送设备认证。</td><td>识别已绑定网关的本地配置，同时处理无法匹配和多个候选。外部地址不得获得另一条连接的临时 Key。</td></tr>
+<tr><td>直连与设备连接</td><td>Mini 目录组件寻找路径中的 proxy 段。普通直连地址会保留内置推荐。</td><td>产品明确两个入口的目录来源；直连推荐、手填和设备账号实时目录在界面可区分。</td></tr>
+<tr><td>测试结果</td><td>Server 基础测试与 Mini 检查模型回复正文，高级 HTTP 检查以完成的 2xx 响应判定成功，真实 CLI 检查预期文本。Server Chrome 隔离回归覆盖选中第二个模型收到正文、200 但无正文显示失败，55 项服务测试通过，本机镜像已部署。基础测试按实际请求路由选择正文解析协议，Gemini 生成路径在测试记录中使用 {model} 占位。</td><td>界面逐项区分连通、生成、预期回复、CLI 使用和审计。保留高级自定义请求的 HTTP 语义。</td></tr>
+<tr><td>CLI 安装与配置</td><td>三个安装入口和 readiness 检查有源码；已有原生配置读写和历史恢复实现。</td><td>逐工具在隔离用户目录覆盖缺失、已安装未配置、目录覆盖、无权限、已有外部修改；从预览、复制、切换到恢复逐步核对文件。</td></tr>
+<tr><td>真实生成</td><td>历史本机真实账号验证中 Codex、Claude 返回预期正文并有 completed 审计。Gemini 目录可读，2.5-flash 和 3.8-flash 的真实 CLI 验证曾超时。</td><td>同一模型逐段验证原生协议、设备转发、CLI 流式输出；确定第一个行为分歧点，再归因。</td></tr>
+<tr><td>隐私处置</td><td>历史验证有设备、凭据代号、请求和处置关联；上游报错后的断开已做审计修复。</td><td>在 Mini 点「查看本次处置」，验证放行、脱敏、拦截、上游失败以及取消。核对当前请求 ID，检查日志和预览脱敏。</td></tr>
+<tr><td>七天轮换</td><td>历史隔离验证覆盖第六天续领、忙时等待、错误回复后保留旧代、重启重试成功。协调器遇到配置不匹配或 CLI 缺失可直接抛错退出本轮。</td><td>三工具混合运行验证每工具独立推进，在最后一个必要验证成功后确认退役；覆盖到期、掉线、丢回包和手动修改配置。</td></tr>
+<tr><td>Session / Skill</td><td>历史记录覆盖独立配对、上传、幂等、版本冲突、恢复。与网关设备认证为独立流程。</td><td>Build 30 从本地发现到远端恢复逐项操作；三个工具分别检查默认目录、覆盖目录、空目录及大量记录的筛选与选择。</td></tr>
+<tr><td>Debug 与界面</td><td>有本机诊断服务与命令行读取入口；历史安装包有启动和只读检查记录。</td><td>30 原生窗口验收可见开关、日志查看、关闭后断开、语言切换与跟随系统；与 R9 工作区和 R10 设备流程逐屏对照。</td></tr></table></section>
+<section id="plan"><h2>实施批次和验收顺序</h2>
+<details open><summary>P0-1　固定版本与复线路径 · 客户端交付</summary><ol><li>从 Build 30 DMG 复制到隔离目录启动，记录包校验、运行进程路径、Build 和服务端镜像。</li><li>用临时身份授权单个账号，分别进入「已保存连接」和「当前配置」；各留一组截图、目录状态码和模型数。</li><li>用另一账号及撤销后的临时身份重复操作。凭据、激活码和请求正文从证据中剔除。</li></ol></details>
+<details open><summary>P0-2　贯通两个原生测试入口 · Mini + Server</summary><ol><li>复用同一账号解析和目录加载逻辑，设备来源须可追溯至已绑定地址和授权账号。</li><li>目录状态覆盖加载、成功有数据、成功为空、凭据失效、离线、重试。切换账号时丢弃旧请求结果；刷新不覆盖已手填的模型。</li><li>三家分别从列表选择非默认模型，核对 Responses/Messages 请求正文及 Gemini 路径；另测输入目录外的模型 ID。</li><li>通过条件为两个原生入口均能选择和发送，所选模型、实际请求、界面结果三者一致。</li></ol></details>
+<details open><summary>P0-3　统一结果含义并定位 Gemini · 网关 + 客户端</summary><ol><li>将 HTTP 状态、协议解析、模型正文和预期回复分别记录。覆盖 200 空正文、200 错误载荷、流中断、401、403、404、429、502、超时和取消。</li><li>同一账号、模型和短提示，顺序比较上游原生请求、设备网关请求和真实 CLI；分别核对首包、结束事件、正文和审计状态。</li><li>Codex、Claude、Gemini 各留一次可关联的成功样本。上游持续故障时保留最后成功步骤及失败证据，单独标记该账号。</li></ol></details>
+<details><summary>P1-1　安装与配置闭环 · 三套 CLI 适配</summary><ol><li>逐一检查可执行路径、安装结果、配置目录和权限。先读出原配置，完成差异预览和脱敏复制。</li><li>在测试目录执行应用、回读、切换和恢复。覆盖用户自定义字段、环境变量凭据、重启和外部编辑冲突。</li><li>三种 CLI 通过正常入口执行，并从原生界面打开同次请求的隐私记录。</li></ol></details>
+<details><summary>P1-2　多工具轮换与撤销 · 身份服务 + Mini</summary><ol><li>注入测试时间，验证签发、续领、到期及撤销；一次续领重试得到同一代。</li><li>令一工具忙、一工具空闲、一工具缺失或有配置冲突。记录每个工具的配置代号、验证代号和等待原因。</li><li>在写入、验证、确认三个步骤分别中断并重启；以 Server、磁盘和钥匙串的最终状态核对恢复结果。</li></ol></details>
+<details><summary>P1-3　资料同步、诊断与原型一致性 · Mini</summary><ol><li>Session 与 Skill 各自执行发现、筛选、预览、同步、冲突、恢复，并验证网关凭据轮换后的独立可用性。</li><li>模拟大量条目；核对加载时窗口响应、筛选、滚动和选择保留。实测耗时后再确定性能目标。</li><li>复核 Debug 可见开关、日志、关闭行为。逐屏核对中文、英文、跟随系统、窄窗口以及错误和空状态。</li></ol></details>
+<details><summary>P2　发布复核 · 安装包与设计记录</summary><ol><li>对用户可见的改动先更新版本化 HTML 原型；保留 R9/R10 供逐项对照。</li><li>从最终 DMG 新装及从旧版升级各跑一次 P0 主流程。保留已有配置、历史和配对关系。</li><li>发布记录写明原型修订号、Build、镜像、每种 CLI 版本、通过与失败用例。最终判断依据为安装包实操。</li></ol></details></section>
+<h2 id="accept">每个验收样本记录什么</h2><p>入口与构建号 → 工具与授权账号 → 选择的模型 → 实际协议与模型 ID → HTTP 状态与正文验证 → CLI 结果 → 设备代号与请求 ID → 用户看到的状态。涉及配置时附脱敏前后差异及恢复结果。</p>
+<script src="../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict'});</script></html>

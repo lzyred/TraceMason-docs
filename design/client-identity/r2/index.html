@@ -1,0 +1,82 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>客户端身份与七天授权 · R2</title>
+<style>*{box-sizing:border-box}body{background:#f6f7f5;color:#182e30;font:16px/1.65 system-ui,sans-serif;margin:0}main{max-width:1120px;margin:auto;padding:42px 5vw}section{background:white;border:1px solid #d8e1dd;border-radius:14px;margin:20px 0;padding:20px 26px;overflow:auto}h1{font-size:clamp(26px,4vw,44px);margin:8px 0}h2{font-size:20px}nav{display:flex;gap:18px;flex-wrap:wrap}a{color:#126960}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #dce5df;text-align:left;vertical-align:top;padding:9px}th{color:#476360}pre{text-align:center}code{overflow-wrap:anywhere}summary{cursor:pointer;font-weight:650}</style><main>
+<small>TraceMason / Server × Mini / 设计评审 R2</small><h1>客户端身份与七天授权</h1>
+<nav><a href="prototype.html">操作双端原型 ↗</a><a href="#contract">接口契约</a><a href="#review">交叉验收</a><a href="../r1/index.html">R1 存档</a></nav>
+<section><h2>产品入口与职责</h2><pre class="mermaid">
+flowchart LR
+ A[管理员] --> P[Provider 接入 · 保存上游凭据]
+ P --> G[选择已启用账号线路]
+ A --> I[客户端管理 · 创建稳定 ID 与名称]
+ I --> G --> T[发放一次性激活码]
+ T --> M[Mini · 设备与服务器]
+ M --> L[绑定设备 · 获取授权目录]
+ L --> R[按工具检测安装和当前配置]
+ R --> D[预览差异 · 选择纳管工具]
+ D --> F[应用并回读 · 发起原生 CLI 验证]
+ F --> O[显示请求结果与审计处置]
+ M --> B[Session 与 Skill · 独立配对备份]
+</pre><p>Server 的名称可改，审计归属使用稳定 client_id。线路对应具体账号，一个协议可有多个账号。Mini 的可选模型取授权账号目录，推荐项仅作快捷选择，保留自定义模型 ID。</p></section>
+<section><h2>请求与信任边界</h2><pre class="mermaid">
+flowchart TD
+ Admin[回环管理入口 · 当前管理员] --> Owner[持久 owner_id 与客户端授权]
+ Mini[远端 Mini · 钥匙串保存设备会话] --> DeviceAPI[HTTP 或 HTTPS 设备接口]
+ DeviceAPI --> Identity[激活 / 续领 / 确认]
+ Identity --> Owner
+ CLI[三种原生 CLI · 客户端七天 Key] --> Gate[HTTP 或 HTTPS 网关 · 校验有效期和撤销]
+ Gate --> Grant[逐请求核对 client_id 与 account_id 授权]
+ Grant --> Cat[账号模型目录]
+ Grant --> Audit[请求 ID · 客户端 ID · 隐私处置]
+ Audit -->|允许或脱敏| Adapter[协议适配 · 注入服务端上游凭据]
+ Audit -->|拦截| Deny[本地返回处置结果]
+ Adapter --> Provider[模型厂商]
+</pre><p>远程入口仅发布设备与网关路由。管理、备份、设备续签和模型请求各用独立权限。首期将现有单管理员映射到持久 owner_id，部署迁移时先建立授权，再开启远程入口。回环兼容模式与远程入口独立监听，默认拒绝未知路由。</p></section>
+<section><h2>七天轮换与恢复</h2><pre class="mermaid">
+sequenceDiagram
+ participant S as Server
+ participant M as Mini
+ participant C as 已纳管 CLI
+ M->>S: 携设备会话和持久操作编号续领
+ S-->>M: 下一代 Key 与 UTC 到期时间
+ M->>M: 暂存钥匙串并建立应用日志
+ loop 每个已纳管工具
+ M->>C: 检查活动与配置指纹
+ alt 活跃或状态未知
+ C-->>M: 等待结束或提示用户退出外部 CLI
+ else 可安全切换
+ M->>C: 加本地锁并复核，逐文件替换与回读
+ C->>S: 新启动的 CLI 发起关联验证请求
+ S-->>M: 请求使用新代及其处置结果
+ end
+ end
+ M->>S: 全部纳管工具确认后幂等提交
+ S->>S: 退役旧代
+</pre><table><tr><th>触发</th><th>确定行为</th></tr>
+<tr><td>启动、唤醒、临近到期</td><td>建议提前 24 小时领取。Server 自签发起计 168 小时，旧代到期独立生效。离线指数退避，恢复联网立即核对服务端时间。</td></tr>
+<tr><td>不同 CLI 进度不同</td><td>同一客户端共享一代 Key，按工具独立切换。新旧两代短暂并存，旧代确认退役或到期后拒绝新请求；已受理流允许结束。撤回线路立即阻止该线路新请求。</td></tr>
+<tr><td>外部 CLI / 并发启动</td><td>Mini 托管启动用互斥门闩与活动计数。外部 CLI 无可靠活动证据时显示未知，由用户退出后明确确认，再复查进程和配置。历史 Session、网关无流量均不能证明空闲；外部并发启动仍需实际 CLI 验证。</td></tr>
+<tr><td>配置外改 / 应用中断</td><td>应用前比较预览指纹，冲突时重新预览。多文件保存原值、权限和阶段，逐文件原子替换。重启按指纹继续或恢复，仅恢复仍匹配本次写入的文件。凭据和含密备份受钥匙串保护。</td></tr>
+<tr><td>下一代也过期 / 工具卸载</td><td>以设备会话重新领取有效代，重新检查每个工具。缺失工具提示用户解除纳管，在线撤销身份始终优先于本地恢复。</td></tr></table></section>
+<section id="contract"><h2>目标接口与持久化</h2><table><tr><th>调用方</th><th>接口草案</th><th>服务端约束</th></tr>
+<tr><td>本机管理员</td><td>POST /admin/clients<br>PATCH /admin/clients/{id}<br>POST …/activation 或 …/revoke</td><td>从管理会话取 owner，名称与授权分开更新，版本冲突返回 409。撤销身份级联失效激活码、会话及各代 Key。</td></tr>
+<tr><td>Mini 首次绑定</td><td>POST /device/activate</td><td>短时单用码摘要，条件更新与创建设备会话同事务。响应丢失由管理员重新配对并撤销旧绑定；重复消费拒绝。</td></tr>
+<tr><td>已绑定设备</td><td>GET /device/me<br>POST /device/rotations<br>POST /device/rotations/{id}/ack</td><td>设备会话仅作用于自身。续领绑定 operation_id、客户端和前代，同操作重试回放加密暂存的同一响应；不同操作并发返回 409 并查询进行中编号。确认后销毁回放密文，重复确认返回最终状态。</td></tr>
+<tr><td>CLI</td><td>/proxy/{account}/{tail}<br>/catalog/{account}</td><td>按协议取临时凭据，歧义拒绝。未认证、到期或撤销返回 401，未授权线路统一 403；校验后再解析账号，目录与转发同策略。凭据在日志中仅以 key_id 表示。</td></tr>
+<tr><td>Mini 验证页</td><td>POST /device/verifications<br>GET /device/verifications/{id}</td><td>验证使用短时路径别名，映射回授权线路；仅为新启动的验证进程注入该地址，CLI 无法注入时显示待核实。验证前申请短时标识，绑定客户端、线路、代号和工具。在服务端关联真实请求。未能唯一关联显示待核实；模型目录成功与生成正文成功分别展示。</td></tr></table>
+<pre class="mermaid">
+erDiagram
+ OWNER ||--o{ CLIENT : owns
+ CLIENT ||--o{ ROUTE_GRANT : authorizes
+ ACCOUNT ||--o{ ROUTE_GRANT : routes
+ CLIENT ||--o{ ACTIVATION : pairs
+ CLIENT ||--o{ DEVICE_SESSION : binds
+ CLIENT ||--o{ GENERATION : issues
+ GENERATION ||--o{ REQUEST_EVENT : admits
+ ACCOUNT ||--o{ REQUEST_EVENT : handles
+</pre><p>约束：授权唯一键 (client_id, account_id)，代号唯一键 (client_id, generation)，单客户端最多一个未确认轮换。每代保存 token_digest、issued_at、expires_at、retired_at。Mini 日志按工具记录目标代、配置指纹、写入阶段、验证编号。Server 每次受理均以当前授权为准。</p></section>
+<section id="review"><h2>源码与验收对照</h2><table><tr><th>当前可核对的事实</th><th>本轮验收条件</th></tr>
+<tr><td>现有宿主端口仅绑定回环，网关挂有目录及代理路由。<a href="../../../../TraceMason-Service/compose.yaml">Compose</a> · <a href="../../../../TraceMason-Service/server.py">路由</a></td><td>第二台设备分别使用 HTTP 和 HTTPS 完成激活、续领与网关请求；管理入口不可达；跨客户端请求其他线路和目录均被拒绝，厂商调用计数为零。</td></tr>
+<tr><td>配对设备令牌属于版本化备份。<a href="../../../../TraceMason-Service/device_sync.py">备份服务</a> · <a href="../../../../TraceMason-App/Sources/DeviceSync.swift">Mini 同步</a></td><td>备份令牌调用模型、模型 Key 调用续领、其他设备读取验证记录均被拒绝。</td></tr>
+<tr><td>Mini 已有安装检查、配置读取与 CLI 审计入口。<a href="../../../../TraceMason-App/Sources/ToolReadiness.swift">安装检测</a> · <a href="../../../../TraceMason-App/Sources/LiveConfiguration.swift">配置读取</a> · <a href="../../../../TraceMason-App/Sources/CLIAudit.swift">审计关联</a></td><td>逐一验 Codex、Claude、Gemini 的缺失、外部会话、真实生成、隐私拦截。每次展示工具、线路、模型、结果；关联失败可见。</td></tr>
+<tr><td>R1 原型使用单个全局活动开关，确认写入即显示已应用。<a href="../r1/prototype.html">原始交互</a></td><td>Codex 忙时 Claude 可独立切换；未知状态保持待处理。回读成功而 CLI 验证失败时，仍保留旧代至退役或到期。</td></tr>
+<tr><td>轮换协议属于本轮设计</td><td>双续领只产生一代；丢响应可恢复；逐文件中断、确认丢包和重启均可续办；到期边界拒绝新请求；撤销后旧新两代均失效。</td></tr></table></section></main>
+<script src="../../provider-gateway-v1/assets/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'neutral'});</script></html>

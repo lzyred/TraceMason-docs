@@ -2862,6 +2862,18 @@
               "forward",
               "inspection"
             ]
+          },
+          "client_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "key_generation": {
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3348,6 +3360,18 @@
           },
           "review_expires_in": {
             "type": "integer"
+          },
+          "client_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "key_generation": {
+            "type": [
+              "integer",
+              "null"
+            ]
           }
         },
         "required": [

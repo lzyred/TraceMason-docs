@@ -1,0 +1,79 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>客户端授权 · 交互评审</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f5f6f8;color:#172b3a;font:15px/1.55 system-ui,sans-serif}main,header{max-width:960px;margin:auto;padding:20px}header{display:flex;align-items:center;border-bottom:1px solid #d8dee3;gap:14px}header strong{margin-right:auto}a{color:#16697a}section{background:white;padding:24px;border:1px solid #dbe2e8;border-radius:12px;margin-bottom:16px}h1{font-size:26px}h2{font-size:18px;margin-top:0}label,output{display:block;margin:10px 0}button,input{font:inherit}button{padding:6px 13px;border:1px solid #becbd2;border-radius:7px;background:white;cursor:pointer}button:disabled{opacity:.47;cursor:default}.primary,[aria-pressed=true]{background:#185e68;color:white}input:not([type=checkbox]){width:min(100%,360px);padding:7px}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.muted{color:#586b77}.tag{border-radius:20px;padding:2px 10px;background:#e0f0e9}code{font-size:13px}dialog{max-width:440px;border:1px solid #bbb;border-radius:10px}button:focus-visible{outline:3px solid #56a5b7}
+article{padding:18px 0;border-top:1px solid #dde6e3}article p{color:#465e60}select{font:inherit}header{flex-wrap:wrap}main{max-width:900px}body{background:#eff3f2}#feedback{position:sticky;bottom:12px;background:#163f40;color:white;border-radius:9px;padding:10px}#feedback:empty{display:none}</style><header><strong>TraceMason · 客户端授权 · R2</strong><button id="serverTab" aria-pressed="true">Server</button><button id="miniTab" aria-pressed="false">Mini</button><a href="index.html">架构图</a></header><main>
+<div id="server"><h1>客户端管理</h1><section><h2>专属客户端</h2><label>名称 <input id="name" placeholder="例如：开发工作站" maxlength="64"></label><fieldset><legend>授权线路</legend><label><input type="checkbox" name="route" value="Codex"> Codex</label><label><input type="checkbox" name="route" value="Claude"> Claude Code</label><label><input type="checkbox" name="route" value="Gemini"> Gemini CLI</label></fieldset><p class="row"><button id="save" class="primary">创建客户端</button><button id="revoke" disabled>撤销身份</button></p><output id="serverState">尚未创建</output><output id="activation"></output></section></div>
+<div id="mini" hidden><h1>设备与服务器</h1><section><h2>客户端登录</h2><label>服务器地址（HTTP 或 HTTPS） <input id="address" type="url" value="https://gateway.example.test"></label><label>一次性激活码 <input id="code" autocomplete="off"></label><button id="login" class="primary">登录并获取线路</button><output id="identity"></output></section><section><h2>授权与本机工具</h2><output id="routes"></output><div id="tools"></div></section><section><h2>七天临时凭据</h2><output id="generation"></output><div class="row"><button id="renew">模拟进入续领窗口</button><button id="expire">模拟旧代到期</button></div></section></div>
+<p class="muted">本地交互原型 · 仅使用演示身份和凭据</p><output id="feedback" role="status"></output></main>
+<dialog id="preview"><h2>确认写入 CLI 配置</h2><p id="changes"></p><div class="row"><button id="cancel">取消</button><button id="confirm" class="primary">确认应用</button></div></dialog>
+<script>
+const el=id=>document.getElementById(id),checks=[...document.querySelectorAll('[name=route]')];
+let client=null,grant=[],ticket='',logged=false,gen=0,pending=false,expired=false,selected='';
+const tools={};
+function toolState(name){
+ return tools[name]??=( {activity:'未知',written:0,verified:0,managed:false,result:''} );
+}
+function report(s){el('feedback').textContent=s}
+function action(parent,label,disabled,fn){
+ const b=document.createElement('button');b.textContent=label;b.disabled=disabled;
+ b.onclick=()=>{fn();render()};parent.append(b);
+}
+function applyPending(){
+ if(!pending)return;
+ for(const name of grant){
+  const t=toolState(name);
+  if(t.managed&&t.activity==='已确认空闲'&&t.written!==gen+1){
+   t.written=gen+1;t.verified=0;t.result='已自动切换 · 等待验证';
+  }
+ }
+}
+function render(){
+ applyPending();
+ el('save').textContent=client?'保存授权':'创建客户端';el('revoke').disabled=!client;
+ el('serverState').textContent=client?client.name+' · '+client.id:'尚未创建';
+ el('activation').textContent=ticket?'一次性激活码　'+ticket:'';
+ el('identity').textContent=logged?'已绑定 · '+client.name:'等待绑定';
+ el('routes').textContent=logged?grant.join(' · '):'绑定设备后可查看分配的线路';
+ el('login').disabled=logged;
+ el('renew').disabled=!logged||pending;el('expire').disabled=!pending||expired;
+ el('generation').textContent=logged?'第 '+gen+' 代'+(expired?'已过期':'有效')+(pending?' · 第 '+(gen+1)+' 代已领取':''):'尚未领取';
+ const panel=el('tools');panel.replaceChildren();if(!logged)return;
+ for(const name of grant){
+  const t=toolState(name), target=gen+Number(pending);
+  const box=document.createElement('article');panel.append(box);
+  const title=document.createElement('strong');title.textContent=name;box.append(title);
+  const line=document.createElement('p');box.append(line);
+  line.textContent=[t.activity,t.written?'已回读第 '+t.written+' 代':'尚未写入',t.result].filter(Boolean).join(' · ');
+  const row=document.createElement('div');row.className='row';box.append(row);
+  action(row,'预览并应用',t.activity!=='已确认空闲'||t.written===target,()=>{
+   selected=name;el('changes').textContent=name+' · '+({Codex:'config.toml 与 auth.json',Claude:'settings.json 的 env',Gemini:'环境配置与认证设置'})[name]+' → 此账号的网关地址与第 '+target+' 代临时凭据（已隐藏）';el('preview').showModal();
+  });
+  for(const [label,ok] of [['模拟生成成功',true],['模拟验证失败',false]]){
+   action(row,label,t.written!==target||t.activity!=='已确认空闲',()=>{
+    t.result=ok?'模拟原生请求已关联':'验证失败 · 可重试';t.verified=ok?target:0;
+    const enrolled=grant.map(toolState).filter(x=>x.managed);
+    if(pending&&enrolled.length&&enrolled.every(x=>x.verified===target)){gen=target;pending=expired=false;report('已确认切换，旧代已退役')}
+   });
+  }
+  const lab=document.createElement('label');lab.textContent='演示本机状态　';const select=document.createElement('select');
+  for(const state of ['未知','未安装','会话活跃','已确认空闲'])select.add(new Option(state,state));
+  select.value=t.activity;select.onchange=()=>{t.activity=select.value;render()};lab.append(select);box.append(lab);
+ }
+}
+function tab(mini){el('server').hidden=mini;el('mini').hidden=!mini;
+ el('serverTab').setAttribute('aria-pressed',String(!mini));el('miniTab').setAttribute('aria-pressed',String(mini));report('')}
+el('serverTab').onclick=()=>tab(false);el('miniTab').onclick=()=>tab(true);
+el('save').onclick=()=>{
+ const routes=checks.filter(x=>x.checked).map(x=>x.value),name=el('name').value.trim();
+ if(!name||!routes.length)return report('请填写名称并选择线路');
+ if(!client){client={id:'demo-'+crypto.randomUUID().slice(0,8)};ticket='demo-'+crypto.randomUUID().slice(0,8)}
+ for(const old of grant)if(!routes.includes(old))delete tools[old];
+ client.name=name;grant=routes;report('授权已保存');render();
+};
+el('revoke').onclick=()=>{client=null;grant=[];ticket='';logged=pending=expired=false;gen=0;for(const k of Object.keys(tools))delete tools[k];el('code').value='';report('身份已撤销');render()};
+el('login').onclick=()=>{try{if(!['http:','https:'].includes(new URL(el('address').value).protocol))throw Error()}catch{return report('请输入有效的 HTTP 或 HTTPS 服务地址')}if(!ticket||el('code').value.trim()!==ticket)return report('激活码无效或已使用');
+ ticket='';el('code').value='';logged=true;gen=1;render();report('已领取七天临时凭据')};
+el('cancel').onclick=()=>el('preview').close();
+el('confirm').onclick=()=>{const t=toolState(selected);el('preview').close();if(!logged||!grant.includes(selected)||t.activity!=='已确认空闲')return;
+ t.managed=true;t.written=gen+Number(pending);t.verified=0;t.result='待验证真实请求';render()};
+el('renew').onclick=()=>{pending=true;render()};el('expire').onclick=()=>{expired=true;render()};render();
+</script></html>
